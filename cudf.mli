@@ -18,6 +18,8 @@ type veqpkglist = veqpkg list
 
 (** {6 CUDF documents} *)
 
+type enum_keep = [ `Keep_version | `Keep_package | `Keep_feature ]
+
 (** Representation of a parsed package description item.
 
     With this representation, optional properties have already been
@@ -31,11 +33,12 @@ type package = {
   conflicts : vpkglist ;	(* default : [] *)
   provides : veqpkglist ;	(* default : [] *)
   installed : bool ;		(* default : false *)
-  keep : [ `Keep_version | `Keep_package | `Keep_feature ] option ;
+  keep :  enum_keep option ;	(* default : None *)
   extra : (string * string) list ;	(* extra properties, unparsed *)
 }
 
 type request = {
+  problem_id : string ;
   install : vpkglist ;	(* default : [] *)
   remove : vpkglist ;	(* default : [] *)
   upgrade : vpkglist ;	(* default : [] *)

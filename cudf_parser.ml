@@ -1,5 +1,9 @@
 
 open ExtLib
+open Printf
+
+open Cudf
+open Cudf_types
 
 exception Parse_error of int * string
 
@@ -29,6 +33,7 @@ let from_in_channel ic =
     p
 let close p = ()
 
+(* XXX: non tail-recursive *)
 let rec parse_stanza p =
   match Enum.get p.lines with
     | Some line ->
@@ -43,8 +48,64 @@ let rec parse_stanza p =
 	  [])
     | None -> []
 	    
+let dummy_package = {	(** implement package defaults *)
+  package = "" ;
+  version = 0 ;
+  depends = FTrue ;
+  conflicts = [] ;
+  provides = [] ;
+  installed = false ;
+  keep = None ;
+  extra = [] ;
+}
+
+let dummy_request = {	(** implement request defaults *)
+  problem_id = "" ;
+  install = [] ;
+  remove = [] ;
+  upgrade = [] ;
+}
+
 let parse_item p =
-  failwith "Not implemented: Cudf_parser.parse_item"
+  let stanza = parse_stanza p in
+  let rec aux_package pkg = function
+    | ("Version", s) :: tl ->
+	aux_package { pkg with version = parse_version s } tl
+    | ("Depends", s) :: tl ->
+	aux_package { pkg with depends = parse_vpkgformula s } tl
+    | ("Conflicts", s) :: tl ->
+	aux_package { pkg with conflicts = parse_vpkglist s } tl
+    | ("Provides", s) :: tl ->
+	aux_package { pkg with provides = parse_veqpkglist s } tl
+    | ("Installed" , s) :: tl ->
+	aux_package { pkg with installed = parse_bool s } tl
+    | ("Keep" , s) :: tl ->
+	aux_package { pkg with keep = Some (parse_keep s) } tl
+    | prop :: tl ->
+	aux_package { pkg with extra = prop :: pkg.extra } tl
+    | [] -> pkg
+  in
+  let rec aux_request req = function
+    | ("Install", s) :: tl ->
+	aux_request { req with install = parse_vpkglist s } tl
+    | ("Remove", s) :: tl ->
+	aux_request { req with remove = parse_vpkglist s } tl
+    | ("Upgrade", s) :: tl ->
+	aux_request { req with upgrade = parse_vpkglist s } tl
+    | (name, _) :: tl ->
+	parse_error p
+	  (sprintf "unexpected property '%s' in problem description item" name);
+    | [] -> req
+   in
+    match stanza with
+      | [] -> parse_error p "empty file stanza"
+      | ("Package", name) :: tl ->
+	  `Package (aux_package { dummy_package with package = name } tl)
+      | ("Problem", id) :: tl ->
+	  `Request (aux_request { dummy_request with problem_id = id } tl)
+      | (prop_name, _) :: _ ->
+	  parse_error p
+	    (sprintf "unexpected stanza starting with postmark '%s'" prop_name)
 
 let parse_cudf p =
   failwith "Not implemented: Cudf_parser.parse_cudf"

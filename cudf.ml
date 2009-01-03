@@ -13,6 +13,7 @@ type vpkgformula =
   | FAnd of vpkgformula list
 type veqpkg = ([`Eq] * version) option * pkgname
 type veqpkglist = veqpkg list
+type enum_keep = [ `Keep_version | `Keep_package | `Keep_feature ]
 
 type package = {
   package : pkgname ;
@@ -25,6 +26,7 @@ type package = {
   extra : (string * string) list
 }
 type request = {
+  problem_id : string ;
   install : vpkglist ;
   remove : vpkglist ;
   upgrade : vpkglist ;
