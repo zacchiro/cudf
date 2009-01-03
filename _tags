@@ -1,2 +1,2 @@
-<*.ml> or <*.mli> : pkg_extlib
-<*.byte> or <*.native> : pkg_extlib
+<*.ml> or <*.mli> : pkg_extlib, pkg_pcre
+<*.byte> or <*.native> : pkg_extlib, pkg_pcre
