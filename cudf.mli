@@ -32,6 +32,7 @@ type package = {
   provides : veqpkglist ;	(* default : [] *)
   installed : bool ;		(* default : false *)
   keep : [ `Keep_version | `Keep_package | `Keep_feature ] option ;
+  extra : (string * string) list ;	(* extra properties, unparsed *)
 }
 
 type request = {

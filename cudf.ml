@@ -22,6 +22,7 @@ type package = {
   provides : veqpkglist ;
   installed : bool ;
   keep : [ `Keep_version | `Keep_package | `Keep_feature ] option ;
+  extra : (string * string) list
 }
 type request = {
   install : vpkglist ;
