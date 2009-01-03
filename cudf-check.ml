@@ -1,3 +1,7 @@
+
+open ExtLib
+
 let _ =
-  let cudf = Cudf_parser.parse_cudf (open_in Sys.argv.(1)) in
-    print_endline "All done."
+  let p = Cudf_parser.from_in_channel stdin in
+  let stanza = Cudf_parser.parse_stanza p in
+     print_endline (dump stanza)

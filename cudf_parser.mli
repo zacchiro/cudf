@@ -3,6 +3,9 @@ type cudf_parser
 val from_in_channel : in_channel -> cudf_parser
 val close : cudf_parser -> unit
 
+(** Parse error. Arguments: line numnber and error message *)
+exception Parse_error of int * string
+
 (** {6 Full CUDF document parsing} *)
 
 (** parse a CUDF document as a whole *)

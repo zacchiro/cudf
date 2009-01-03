@@ -1,11 +1,15 @@
 
 open ExtLib
 
+exception Parse_error of int * string
+
 (* INVARIANT: lines are always kept lstrip-ed (see [lstrip] below) *)
 type cudf_parser = {
   lines : string Enum.t ;	(* TODO: to be converted to a _real_ parser *)
   mutable pos: int ;	(** last line read; start with 0, 1st line read is 1 *)
 }
+
+let parse_error p msg = raise (Parse_error (p.pos, msg))
 
 let blank_RE = Pcre.regexp "^\\s*$"
 let prop_RE = Pcre.regexp "(^[a-zA-Z][a-zA-Z0-9-]*): (.*)$"
@@ -32,7 +36,11 @@ let rec parse_stanza p =
 	  let subs = Pcre.extract ~rex:prop_RE line in
 	    p.pos <- p.pos + 1;
 	    (subs.(1), subs.(2)) :: parse_stanza p
-	with Not_found -> lstrip p; [])
+	with Not_found ->	(* not a valid property line *)
+	  if not (Pcre.pmatch ~rex:blank_RE line) then
+	    parse_error p "invalid property line";
+	  lstrip p;
+	  [])
     | None -> []
 	    
 let parse_item p =
