@@ -2,14 +2,17 @@ LIBS = _build/cudf.cma
 PROGS = _build/cudf-check.byte
 RESULTS = $(LIBS) $(PROGS)
 SOURCES = $(wildcard *.ml *.mli)
+OCAMLBUILD = ocamlbuild
+OBFLAGS = -classic-display
+
 all: $(RESULTS)
 $(RESULTS): $(SOURCES)
 
 clean:
-	ocamlbuild -clean
+	$(OCAMLBUILD) $(OBFLAGS) -clean
 
 _build/%:
-	ocamlbuild $*
+	$(OCAMLBUILD) $(OBFLAGS) $*
 	@touch $@
 
 top-level: _build/cudf.cma
