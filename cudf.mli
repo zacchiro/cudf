@@ -2,18 +2,19 @@
 (** {5 CUDF types} *)
 
 type version = int	(* required to be non 0 *)
+type relop = [`Eq|`Neq|`Geq|`Gt|`Leq|`Lt]
 
 (** {6 CUDF spec. types} *)
 
 type pkgname = string
-type vpkg = ([`Eq|`Neq|`Geq|`Gt|`Leq|`Lt] * version) option * pkgname
+type vpkg = pkgname * ([`Eq|`Neq|`Geq|`Gt|`Leq|`Lt] * version) option
 type vpkglist = vpkg list
 type vpkgformula = (* XXX does not enforce CNF, whereas the spec requires it *)
     FTrue
   | FPkg of vpkg
   | FOr of vpkgformula list
   | FAnd of vpkgformula list
-type veqpkg = ([`Eq] * version) option * pkgname
+type veqpkg = pkgname * ([`Eq] * version) option
 type veqpkglist = veqpkg list
 
 (** {6 CUDF documents} *)

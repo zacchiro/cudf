@@ -1,17 +1,16 @@
 
-open ExtLib
-
 type version = int
+type relop = [`Eq|`Neq|`Geq|`Gt|`Leq|`Lt]
 
 type pkgname = string
-type vpkg = ([`Eq|`Neq|`Geq|`Gt|`Leq|`Lt] * version) option * pkgname
+type vpkg = pkgname * ([`Eq|`Neq|`Geq|`Gt|`Leq|`Lt] * version) option
 type vpkglist = vpkg list
 type vpkgformula =
     FTrue
   | FPkg of vpkg
   | FOr of vpkgformula list
   | FAnd of vpkgformula list
-type veqpkg = ([`Eq] * version) option * pkgname
+type veqpkg = pkgname * ([`Eq] * version) option
 type veqpkglist = veqpkg list
 type enum_keep = [ `Keep_version | `Keep_package | `Keep_feature ]
 
