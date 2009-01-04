@@ -34,20 +34,25 @@ let from_in_channel ic =
 let close p = ()
 
 (* XXX: non tail-recursive *)
-let rec parse_stanza p =
-  match Enum.get p.lines with
-    | Some line ->
-	(try
-	  let subs = Pcre.extract ~rex:prop_RE line in
-	    p.pos <- p.pos + 1;
-	    (subs.(1), subs.(2)) :: parse_stanza p
-	with Not_found ->	(* not a valid property line *)
-	  if not (Pcre.pmatch ~rex:blank_RE line) then
-	    parse_error p "invalid property line";
-	  lstrip p;
-	  [])
-    | None -> []
-	    
+let parse_stanza p =
+  let rec aux p =
+    match Enum.get p.lines with
+      | Some line ->
+	  (try
+	     let subs = Pcre.extract ~rex:prop_RE line in
+	       p.pos <- p.pos + 1;
+	       (subs.(1), subs.(2)) :: aux p
+	   with Not_found ->	(* not a valid property line *)
+	     if not (Pcre.pmatch ~rex:blank_RE line) then
+	       parse_error p "invalid property line";
+	     lstrip p;
+	     [])
+      | None -> []
+  in
+    match aux p with
+      | [] -> raise End_of_file
+      | stanza -> stanza
+	
 let dummy_package = {	(** implement package defaults *)
   package = "" ;
   version = 0 ;
@@ -107,9 +112,33 @@ let parse_item p =
 	  parse_error p
 	    (sprintf "unexpected stanza starting with postmark '%s'" prop_name)
 
+let parse_items p =
+  let items = ref [] in
+    try
+      while true do
+	items := parse_item p :: !items
+      done;
+      assert false	(* unreachable *)
+    with End_of_file -> List.rev !items
+
+(** TODO: add check for package key (name, version) uniqueness *)
 let parse_cudf p =
-  failwith "Not implemented: Cudf_parser.parse_cudf"
+  let pkg_items, req_items =
+    List.partition (function `Package _ -> true | _ -> false) (parse_items p)
+  in
+  let pkgs =
+    List.map (function `Package pkg -> pkg | _ -> assert false) pkg_items
+  in
+    match req_items with
+      | [`Request req] -> pkgs, req
+      | [] -> parse_error p "missing problem description item"
+      | _ -> parse_error p "too many problem description items (1 expected)"
 
 let parse_packages p =
-  failwith "Not implemented: Cudf_parser.parse_packages"
+  List.map
+    (function
+       | `Package pkg -> pkg
+       | `Request _ ->
+	   raise (Parse_error (-1, "unexpected problem description item")))
+    (parse_items p)
 
