@@ -119,15 +119,20 @@ let parse_item p =
 	  (sprintf "unexpected property '%s' in problem description item" name);
     | [] -> req
    in
-    match stanza with
-      | [] -> parse_error p "empty file stanza"
-      | ("Package", name) :: tl ->
-	  `Package (aux_package { dummy_package with package = name } tl)
-      | ("Problem", id) :: tl ->
-	  `Request (aux_request { dummy_request with problem_id = id } tl)
-      | (prop_name, _) :: _ ->
-	  parse_error p
-	    (sprintf "unexpected stanza starting with postmark '%s'" prop_name)
+    try
+      (match stanza with
+	| [] -> parse_error p "empty file stanza"
+	| ("Package", name) :: tl ->
+	    `Package (aux_package { dummy_package with package = name } tl)
+	| ("Problem", id) :: tl ->
+	    `Request (aux_request { dummy_request with problem_id = id } tl)
+	| (prop_name, _) :: _ ->
+	    parse_error p
+	      (sprintf "unexpected stanza starting with postmark '%s'"
+		 prop_name))
+    with Cudf_types.Parse_error _ as exn ->
+      parse_error p (sprintf "error while parsing a CUDF type: %s"
+		       (Printexc.to_string exn))
 
 let parse_items p =
   let items = ref [] in
