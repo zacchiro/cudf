@@ -3,7 +3,8 @@ PROGS = _build/cudf-check.byte
 RESULTS = $(LIBS) $(PROGS)
 SOURCES = $(wildcard *.ml *.mli)
 OCAMLBUILD = ocamlbuild
-OBFLAGS = -classic-display
+# OBFLAGS = -classic-display
+OBFLAGS =
 
 all: $(RESULTS)
 $(RESULTS): $(SOURCES)
@@ -23,5 +24,6 @@ headers: header.txt .headache.conf
 
 test: _build/test.byte
 	$<
+_build/test.byte: $(SOURCES)
 
 .PHONY: all clean top-level headers test

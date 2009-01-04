@@ -21,34 +21,50 @@ open Printf
 
 let cudf_test_path name = sprintf "./tests/%s.cudf" name
 
-let good_cudf_docs =	(* CUDF whose parsing must suceed *)
-  [ "conflict-comma-sep" ;
-  ]
+let good_cudfs = [	(* CUDF whose parsing must suceed *)
+  "conflict-comma-sep" ;
+]
 
-let bad_cudf_docs =	(* CUDF whose parsing must fail *)
-  []
+let bad_cudfs = [	(* CUDF whose parsing must fail *)
+]
 
-let assert_no_exn f arg = assert_equal true (try f arg ; true with _ -> false)
+let assert_no_exn f = assert_equal true (try f () ; true with _ -> false)
+
+let assert_raises' ?(cmp = (=)) ~exn f =
+  assert_equal true (try f () ; false with exn' -> cmp exn exn')
+
+let good_parse fname = TestCase (fun _ ->
+  let ic = open_in fname in
+  let p = Cudf_parser.from_in_channel ic in
+    assert_no_exn (fun () -> Cudf_parser.parse_cudf p);
+    Cudf_parser.close p;
+    close_in ic)
+
+let bad_parse fname = TestCase (fun _ ->
+  let ic = open_in fname in
+  let p = Cudf_parser.from_in_channel ic in
+    assert_raises'
+      ~cmp:(fun e1 e2 ->
+	      match e1, e2 with
+		| Cudf_parser.Parse_error _, Cudf_parser.Parse_error _ -> true
+		| _ -> false)
+      ~exn:(Cudf_parser.Parse_error (0, ""))
+      (fun () -> Cudf_parser.parse_cudf p);
+    Cudf_parser.close p;
+    close_in ic)
 
 let good_parse_suite =
-  let good_parse fname = TestCase (fun _ ->
-    let ic = open_in fname in
-    let p = Cudf_parser.from_in_channel ic in
-      assert_no_exn Cudf_parser.parse_cudf p;
-      Cudf_parser.close p;
-      close_in ic)
-  in
-  let tests =
-    List.map
-      (fun name ->
-	 TestLabel (name, good_parse (cudf_test_path name)))
-      good_cudf_docs
-  in
-    TestLabel ("parsing of good CUDFs", TestList tests)
+  "parsing of good CUDFs" >:::
+    List.map (fun n -> n >: good_parse (cudf_test_path n)) good_cudfs
+
+let bad_parse_suite =
+  "parsing of bad CUDFs" >:::
+    List.map (fun n -> n >: bad_parse (cudf_test_path n)) bad_cudfs
 
 let all =
-  TestList [
-    good_parse_suite
+  "all tests" >::: [
+    good_parse_suite ;
+    bad_parse_suite
   ]
 
 let _ = run_test_tt_main all
