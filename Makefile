@@ -18,4 +18,7 @@ top-level: _build/cudf.cma
 headers: header.txt .headache.conf
 	headache -h header.txt -c .headache.conf $(SOURCES)
 
-.PHONY: all clean top-level headers
+test: _build/test.byte
+	$<
+
+.PHONY: all clean top-level headers test
