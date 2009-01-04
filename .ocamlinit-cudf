@@ -1,0 +1,5 @@
+#use "topfind";;
+#require "pcre";;
+#require "extlib";;
+#load "_build/cudf.cma";;
+open ExtLib;;
