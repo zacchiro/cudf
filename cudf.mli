@@ -84,3 +84,7 @@ val load_universe : package list -> universe
     @raise Not_found *)
 val lookup_package : universe -> string * int -> package
 
+(** keep only packages having "installed: true".
+    Inefficient (involves hashtbl cloning), use with care. *)
+val status : universe -> universe
+

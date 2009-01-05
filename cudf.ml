@@ -72,3 +72,13 @@ let load_cudf (pkgs, req) = load_universe pkgs, req
 
 let lookup_package univ = Hashtbl.find univ
 
+let status univ =
+  let tbl = Hashtbl.create 1023 in
+    Hashtbl.iter
+      (fun id pkg ->
+	 match pkg with
+	   | { installed = true } -> Hashtbl.add tbl id pkg
+	   | _ -> ())
+      univ;
+    tbl
+
