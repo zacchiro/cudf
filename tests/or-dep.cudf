@@ -1,0 +1,5 @@
+Package: electric-engine
+Version: 1
+Depends: solar-collector | huge-battery
+Provides: engine
+Conflicts: engine, electric-engine
