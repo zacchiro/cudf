@@ -63,16 +63,16 @@ let load_univ_test = parse_test ~parse_fun:Cudf_parser.load_universe
 (** {5 Test builders} *)
 
 let good_parse ~parse_fun name = TestCase (fun _ ->
-  assert_no_exn (fun () -> parse_test ~parse_fun))
+  assert_no_exn (fun () -> parse_test ~parse_fun name))
 
-let bad_parse ~parse_fun fname = TestCase (fun _ ->
+let bad_parse ~parse_fun name = TestCase (fun _ ->
   assert_raises'
     ~cmp:(fun e1 e2 ->
 	    match e1, e2 with
 	      | Cudf_parser.Parse_error _, Cudf_parser.Parse_error _ -> true
 	      | _ -> false)
     ~exn:(Cudf_parser.Parse_error (0, ""))
-    (fun () -> parse_test ~parse_fun))
+    (fun () -> parse_test ~parse_fun name))
 
 (** {5 Test suites} *)
 
