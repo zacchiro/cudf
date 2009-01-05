@@ -3,5 +3,5 @@
 #require "extlib";;
 #require "oUnit";;
 #load "_build/cudf.cma";;
-#load "_build/test.cmo";;
+#load "_build/tests.cmo";;
 open ExtLib;;

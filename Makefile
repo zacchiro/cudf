@@ -16,7 +16,7 @@ _build/%:
 	$(OCAMLBUILD) $(OBFLAGS) $*
 	@touch $@
 
-top-level: _build/cudf.cma _build/test.cmo
+top-level: _build/cudf.cma _build/tests.cmo
 	ledit ocaml -I ./_build/ -init ./.ocamlinit-cudf
 
 headers: header.txt .headache.conf
