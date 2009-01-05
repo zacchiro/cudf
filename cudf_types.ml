@@ -33,8 +33,9 @@ let or_sep_RE = Pcre.regexp "\\s*\\|\\s*"
 (** Higher-order parsers *)
 
 (** Given a parser as input, return a parser for "list of" what it
-    usually parses. List itmes are separated by single spaces only. *)
-let list_parser p s = List.map p (Pcre.split ~rex:space_RE s)
+    usually parses.
+    @param sep list items separator, a regexp *)
+let list_parser ?(sep = space_RE) p s = List.map p (Pcre.split ~rex:sep s)
 
 (** Parsers *)
 
@@ -81,7 +82,7 @@ let parse_vpkg s =
       Not_found
     | Parse_error _ -> raise (Parse_error ("vpkg", s))
 
-let parse_vpkglist = list_parser parse_vpkg
+let parse_vpkglist = list_parser ~sep:and_sep_RE parse_vpkg
   
 let parse_veqpkg s =
   match parse_vpkg s with
@@ -98,5 +99,5 @@ let parse_vpkgformula s =
 	      Cudf.FOr (List.map (fun s -> Cudf.FPkg (parse_vpkg s)) or_args))
 	 and_args)
       
-let parse_veqpkglist = list_parser parse_veqpkg
+let parse_veqpkglist = list_parser ~sep:and_sep_RE parse_veqpkg
 
