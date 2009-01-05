@@ -82,7 +82,7 @@ let good_pkgs_parse_suite =
       good_pkgs
 
 let bad_pkgs_parse_suite =
-  "parsing of good package universes" >::: List.map
+  "parsing of bad package universes" >::: List.map
       (fun n -> n >: bad_parse ~parse_fun:Cudf_parser.parse_packages
 	 (cudf_test_path n))
       bad_pkgs
