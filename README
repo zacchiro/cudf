@@ -1,0 +1,36 @@
+libCUDF - CUDF (Common Upgrade Description Format) manipulation library
+=======================================================================
+
+libCUDF is a library to manipulate so called CUDF documents. A CUDF
+document describe an "upgrade problem", as faced by package managers
+in popular package-based FOSS (Free and Open Source Software)
+distributions.
+
+Usually, a CUDF document consists of a "package universe" and of a
+"user request":
+
+- The package universe describes all packages known to the package
+  manager, a subset of which (the "package status") denotes the
+  package being currently installed on the target machine.
+
+- The user request denotes a change to the package status as requested
+  by the user, e.g.: "install package foo", "remove package bar", ...
+
+A CUDF document is naturally complemented by a "solution" describing
+the resulting package status (if any) implementing the user request,
+as found by a package manager.
+
+libCUDF enables manipulation of CUDF and related documents.
+
+Reference
+---------
+
+libCUDF consists of an implementation of the CUDF specifications
+[1][2], edited by the Mancoosi project [3].
+
+[1] http://www.mancoosi.org/deliverables/d5.1.pdf
+[2] http://mancoosi.org/deliverables/
+[3] http://www.mancoosi.org
+
+ -- Stefano Zacchiroli <zack@pps.jussieu.fr>  Mon,  5 Jan 2009 14:47:37 +0100
+
