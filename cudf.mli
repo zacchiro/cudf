@@ -83,6 +83,9 @@ val load_universe : package list -> universe
 (** lookup a specific package via a <name, version> key
     @raise Not_found *)
 val lookup_package : universe -> string * int -> package
+val iter_packages : universe -> (package -> unit) -> unit
+val fold_packages : ('a -> package -> 'a) -> 'a -> universe -> 'a
+val get_packages : universe -> package list
 
 (** keep only packages having "installed: true".
     Inefficient (involves hashtbl cloning), use with care. *)

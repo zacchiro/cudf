@@ -71,6 +71,10 @@ let load_universe pkgs =
 let load_cudf (pkgs, req) = load_universe pkgs, req
 
 let lookup_package univ = Hashtbl.find univ
+let iter_packages univ f = Hashtbl.iter (fun _id pkg -> f pkg) univ
+let fold_packages f init univ =
+  Hashtbl.fold (fun _id pkg acc -> f acc pkg) univ init
+let get_packages = fold_packages (fun acc pkg -> pkg :: acc) []
 
 let status univ =
   let tbl = Hashtbl.create 1023 in
