@@ -87,7 +87,7 @@ val iter_packages : universe -> (package -> unit) -> unit
 val fold_packages : ('a -> package -> 'a) -> 'a -> universe -> 'a
 val get_packages : universe -> package list
 
-(** keep only packages having "installed: true".
+(** project on packages having "installed: true".
     Inefficient (involves hashtbl cloning), use with care. *)
 val status : universe -> universe
 

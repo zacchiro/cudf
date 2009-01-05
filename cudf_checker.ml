@@ -16,3 +16,4 @@
 (*  along with this program.  If not, see <http://www.gnu.org/licenses/>.    *)
 (*****************************************************************************)
 
+let is_healthy univ = failwith "not implemented: Cudf_checker.is_healthy"

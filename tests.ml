@@ -109,6 +109,21 @@ let parse_reg_suite =
     or_dep ;
   ]
 
+(** {6 New feature tests}
+    i.e., kinda test-driven development *)
+
+let status_filtering =
+  "status projection" >:: (fun () ->
+    "status projection returned an \"installed: false\" package" @?
+      List.for_all
+        (fun { installed = i } -> i)
+        (get_packages (status (fst (load_cudf_test "legacy")))))
+
+let feature_suite =
+  "new feature tests" >::: [
+    status_filtering ;
+  ]
+
 (** {5 Assemble and run tests} *)
 
 let all =
@@ -118,5 +133,6 @@ let all =
     good_pkgs_parse_suite ;
     bad_pkgs_parse_suite ;
     parse_reg_suite ;
+    feature_suite ;
   ]
 
