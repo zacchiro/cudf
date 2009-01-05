@@ -1,5 +1,7 @@
 #use "topfind";;
 #require "pcre";;
 #require "extlib";;
+#require "oUnit";;
 #load "_build/cudf.cma";;
+#load "_build/test.cmo";;
 open ExtLib;;
