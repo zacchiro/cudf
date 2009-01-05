@@ -20,11 +20,12 @@
 
 type version = int	(* required to be non 0 *)
 type relop = [`Eq|`Neq|`Geq|`Gt|`Leq|`Lt]
+type constr = (relop * version) option
 
 (** {6 CUDF spec. types} *)
 
 type pkgname = string
-type vpkg = pkgname * ([`Eq|`Neq|`Geq|`Gt|`Leq|`Lt] * version) option
+type vpkg = pkgname * constr
 type vpkglist = vpkg list
 type vpkgformula = (* XXX does not enforce CNF, whereas the spec requires it *)
     FTrue
@@ -91,4 +92,8 @@ val get_packages : universe -> package list
 (** project on packages having "installed: true".
     Inefficient (involves hashtbl cloning), use with care. *)
 val status : universe -> universe
+
+(** current installation: given a universe, return a lookup function
+    mapping package names to the list of their installed version *)
+val installation : universe -> (pkgname -> version list)
 

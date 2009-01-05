@@ -16,6 +16,7 @@
 (*  along with this program.  If not, see <http://www.gnu.org/licenses/>.    *)
 (*****************************************************************************)
 
+open ExtLib
 open OUnit
 open Printf
 
@@ -122,9 +123,18 @@ let status_filtering =
         (fun { installed = i } -> i)
         (get_packages (status (fst (load_cudf_test "legacy")))))
 
+let inst_version_lookup =
+  "lookup installed versions" >:: (fun () ->
+    let inst = installation (load_univ_test "multi-versions") in
+    assert_equal (List.sort (inst "gasoline-engine")) [1; 2];
+    assert_equal (inst "battery") [3];
+    assert_equal (inst "not-installed") [];
+    assert_equal (inst "not-existent") [])
+
 let feature_suite =
   "new feature tests" >::: [
     status_filtering ;
+    inst_version_lookup ;
   ]
 
 (** {5 Assemble and run tests} *)

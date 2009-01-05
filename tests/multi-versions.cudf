@@ -1,0 +1,19 @@
+Package: gasoline-engine
+Version: 1
+Depends: turbo
+Provides: engine
+Conflicts: engine, gasoline-engine
+Installed: true
+
+Package: gasoline-engine
+Version: 2
+Conflicts: engine, gasoline-engine
+Installed: true
+
+Package: battery
+Version: 3
+Provides: huge-battery
+Installed: true
+
+Package: not-installed
+Version: 4

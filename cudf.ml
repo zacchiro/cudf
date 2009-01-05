@@ -16,15 +16,17 @@
 (*  along with this program.  If not, see <http://www.gnu.org/licenses/>.    *)
 (*****************************************************************************)
 
+open ExtLib
 open Printf
 
 exception Constraint_violation of string
 
 type version = int
 type relop = [`Eq|`Neq|`Geq|`Gt|`Leq|`Lt]
+type constr = (relop * version) option
 
 type pkgname = string
-type vpkg = pkgname * ([`Eq|`Neq|`Geq|`Gt|`Leq|`Lt] * version) option
+type vpkg = pkgname * constr
 type vpkglist = vpkg list
 type vpkgformula =
     FTrue
@@ -42,7 +44,7 @@ type package = {
   conflicts : vpkglist ;
   provides : veqpkglist ;
   installed : bool ;
-  keep : [ `Keep_version | `Keep_package | `Keep_feature ] option ;
+  keep : enum_keep option ;
   extra : (string * string) list
 }
 type request = {
@@ -52,38 +54,53 @@ type request = {
   upgrade : vpkglist ;
 }
 type cudf_doc = package list * request
-type universe = ((string * int), package) Hashtbl.t
+type universe =
+    ((string * int), package) Hashtbl.t	(* <name, version> -> package *)
+    * (string, package) Hashtbl.t	(* name -> package (multi-bindings) *)
 type solution = universe
 type cudf = universe * request
 
+let empty_universe () =
+  let id2pkg = Hashtbl.create 1023 in
+  let name2pkg = Hashtbl.create 1023 in
+    (id2pkg, name2pkg)
+
 let load_universe pkgs =
-  let tbl = Hashtbl.create 1023 in
+  let id2pkg, name2pkg = empty_universe () in
     List.iter
       (fun pkg ->
 	 let id = pkg.package, pkg.version in
-	   if Hashtbl.mem tbl id then
+	   if Hashtbl.mem id2pkg id then
 	     raise (Constraint_violation
 		      (sprintf "duplicate package: <%s, %d>"
 			 pkg.package pkg.version));
-	   Hashtbl.add tbl id pkg)
+	   Hashtbl.add id2pkg id pkg;
+	   Hashtbl.add name2pkg pkg.package pkg)
       pkgs;
-    tbl
+    (id2pkg, name2pkg)
 
 let load_cudf (pkgs, req) = load_universe pkgs, req
 
-let lookup_package univ = Hashtbl.find univ
-let iter_packages univ f = Hashtbl.iter (fun _id pkg -> f pkg) univ
-let fold_packages f init univ =
+let lookup_package (univ, _) = Hashtbl.find univ
+let iter_packages (univ, _) f = Hashtbl.iter (fun _id pkg -> f pkg) univ
+let fold_packages f init (univ, _) =
   Hashtbl.fold (fun _id pkg acc -> f acc pkg) univ init
 let get_packages = fold_packages (fun acc pkg -> pkg :: acc) []
 
-let status univ =
-  let tbl = Hashtbl.create 1023 in
+let status (univ, _) =
+  let id2pkg, name2pkg = empty_universe () in
     Hashtbl.iter
       (fun id pkg ->
 	 match pkg with
-	   | { installed = true } -> Hashtbl.add tbl id pkg
+	   | { installed = true } ->
+	       Hashtbl.add id2pkg id pkg;
+	       Hashtbl.add name2pkg pkg.package pkg
 	   | _ -> ())
       univ;
-    tbl
+    (id2pkg, name2pkg)
+
+let installation (_, univ) pkgname =
+  List.filter_map
+    (function { installed = true ; version = v} as pkg -> Some v | _ -> None)
+    (Hashtbl.find_all univ pkgname)
 
