@@ -24,6 +24,7 @@ open Cudf
 let cudf_test_path name = sprintf "./tests/%s.cudf" name
 
 let good_cudfs = [	(* CUDF whose parsing must suceed *)
+  "adjacent-stanzas" ;
 ]
 let bad_cudfs = [	(* CUDF whose parsing must fail *)
 ]

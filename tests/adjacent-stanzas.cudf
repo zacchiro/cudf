@@ -1,0 +1,15 @@
+Package: car
+Version: 1
+Depends: engine, wheel, door, battery
+Installed: true
+Package: bicycle
+Version: 7
+Package: gasoline-engine
+Version: 1
+Depends: turbo
+Provides: engine
+Conflicts: engine, gasoline-engine
+Installed: true
+Problem: source: Debian/DUDF 733963bab9fe1f78fd551ad20485b217
+Install: bicycle, electric-engine = 1
+Upgrade: door, wheel > 2

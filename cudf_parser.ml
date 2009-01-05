@@ -52,13 +52,21 @@ let close p = ()
 
 (* XXX: non tail-recursive *)
 let parse_stanza p =
-  let rec aux p =
+  let rec aux ?(start = false) p =
     match Enum.get p.lines with
       | Some line ->
 	  (try
 	     let subs = Pcre.extract ~rex:prop_RE line in
-	       p.pos <- p.pos + 1;
-	       (subs.(1), subs.(2)) :: aux p
+	     let prop = subs.(1), subs.(2) in
+	       (match prop with
+		 | "Package", _
+		 | "Problem", _ when not start ->
+		     (* beginning of next stanza, rollback *)
+		     Enum.push p.lines line;
+		     []
+		 | _ ->
+		     p.pos <- p.pos + 1;
+		     prop :: aux p)
 	   with Not_found ->	(* not a valid property line *)
 	     if not (Pcre.pmatch ~rex:blank_RE line) then
 	       parse_error p "invalid property line";
@@ -66,7 +74,7 @@ let parse_stanza p =
 	     [])
       | None -> []
   in
-    match aux p with
+    match aux ~start:true p with
       | [] -> raise End_of_file
       | stanza -> stanza
 	
