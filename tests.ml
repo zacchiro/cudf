@@ -30,8 +30,10 @@ let bad_cudfs = [	(* CUDF whose parsing must fail *)
 ]
 let good_pkgs = [	(* universes whose parsing must suceed *)
   "conflict-comma-sep" ;
+  "plus-in-pkgname" ;
 ]
 let bad_pkgs = [	(* universes whose parsing must fail *)
+  "weird-pkgname" ;
 ]
 
 (** {5 Helpers} *)

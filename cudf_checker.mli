@@ -17,4 +17,4 @@
 (*****************************************************************************)
 
 val is_healthy : Cudf.universe -> bool
-
+val is_solution : Cudf.cudf -> Cudf.solution -> bool

@@ -16,4 +16,15 @@
 (*  along with this program.  If not, see <http://www.gnu.org/licenses/>.    *)
 (*****************************************************************************)
 
-let is_healthy univ = failwith "not implemented: Cudf_checker.is_healthy"
+open Printf
+
+(* TODO implement is_healthy *)
+let is_healthy univ =
+  eprintf "WARNING: Cudf_checker.is_healty not implement yet; dummy answer.";
+  true
+
+(* TODO implement is_solution *)
+let is_solution cudf univ =
+  eprintf "WARNING: Cudf_checker.is_solution not implement yet; dummy answer.";
+  true
+

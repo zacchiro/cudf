@@ -130,8 +130,9 @@ let parse_item p =
     try
       (match stanza with
 	| [] -> parse_error p "empty file stanza"
-	| ("Package", name) :: tl ->
-	    `Package (aux_package { dummy_package with package = name } tl)
+	| ("Package", n) :: tl ->
+	    `Package
+	      (aux_package { dummy_package with package = parse_pkgname n } tl)
 	| ("Problem", id) :: tl ->
 	    `Request (aux_request { dummy_request with problem_id = id } tl)
 	| (prop_name, _) :: _ ->

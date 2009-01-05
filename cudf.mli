@@ -74,6 +74,7 @@ exception Constraint_violation of string
 
 (** package universe (including package status, i.e., installed packages) *)
 type universe
+type solution = universe
 type cudf = universe * request
 val load_cudf : cudf_doc -> cudf
 val load_universe : package list -> universe

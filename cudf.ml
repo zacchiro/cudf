@@ -53,6 +53,7 @@ type request = {
 }
 type cudf_doc = package list * request
 type universe = ((string * int), package) Hashtbl.t
+type solution = universe
 type cudf = universe * request
 
 let load_universe pkgs =
