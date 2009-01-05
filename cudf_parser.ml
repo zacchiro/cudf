@@ -143,7 +143,6 @@ let parse_items p =
       assert false	(* unreachable *)
     with End_of_file -> List.rev !items
 
-(** TODO: add check for package key (name, version) uniqueness *)
 let parse_cudf p =
   let pkg_items, req_items =
     List.partition (function `Package _ -> true | _ -> false) (parse_items p)
@@ -163,4 +162,7 @@ let parse_packages p =
        | `Request _ ->
 	   raise (Parse_error (-1, "unexpected problem description item")))
     (parse_items p)
+
+let load_cudf p = Cudf.load_cudf (parse_cudf p)
+let load_universe p = Cudf.load_universe (parse_packages p)
 

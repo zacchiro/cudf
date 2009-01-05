@@ -62,11 +62,25 @@ type request = {
   upgrade : vpkglist ;	(* default : [] *)
 }
 
-type cudf = package list * request
+(** {6 Syntactic CUDF representation} *)
+type cudf_doc = package list * request
+
+(** {6 Semantic CUDF representation} *)
+
+(** violation of a constraint imposed by CUDF specification
+
+    @param msg explanation of which constraint has been violated *)
+exception Constraint_violation of string
+
+(** package universe (including package status, i.e., installed packages) *)
+type universe
+type cudf = universe * request
+val load_cudf : cudf_doc -> cudf
+val load_universe : package list -> universe
 
 (** {5 CUDF manipulation} *)
 
 (** lookup a specific package via a <name, version> key
     @raise Not_found *)
-val lookup_package : cudf -> string * int -> package
+val lookup_package : universe -> string * int -> package
 

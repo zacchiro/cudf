@@ -16,6 +16,10 @@
 (*  along with this program.  If not, see <http://www.gnu.org/licenses/>.    *)
 (*****************************************************************************)
 
+open Printf
+
+exception Constraint_violation of string
+
 type version = int
 type relop = [`Eq|`Neq|`Geq|`Gt|`Leq|`Lt]
 
@@ -47,8 +51,24 @@ type request = {
   remove : vpkglist ;
   upgrade : vpkglist ;
 }
-type cudf = package list * request
+type cudf_doc = package list * request
+type universe = ((string * int), package) Hashtbl.t
+type cudf = universe * request
 
-let lookup_package (pkgs, _req) id =
-  List.find (fun pkg -> (pkg.package, pkg.version) = id) pkgs
+let load_universe pkgs =
+  let tbl = Hashtbl.create 1023 in
+    List.iter
+      (fun pkg ->
+	 let id = pkg.package, pkg.version in
+	   if Hashtbl.mem tbl id then
+	     raise (Constraint_violation
+		      (sprintf "duplicate package: <%s, %d>"
+			 pkg.package pkg.version));
+	   Hashtbl.add tbl id pkg)
+      pkgs;
+    tbl
+
+let load_cudf (pkgs, req) = load_universe pkgs, req
+
+let lookup_package univ = Hashtbl.find univ
 

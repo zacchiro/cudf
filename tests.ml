@@ -54,6 +54,8 @@ let parse_test ~parse_fun name =
 
 let parse_cudf_test = parse_test ~parse_fun:Cudf_parser.parse_cudf
 let parse_pkgs_test = parse_test ~parse_fun:Cudf_parser.parse_packages
+let load_cudf_test = parse_test ~parse_fun:Cudf_parser.load_cudf
+let load_univ_test = parse_test ~parse_fun:Cudf_parser.load_universe
 
 (** {5 Test builders} *)
 
@@ -98,7 +100,7 @@ let bad_pkgs_parse_suite =
 let or_dep =
   "disjunctive dependencies" >:: (fun () ->
     assert_equal
-      ((List.hd (parse_pkgs_test "or-dep")).depends)
+      (lookup_package (load_univ_test "or-dep") ("electric-engine", 1)).depends
       (FAnd [
 	 FOr [FPkg ("solar-collector", None) ; FPkg ("huge-battery", None)]]))
 

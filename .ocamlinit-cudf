@@ -5,3 +5,8 @@
 #load "_build/cudf.cma";;
 #load "_build/tests.cmo";;
 open ExtLib;;
+
+open Cudf_parser;;
+let p = Cudf_parser.from_in_channel (open_in "example.cudf");;
+let cudf_doc = Cudf_parser.parse_cudf p;;
+let (univ, req) as cudf = Cudf.load_cudf cudf_doc;;

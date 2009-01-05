@@ -23,13 +23,22 @@ val close : cudf_parser -> unit
 (** Parse error. Arguments: line numnber and error message *)
 exception Parse_error of int * string
 
-(** {6 Full CUDF document parsing} *)
+(** {6 Full CUDF document parsing}
+
+    "parse_*" functions offer plain syntax parsing, with no semantic
+    interpretation of what is being parsed. "load_*" functions offer
+    the latter, hence also checking for semantic constraints (such as
+    the lack of key duplication).
+*)
 
 (** parse a CUDF document as a whole *)
-val parse_cudf : cudf_parser -> Cudf.cudf
+val parse_cudf : cudf_parser -> Cudf.cudf_doc
 
 (** parse a CUDF document missing the request information item *)
 val parse_packages : cudf_parser -> Cudf.package list
+
+val load_cudf : cudf_parser -> Cudf.cudf
+val load_universe : cudf_parser -> Cudf.universe
 
 (** {6 Item-by-item CUDF parsing} *)
 
