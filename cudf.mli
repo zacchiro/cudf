@@ -83,6 +83,15 @@ exception Constraint_violation of string
 (** package universe (including package status, i.e., installed packages) *)
 type universe
 type cudf = universe * request
+
+(** XXX temporary encoding for CUDF solutions, as they are not yet
+    defined by the CUDF spec
+
+    A universe encoding a solution matters only for its [installed]
+    packages, which are considered to be the resulting package
+    status *)
+type solution = universe
+
 val load_cudf : cudf_doc -> cudf
 val load_universe : package list -> universe
 
@@ -96,9 +105,9 @@ val lookup_package : universe -> pkgname * version -> package
     package status (i.e., the universe subset of [installed] packages)
 
     @param include_features allow constraint to be satisfied by features
-      (i.e., Provides). Default: true
+    (i.e., Provides). Default: true
     @param ignore make the lookup skip over all packages matching the given
-      package predicate *)
+    package predicate *)
 val mem_installed :
   ?include_features: bool ->
   ?ignore:(package -> bool) ->
@@ -117,8 +126,14 @@ val fold_packages : ('a -> package -> 'a) -> 'a -> universe -> 'a
 (** conversion from universe to plain package list *)
 val get_packages : universe -> package list
 
+(** total numer of available packages (no matter whether they are
+    installed or not) *)
+val universe_size : universe -> int
+
+(** total number of installed packages occurring in the universe *)
+val installed_size : universe -> int
+
 (** project on packages having "installed: true".
     Inefficient (involves hashtbl cloning), use with care. *)
 val status : universe -> universe
-
 

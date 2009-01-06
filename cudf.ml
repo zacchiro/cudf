@@ -63,8 +63,14 @@ type universe = {
       pair <owner, provided version>, where owner is the package
       providing it. Provided version "None" means "all possible
       versions" *)
+  mutable univ_size : int;
+  mutable inst_size : int;
 }
 type cudf = universe * request
+type solution = universe
+
+let universe_size univ = univ.univ_size
+let installed_size univ = univ.inst_size
 
 let (=%) pkg1 pkg2 =
   pkg1.package = pkg2.package && pkg1.version = pkg2.version
@@ -91,6 +97,7 @@ let empty_universe () =
   { id2pkg = Hashtbl.create 1023 ;
     name2pkgs = Hashtbl.create 1023 ;
     inst_features = Hashtbl.create 1023 ;
+    univ_size = 0 ; inst_size = 0 ;
   }
 
 (** process all features (i.e., Provides) provided by a given package
@@ -115,7 +122,10 @@ let load_universe pkgs =
 			 pkg.package pkg.version));
 	   Hashtbl.add univ.id2pkg id pkg;
 	   Hashtbl.add univ.name2pkgs pkg.package pkg;
-	   expand_features pkg univ.inst_features)
+	   expand_features pkg univ.inst_features;
+	   univ.univ_size <- univ.univ_size + 1;
+	   if pkg.installed then
+	     univ.inst_size <- univ.inst_size + 1)
       pkgs;
     univ
 

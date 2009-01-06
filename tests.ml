@@ -182,6 +182,13 @@ let consistency =
 	"inconsistent legacy example" @? fst (Cudf_checker.is_consistent univ))
   ]
 
+let univ_sizes =
+  let univ, _ = load_cudf_test "legacy" in
+    "check universe size measuring" >::: [
+      "total size" >:: (fun () -> assert_equal (universe_size  univ) 20);
+      "installed size" >:: (fun () -> assert_equal (installed_size  univ) 6);
+    ]
+
 let feature_suite =
   "new feature tests" >::: [
     status_filtering ;
@@ -191,6 +198,7 @@ let feature_suite =
     disjoint ;
     self_conflicts ;
     consistency ;
+    univ_sizes ;
   ]
 
 (** {5 Assemble and run tests} *)
