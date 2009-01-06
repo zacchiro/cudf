@@ -18,9 +18,6 @@
 
 open Cudf
 
-type solution
-val solution : universe -> solution
-
 val satisfy_formula : universe -> vpkgformula -> bool
 val disjoint : universe -> ?ignore:(package -> bool) -> vpkglist -> bool
 
@@ -28,4 +25,7 @@ val disjoint : universe -> ?ignore:(package -> bool) -> vpkglist -> bool
     msg] otherwise, where msg is the inconsistency reason *)
 val is_consistent : universe -> bool * string
 
-val is_solution : universe -> solution -> bool * string
+(** check whether a given solution fulfill the request of a given CUDF
+    @return [true, _] if this is the case, [false, msg] otherwise,
+    where msg is an explanatory message *)
+val is_solution : cudf -> solution -> bool * string

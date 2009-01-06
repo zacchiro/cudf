@@ -21,10 +21,6 @@ open Printf
 
 open Cudf
 
-type solution	(* TODO *)
-
-let solution univ = assert false	(* TODO *)
-
 (* XXX not tail-recursive *)
 let satisfy_formula univ =
   let rec aux = function
@@ -59,8 +55,46 @@ let is_consistent univ =
       true, !msg
     with Exit -> false, !msg
 
-(* TODO implement is_solution *)
-let is_solution inst sol =
-  eprintf "WARNING: Cudf_checker.is_solution not implement yet; dummy answer.";
-  true, ""
+(* for reference, see CUDF §3.3.4, "semantics of requets" *)
+let is_solution (univ, req) sol =
+  let _ =
+    if universe_size sol <> installed_size sol then
+      prerr_endline ("WARNING: solution contains not-installed packages,"
+		     ^ " they have been ignored")
+  in
+  let and_of_vpkglist l = FAnd (List.map (fun p -> FPkg p) l) in
+  let is_succ = (* XXX not implemented, as it will be pointless with a
+		   diff-like encoding of solutions *)
+    lazy (true, "") in
+  let is_cons = lazy (is_consistent sol) in
+  let install_ok = lazy (
+    if satisfy_formula sol (and_of_vpkglist req.install) then
+      true, ""
+    else
+      false, "requested _install_ packages missing"
+  ) in
+  let remove_ok = lazy (
+    if disjoint sol req.remove then
+      true, ""
+    else
+      false, "requested _remove_ packages still present"
+  ) in
+  let upgrade_ok = lazy (
+    if not (satisfy_formula sol (and_of_vpkglist req.upgrade)) then
+      false, "requested _upgrade_ packages missing"
+    else
+      (* TODO implement extra check on upgrade requests
+	 1) packages are not older than before
+	 2) packages are singletons *)
+      true, ""
+  ) in
+  let is_sol, msgs =
+    List.fold_left
+      (fun (is_sol, msgs) test ->
+	 let res, msg = Lazy.force test in
+	   res && is_sol, msg :: msgs)
+      (true, [])
+      [is_succ; is_cons; install_ok; remove_ok; upgrade_ok]
+  in
+    is_sol, String.concat "; " (List.rev (List.filter ((<>) "") msgs))
 

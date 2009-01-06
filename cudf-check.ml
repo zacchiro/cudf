@@ -107,10 +107,9 @@ let main () =
 	print_inst_info (fst cudf);
 	print_cudf cudf
     | Some cudf, None, Some sol ->
-	let sol = Cudf_checker.solution sol in
-	  print_inst_info (fst cudf);
-	  print_sol_info (fst cudf) sol;
-	  print_cudf cudf
+	print_inst_info (fst cudf);
+	print_sol_info cudf sol;
+	print_cudf cudf
     | None, Some univ, None ->
 	print_inst_info univ
     | _ -> die_usage ()
