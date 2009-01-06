@@ -26,4 +26,8 @@ test: _build/test.byte
 	$<
 _build/test.byte: $(SOURCES)
 
-.PHONY: all clean top-level headers test
+tags: TAGS
+TAGS: $(SOURCES)
+	otags $^
+
+.PHONY: all clean top-level headers test tags
