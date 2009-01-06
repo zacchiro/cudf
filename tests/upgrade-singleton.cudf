@@ -1,0 +1,10 @@
+Package: foo
+Version: 1
+Installed: true
+
+Package: foo
+Version: 2
+Installed: true
+
+Problem: source: test 68a2d0dd26aa1de89b635183dfd6743f0befccfa
+Upgrade: foo

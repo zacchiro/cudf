@@ -36,6 +36,15 @@ let good_pkgs = [	(* universes whose parsing must suceed *)
 let bad_pkgs = [	(* universes whose parsing must fail *)
   "weird-pkgname" ;
 ]
+let good_prob_sol = [	(* pairs cudf/sol, with sol being a good solution *)
+  "legacy", "legacy-sol" ;
+  "fresher", "fresher-sol-good" ;
+  "upgrade-singleton", "upgrade-singleton-sol-good" ;
+]
+let bad_prob_sol = [	(* pairs cudf/sol, with sol being a bad solution *)
+  "fresher", "fresher-sol-bad" ;
+  "upgrade-singleton", "upgrade-singleton-sol-bad" ;
+]
 
 (** {5 Helpers} *)
 
@@ -79,6 +88,11 @@ let good_solution prob_name sol_name = TestCase (fun _ ->
   let cudf, sol = load_cudf_test prob_name, load_univ_test sol_name in
     sprintf "problem with correct solution: (%s,%s)" prob_name sol_name @?
       fst (Cudf_checker.is_solution cudf sol))
+
+let bad_solution prob_name sol_name = TestCase (fun _ ->
+  let cudf, sol = load_cudf_test prob_name, load_univ_test sol_name in
+    sprintf "problem with correct solution: (%s,%s)" prob_name sol_name @?
+      not (fst (Cudf_checker.is_solution cudf sol)))
 
 (** {5 Test suites} *)
 
@@ -194,9 +208,11 @@ let univ_sizes =
       "installed size" >:: (fun () -> assert_equal (installed_size  univ) 6);
     ]
 
-let good_solution_suite = "good solutions" >::: [
-  good_solution "legacy" "legacy-sol" ;
-]
+let good_solution_suite = "good solutions" >:::
+  List.map (fun (prob, sol) -> good_solution prob sol) good_prob_sol
+
+let bad_solution_suite = "bad solutions" >:::
+  List.map (fun (prob, sol) -> bad_solution prob sol) bad_prob_sol
 
 let feature_suite =
   "new feature tests" >::: [
@@ -219,6 +235,7 @@ let all =
     good_pkgs_parse_suite ;
     bad_pkgs_parse_suite ;
     good_solution_suite ;
+    bad_solution_suite ;
     parse_reg_suite ;
     feature_suite ;
   ]

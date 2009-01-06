@@ -1,0 +1,12 @@
+Package: foo
+Version: 2
+Installed: true
+
+Package: foo
+Version: 1
+
+Package: foo
+Version: 3
+
+Problem: source: test 850394e40e69d891d824db71bcda548559040edf
+Upgrade: foo

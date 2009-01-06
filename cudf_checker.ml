@@ -83,10 +83,31 @@ let is_solution (univ, req) sol =
     if not (satisfy_formula sol (and_of_vpkglist req.upgrade)) then
       false, "requested _upgrade_ packages missing"
     else
-      (* TODO implement extra check on upgrade requests
-	 1) packages are not older than before
-	 2) packages are singletons *)
-      true, ""
+      let msg = ref "" in
+	try
+	  List.iter
+	    (fun (pkgname, _constr) ->
+	       match get_installed sol pkgname with
+		 | [pkg] ->
+		     let old_installed = get_installed univ pkgname in
+		       if not (List.for_all
+				 (fun pkg' -> pkg'.version <= pkg.version)
+				 old_installed) then begin
+			 msg := sprintf
+			   ("requested _upgrade_ packares are not newer"
+			    ^^ " than before (e.g.: %s)") pkgname;
+			 raise Exit
+		       end
+		 | [] -> (* impossible, since the upgrade fmla is satisfied *)
+		     assert false
+		 | _ ->
+		     msg := sprintf
+		       ("requested _upgrade_ packages are not singletons"
+			^^ " (e.g.: %s)") pkgname;
+		     raise Exit)
+	    req.upgrade;
+	  true, ""
+	with Exit -> false, !msg
   ) in
   let is_sol, msgs =
     List.fold_left
@@ -96,5 +117,5 @@ let is_solution (univ, req) sol =
       (true, [])
       [is_succ; is_cons; install_ok; remove_ok; upgrade_ok]
   in
-    is_sol, String.concat "; " (List.rev (List.filter ((<>) "") msgs))
+    is_sol, String.concat "; " (List.filter ((<>) "") msgs)
 
