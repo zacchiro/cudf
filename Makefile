@@ -1,13 +1,35 @@
+NAME = cudf
+VERSION = 0.2
+
 LIBS = _build/cudf.cma
+LIBS_OPT = _build/cudf.cmxa
 PROGS = _build/cudf-check.byte
+PROGS_OPT = _build/cudf-check.native
 RESULTS = $(LIBS) $(PROGS)
+RESULTS_OPT = $(LIBS_OPT) $(PROGS_OPT)
 SOURCES = $(wildcard *.ml *.mli)
+
 OCAMLBUILD = ocamlbuild
 # OBFLAGS = -classic-display
 OBFLAGS =
+OCAMLFIND = ocamlfind
+
+DESTDIR =
+ifeq ($(DESTDIR),)
+INSTALL = $(OCAMLFIND) install
+UNINSTALL = $(OCAMLFIND) remove
+else
+INSTALL = $(OCAMLFIND) install -destdir $(DESTDIR)
+UNINSTALL = $(OCAMLFIND) remove -destdir $(DESTDIR)
+endif
+
+LIBDIR = $(DESTDIR)/$(shell ocamlc -where)
+BINDIR = $(DESTDIR)/usr/local/bin
 
 all: $(RESULTS)
+opt: $(RESULTS_OPT)
 $(RESULTS): $(SOURCES)
+$(RESULTS_OPT): $(SOURCES)
 
 clean:
 	$(OCAMLBUILD) $(OBFLAGS) -clean
@@ -29,5 +51,28 @@ _build/test.byte: $(SOURCES)
 tags: TAGS
 TAGS: $(SOURCES)
 	otags $^
+
+INSTALL_STUFF = META
+INSTALL_STUFF += $(wildcard _build/*.cma _build/*.cmxa)
+INSTALL_STUFF += $(wildcard _build/cudf_*.cmi) $(wildcard *.mli)
+INSTALL_STUFF += $(wildcard _build/cudf_*.cmx _build/cudf_*.o _build/cudf_*.a)
+INSTALL_STUFF += $(wildcard _build/cudf.o _build/cudf.cmx _build/cudf.cmi)
+
+install: all opt
+	test -d $(LIBDIR) || mkdir -p $(LIBDIR)
+	$(INSTALL) -patch-version $(VERSION) $(NAME) $(INSTALL_STUFF)
+	if [ -f _build/cudf-check.native ] ; then \
+		cp _build/cudf-check.native $(BINDIR)/cudf-check ; \
+	else \
+		cp _build/cudf-check.byte $(BINDIR)/cudf-check ; \
+	fi
+	@echo "Installed $(BINDIR)/cudf-check"
+
+uninstall:
+	$(UNINSTALL) $(NAME)
+	if [ -f $(BINDIR)/cudf-check ] ; then \
+		rm $(BINDIR)/cudf-check ; \
+	fi
+	@echo "Removed $(BINDIR)/cudf-check"
 
 .PHONY: all clean top-level headers test tags

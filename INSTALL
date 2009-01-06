@@ -1,0 +1,36 @@
+
+To build
+========
+
+Build dependencies:
+- ocaml		(Debian package: "ocaml-nox")
+- findlib	(Debian package: "ocaml-findlib")
+- pcre-ocaml	(Debian package: "libpcre-ocaml-dev")
+- extlib	(Debian package: "libextlib-ocaml-dev")
+
+To build run:
+
+- make all	# build bytecode libs and executables
+- make opt	# build native code libs and executables (if you have ocamlopt)
+- make test	# run the test suite
+
+To install
+==========
+
+To install run, after compilation:
+
+- make install	# install libs and executables
+
+To install under a non-standard location, say "/my/dest/dir":
+
+- make install DESTDIR=/my/dest/dir
+
+To uninstall
+============
+
+- make uninstall
+
+or:
+
+- make uninstall DESTDIR=/my/dest/dir
+
