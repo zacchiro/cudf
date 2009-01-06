@@ -57,12 +57,17 @@ type cudf_doc = package list * request
 type universe = {
   id2pkg: ((string * int), package) Hashtbl.t;	(** <name, ver> -> pkg *)
   name2pkgs: (string, package) Hashtbl.t; (** name -> pkg (multi-bindings) *)
-  inst_features: (string, version option) Hashtbl.t;
+  inst_features: (string, (package * version option)) Hashtbl.t;
   (** feature -> avail feature versions (multi-bindings) among
-      installed packages only.
-      Version "None" means "all possible versions" *)
+      installed packages only. Each available feature is reported as a
+      pair <owner, provided version>, where owner is the package
+      providing it. Provided version "None" means "all possible
+      versions" *)
 }
 type cudf = universe * request
+
+let (=%) pkg1 pkg2 =
+  pkg1.package = pkg2.package && pkg1.version = pkg2.version
 
 let dummy_package = {
   package = "" ;
@@ -95,9 +100,8 @@ let expand_features pkg features =
     List.iter
       (fun feat ->
 	 match feat with
-	   | name, None -> Hashtbl.add features name None
-	   | name, Some (_, ver) ->
-	       Hashtbl.add features name (Some ver))
+	   | name, None -> Hashtbl.add features name (pkg, None)
+	   | name, Some (_, ver) -> Hashtbl.add features name (pkg, (Some ver)))
       pkg.provides
 
 let load_universe pkgs =
@@ -150,11 +154,17 @@ let lookup_packages univ pkgname = Hashtbl.find_all univ.name2pkgs pkgname
 let get_installed univ pkgname =
   List.filter (fun { installed = i } -> i) (lookup_packages univ pkgname)
 
-let mem_installed ?(include_features = true) univ (name, constr) =
+let mem_installed ?(include_features = true) ?(ignore = fun _ -> false)
+    univ (name, constr) =
+  let pkg_filter = fun pkg -> not (ignore pkg) in
   let mem_feature constr =
     let feats = Hashtbl.find_all univ.inst_features name in
-      List.exists (function None -> true | Some v -> v |= constr) feats in
-  let pkgs = get_installed univ name in
+      List.exists
+	(function
+	     owner_pkg, None -> pkg_filter owner_pkg
+	   | owner_pkg, Some v -> pkg_filter owner_pkg && v |= constr)
+	feats in
+  let pkgs = List.filter pkg_filter (get_installed univ name) in
     List.exists (fun pkg -> pkg.version |= constr) pkgs
     || (include_features && mem_feature constr)
-	  
+

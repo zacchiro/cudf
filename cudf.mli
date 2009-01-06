@@ -56,6 +56,10 @@ type package = {
   extra : (string * string) list ;	(* extra properties, unparsed *)
 }
 
+(** package equality up to <name, version>
+    i.e. 2 packages are equal if they have the same name and version *)
+val (=%) : package -> package -> bool
+
 type request = {
   problem_id : string ;
   install : vpkglist ;	(* default : [] *)
@@ -92,8 +96,13 @@ val lookup_package : universe -> pkgname * version -> package
     package status (i.e., the universe subset of [installed] packages)
 
     @param include_features allow constraint to be satisfied by features
-      (i.e., Provides). Default: true *)
-val mem_installed : ?include_features:bool -> universe -> vpkg -> bool
+      (i.e., Provides). Default: true
+    @param ignore make the lookup skip over all packages matching the given
+      package predicate *)
+val mem_installed :
+  ?include_features: bool ->
+  ?ignore:(package -> bool) ->
+  universe -> vpkg -> bool
 
 (** lookup all available versions of a given package name *)
 val lookup_packages : universe -> pkgname -> package list

@@ -168,12 +168,19 @@ let disjoint =
 	not (disj ["door", Some (`Gt, 1); "turbo", None]);
   )
 
-(* let self_conflicts = *)
-(*   "check self-conflicts" >:: (fun () -> *)
-(*     let univ, _ = load_cudf_test "legacy" in *)
-(*     let disj = Cudf_checker.disjoint univ in *)
-(*       "direct self-conflict" @? disj ["fubar", None]; *)
-(*   ) *)
+let self_conflicts =
+  "check self-conflicts" >:: (fun () ->
+    let consist u = fst (Cudf_checker.is_consistent u) in
+      "direct self-conflict" @? consist (load_univ_test "direct-self-conflict");
+      "indirect self-conflict" @?
+	consist (load_univ_test "indirect-self-conflict"))
+
+let consistency =
+  "check universe consistency" >::: [
+    "legacy example consistency" >:: (fun () ->
+      let univ, _ = load_cudf_test "legacy" in
+	"inconsistent legacy example" @? fst (Cudf_checker.is_consistent univ))
+  ]
 
 let feature_suite =
   "new feature tests" >::: [
@@ -182,7 +189,8 @@ let feature_suite =
     mem_installed ;
     satisfy_formula ;
     disjoint ;
-    (* self_conflicts ; *)
+    self_conflicts ;
+    consistency ;
   ]
 
 (** {5 Assemble and run tests} *)

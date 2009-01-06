@@ -16,6 +16,8 @@
 (*  along with this program.  If not, see <http://www.gnu.org/licenses/>.    *)
 (*****************************************************************************)
 
+open Cudf
+
 (** CUDF type library
 
     Implement parsing and pretty printing of core CUDF types (see CUDF
@@ -34,18 +36,18 @@ exception Parse_error of string * string
 val parse_bool : string -> bool
 
 val parse_pkgname : string -> string
-val parse_version : string -> Cudf.version
-val parse_vpkg : string -> Cudf.vpkg
-val parse_vpkglist : string -> Cudf.vpkglist
-val parse_vpkgformula : string -> Cudf.vpkgformula
-val parse_veqpkg : string -> Cudf.veqpkg
-val parse_veqpkglist : string -> Cudf.veqpkglist
+val parse_version : string -> version
+val parse_vpkg : string -> vpkg
+val parse_vpkglist : string -> vpkglist
+val parse_vpkgformula : string -> vpkgformula
+val parse_veqpkg : string -> veqpkg
+val parse_veqpkglist : string -> veqpkglist
 
-val parse_keep : string -> Cudf.enum_keep
+val parse_keep : string -> enum_keep
 
 (** {6 Private (i.e., low-level) types} *)
 
-val parse_relop : string -> Cudf.relop
+val parse_relop : string -> relop
 
 (** {5 Pretty printers} *)
 

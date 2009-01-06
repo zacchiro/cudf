@@ -35,21 +35,26 @@ let satisfy_formula univ =
   in
     aux
 
-let disjoint univ =
-  List.for_all (fun pkg -> not (mem_installed ~include_features:true univ pkg))
+let disjoint univ ?ignore =
+  List.for_all
+    (fun vpkg -> not (mem_installed ?ignore ~include_features:true univ vpkg))
 
 let is_consistent univ =
   let msg = ref "" in
     try
       iter_packages univ
 	(fun pkg ->
-	   if not (satisfy_formula univ pkg.depends) then begin
-	     msg := sprintf "Cannot satisfy dependency: %s" (dump pkg.depends);
-	     raise Exit
-	   end;
-	   if not (disjoint univ pkg.conflicts) then begin
-	     msg := sprintf "Unsolved conflicts: %s" (dump pkg.conflicts);
-	     raise Exit
+	   if pkg.installed then begin
+	     if not (satisfy_formula univ pkg.depends) then begin
+	       msg := sprintf "Cannot satisfy dependency: (%s,%d) -> %s"
+		 pkg.package pkg.version (dump pkg.depends);
+	       raise Exit
+	     end;
+	     if not (disjoint univ ~ignore:((=%) pkg) pkg.conflicts) then begin
+	       msg := sprintf "Unsolved conflicts: (%s,%d) -#- %s"
+		 pkg.package pkg.version (dump pkg.conflicts);
+	       raise Exit
+	     end
 	   end);
       true, !msg
     with Exit -> false, !msg

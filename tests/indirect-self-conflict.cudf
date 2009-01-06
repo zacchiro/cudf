@@ -1,0 +1,5 @@
+Package: foo
+Version: 1
+Provides: bar
+Conflicts: bar
+Installed: true

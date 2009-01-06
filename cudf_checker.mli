@@ -16,17 +16,16 @@
 (*  along with this program.  If not, see <http://www.gnu.org/licenses/>.    *)
 (*****************************************************************************)
 
+open Cudf
+
 type solution
+val solution : universe -> solution
 
-val solution : Cudf.universe -> solution
+val satisfy_formula : universe -> vpkgformula -> bool
+val disjoint : universe -> ?ignore:(package -> bool) -> vpkglist -> bool
 
-val satisfy_formula : Cudf.universe -> Cudf.vpkgformula -> bool
-val disjoint : Cudf.universe -> Cudf.vpkglist -> bool
+(** @return [true, _] if the given installation is consistent, [false,
+    msg] otherwise, where msg is the inconsistency reason *)
+val is_consistent : universe -> bool * string
 
-(** @return true if the given installation is consistent (in that case
-    the returned string is pointless), false and if it is not (in that
-    case the returned string is an explanation of why the installation
-    is inconsistent) *)
-val is_consistent : Cudf.universe -> bool * string
-
-val is_solution : Cudf.universe -> solution -> bool * string
+val is_solution : universe -> solution -> bool * string

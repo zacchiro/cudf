@@ -16,6 +16,8 @@
 (*  along with this program.  If not, see <http://www.gnu.org/licenses/>.    *)
 (*****************************************************************************)
 
+open Cudf
+
 type cudf_parser
 val from_in_channel : in_channel -> cudf_parser
 val close : cudf_parser -> unit
@@ -32,20 +34,20 @@ exception Parse_error of int * string
 *)
 
 (** parse a CUDF document as a whole *)
-val parse_cudf : cudf_parser -> Cudf.cudf_doc
+val parse_cudf : cudf_parser -> cudf_doc
 
 (** parse a CUDF document missing the request information item *)
-val parse_packages : cudf_parser -> Cudf.package list
+val parse_packages : cudf_parser -> package list
 
-val load_cudf : cudf_parser -> Cudf.cudf
-val load_universe : cudf_parser -> Cudf.universe
+val load_cudf : cudf_parser -> cudf
+val load_universe : cudf_parser -> universe
 
 (** {6 Item-by-item CUDF parsing} *)
 
 (** parse the next information item (either a package description or a
     user request) from the given input channel. *)
 val parse_item :
-  cudf_parser -> [ `Package of Cudf.package | `Request of Cudf.request ]
+  cudf_parser -> [ `Package of package | `Request of request ]
 
 (** {6 Low-level parsing functions} *)
 

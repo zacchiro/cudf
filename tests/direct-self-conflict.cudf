@@ -1,0 +1,4 @@
+Package: foo
+Version: 1
+Conflicts: foo
+Installed: true
