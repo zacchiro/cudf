@@ -145,11 +145,44 @@ let mem_installed =
       "'engine' satisfied w/o features" @? not (mem' ("engine", None));
   )
 
+let satisfy_formula =
+  "check formula satisfaction" >:: (fun () ->
+    let univ, _ = load_cudf_test "legacy" in
+    let sat = Cudf_checker.satisfy_formula univ in
+      "true unsatisfied (WTF?)" @? sat FTrue;
+      "conjunction unsatisfied" @?
+	sat (FAnd [FPkg ("battery", None); FPkg ("wheel", None)]) ;
+      "disjunction unsatisfied" @?
+	sat (FOr [FPkg ("solar-collectore", None); FPkg ("wheel", None)]) ;
+      "unsat formula satisfied" @?
+	not (sat (FOr [FPkg ("wheel", Some (`Gt, 2)); FPkg ("tire", None)])) ;
+  )
+
+let disjoint =
+  "check package disjunction (i.e., conflicts)" >:: (fun () ->
+    let univ, _ = load_cudf_test "legacy" in
+    let disj = Cudf_checker.disjoint univ in
+      "missing package reported as existing" @? disj ["fubar", None];
+      "undetected conflict" @? not (disj ["door", Some (`Eq, 1)]);
+      "undetected partial conflict" @?
+	not (disj ["door", Some (`Gt, 1); "turbo", None]);
+  )
+
+(* let self_conflicts = *)
+(*   "check self-conflicts" >:: (fun () -> *)
+(*     let univ, _ = load_cudf_test "legacy" in *)
+(*     let disj = Cudf_checker.disjoint univ in *)
+(*       "direct self-conflict" @? disj ["fubar", None]; *)
+(*   ) *)
+
 let feature_suite =
   "new feature tests" >::: [
     status_filtering ;
     inst_version_lookup ;
     mem_installed ;
+    satisfy_formula ;
+    disjoint ;
+    (* self_conflicts ; *)
   ]
 
 (** {5 Assemble and run tests} *)

@@ -20,6 +20,9 @@ type solution
 
 val solution : Cudf.universe -> solution
 
+val satisfy_formula : Cudf.universe -> Cudf.vpkgformula -> bool
+val disjoint : Cudf.universe -> Cudf.vpkglist -> bool
+
 (** @return true if the given installation is consistent (in that case
     the returned string is pointless), false and if it is not (in that
     case the returned string is an explanation of why the installation

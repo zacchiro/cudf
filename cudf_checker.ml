@@ -25,22 +25,29 @@ type solution	(* TODO *)
 
 let solution univ = assert false	(* TODO *)
 
-let is_consistent univ =
-  let msg = ref "" in
-  let rec satisfied = function
+(* XXX not tail-recursive *)
+let satisfy_formula univ =
+  let rec aux = function
     | FTrue -> true
     | FPkg pkg -> mem_installed ~include_features:true univ pkg
-    | FOr fmlas -> List.exists satisfied fmlas
-    | FAnd fmlas -> List.for_all satisfied fmlas in
-  let disjoint = List.for_all (fun pkg -> not (mem_installed univ pkg)) in
+    | FOr fmlas -> List.exists aux fmlas
+    | FAnd fmlas -> List.for_all aux fmlas
+  in
+    aux
+
+let disjoint univ =
+  List.for_all (fun pkg -> not (mem_installed ~include_features:true univ pkg))
+
+let is_consistent univ =
+  let msg = ref "" in
     try
       iter_packages univ
 	(fun pkg ->
-	   if not (satisfied pkg.depends) then begin
+	   if not (satisfy_formula univ pkg.depends) then begin
 	     msg := sprintf "Cannot satisfy dependency: %s" (dump pkg.depends);
 	     raise Exit
 	   end;
-	   if not (disjoint pkg.conflicts) then begin
+	   if not (disjoint univ pkg.conflicts) then begin
 	     msg := sprintf "Unsolved conflicts: %s" (dump pkg.conflicts);
 	     raise Exit
 	   end);
