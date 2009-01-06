@@ -78,24 +78,6 @@ let parse_stanza p =
       | [] -> raise End_of_file
       | stanza -> stanza
 	
-let dummy_package = {	(** implement package defaults *)
-  package = "" ;
-  version = 0 ;
-  depends = FTrue ;
-  conflicts = [] ;
-  provides = [] ;
-  installed = false ;
-  keep = None ;
-  extra = [] ;
-}
-
-let dummy_request = {	(** implement request defaults *)
-  problem_id = "" ;
-  install = [] ;
-  remove = [] ;
-  upgrade = [] ;
-}
-
 let parse_item p =
   let stanza = parse_stanza p in
   let rec aux_package pkg = function

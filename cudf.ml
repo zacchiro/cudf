@@ -57,28 +57,48 @@ type cudf_doc = package list * request
 type universe = {
   id2pkg: ((string * int), package) Hashtbl.t;	(** <name, ver> -> pkg *)
   name2pkgs: (string, package) Hashtbl.t; (** name -> pkg (multi-bindings) *)
-  features: (string, version option) Hashtbl.t;
-  (** feature -> avail feature versions (multi-bindings). Version
-    "None" means "all possible versions" *)
+  inst_features: (string, version option) Hashtbl.t;
+  (** feature -> avail feature versions (multi-bindings) among
+      installed packages only.
+      Version "None" means "all possible versions" *)
 }
 type cudf = universe * request
+
+let dummy_package = {
+  package = "" ;
+  version = 0 ;
+  depends = FTrue ;
+  conflicts = [] ;
+  provides = [] ;
+  installed = false ;
+  keep = None ;
+  extra = [] ;
+}
+
+let dummy_request = {
+  problem_id = "" ;
+  install = [] ;
+  remove = [] ;
+  upgrade = [] ;
+}
 
 let empty_universe () =
   { id2pkg = Hashtbl.create 1023 ;
     name2pkgs = Hashtbl.create 1023 ;
-    features = Hashtbl.create 1023 ;
+    inst_features = Hashtbl.create 1023 ;
   }
 
 (** process all features (i.e., Provides) provided by a given package
     and fill with them a given feature table *)
 let expand_features pkg features =
-  List.iter
-    (fun feat ->
-       match feat with
-	 | name, None -> Hashtbl.add features name None
-	 | name, Some (_, ver) ->
-	     Hashtbl.add features name (Some ver))
-    pkg.provides
+  if pkg.installed then
+    List.iter
+      (fun feat ->
+	 match feat with
+	   | name, None -> Hashtbl.add features name None
+	   | name, Some (_, ver) ->
+	       Hashtbl.add features name (Some ver))
+      pkg.provides
 
 let load_universe pkgs =
   let univ = empty_universe () in
@@ -91,7 +111,7 @@ let load_universe pkgs =
 			 pkg.package pkg.version));
 	   Hashtbl.add univ.id2pkg id pkg;
 	   Hashtbl.add univ.name2pkgs pkg.package pkg;
-	   expand_features pkg univ.features)
+	   expand_features pkg univ.inst_features)
       pkgs;
     univ
 
@@ -103,11 +123,14 @@ let fold_packages f init univ =
   Hashtbl.fold (fun _id pkg acc -> f acc pkg) univ.id2pkg init
 let get_packages = fold_packages (fun acc pkg -> pkg :: acc) []
 
-let mem_package ?(only_installed = false) ?(include_features = true) univ =
-  assert false
-  (* function *)
-  (*   | name, None -> Hashtbl.mem name univ.name2pkgs *)
-  (*   | name, Some constr -> *)
+let (|=) v = function
+  | None -> true
+  | Some (`Eq, v') -> v = v'
+  | Some (`Neq, v') -> v <> v'
+  | Some (`Geq, v') -> v >= v'
+  | Some (`Gt, v') -> v > v'
+  | Some (`Leq, v') -> v <= v'
+  | Some (`Lt, v') -> v < v'
 
 let status univ =
   let univ' = empty_universe () in
@@ -117,7 +140,7 @@ let status univ =
 	   | { installed = true } ->
 	       Hashtbl.add univ'.id2pkg id pkg;
 	       Hashtbl.add univ'.name2pkgs pkg.package pkg;
-	       expand_features pkg univ'.features
+	       expand_features pkg univ'.inst_features
 	   | _ -> ())
       univ.id2pkg;
     univ'
@@ -127,3 +150,11 @@ let lookup_packages univ pkgname = Hashtbl.find_all univ.name2pkgs pkgname
 let get_installed univ pkgname =
   List.filter (fun { installed = i } -> i) (lookup_packages univ pkgname)
 
+let mem_installed ?(include_features = true) univ (name, constr) =
+  let mem_feature constr =
+    let feats = Hashtbl.find_all univ.inst_features name in
+      List.exists (function None -> true | Some v -> v |= constr) feats in
+  let pkgs = get_installed univ name in
+    List.exists (fun pkg -> pkg.version |= constr) pkgs
+    || (include_features && mem_feature constr)
+	  

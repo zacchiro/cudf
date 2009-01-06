@@ -29,11 +29,10 @@ let is_consistent univ =
   let msg = ref "" in
   let rec satisfied = function
     | FTrue -> true
-    | FPkg pkg ->
-	mem_package ~only_installed:true ~include_features:true univ pkg
+    | FPkg pkg -> mem_installed ~include_features:true univ pkg
     | FOr fmlas -> List.exists satisfied fmlas
     | FAnd fmlas -> List.for_all satisfied fmlas in
-  let disjoint = List.for_all (fun pkg -> not (mem_package univ pkg)) in
+  let disjoint = List.for_all (fun pkg -> not (mem_installed univ pkg)) in
     try
       iter_packages univ
 	(fun pkg ->

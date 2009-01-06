@@ -132,10 +132,24 @@ let inst_version_lookup =
       assert_equal (versions "not-installed") [];
       assert_equal (versions "not-existent") [])
 
+let mem_installed =
+  "check whether an installation satisfy a package constraint" >:: (fun () ->
+    let univ, _ = load_cudf_test "legacy" in
+    let mem = mem_installed ~include_features:true univ in
+    let mem' = mem_installed ~include_features:false univ in
+      "'car' unsatisfied" @? mem ("car", None);
+      "'car = 1' unsatisfied" @? mem ("car", Some (`Eq, 1));
+      "'car > 1' satisfied'" @? not (mem ("car", Some (`Gt, 1)));
+      "'car >= 1' unsatisfied" @? mem ("car", Some (`Leq, 1));
+      "'engine' unsatisfied w features" @? mem ("engine", None);
+      "'engine' satisfied w/o features" @? not (mem' ("engine", None));
+  )
+
 let feature_suite =
   "new feature tests" >::: [
     status_filtering ;
     inst_version_lookup ;
+    mem_installed ;
   ]
 
 (** {5 Assemble and run tests} *)

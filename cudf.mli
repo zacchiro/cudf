@@ -63,6 +63,9 @@ type request = {
   upgrade : vpkglist ;	(* default : [] *)
 }
 
+val dummy_package : package	(** implement package defaults *)
+val dummy_request : request	(** implement request defaults *)
+
 (** {6 Syntactic CUDF representation} *)
 type cudf_doc = package list * request
 
@@ -86,16 +89,11 @@ val load_universe : package list -> universe
 val lookup_package : universe -> pkgname * version -> package
 
 (** check wheather a given package constraint is satisfied in a given
-    universe
+    package status (i.e., the universe subset of [installed] packages)
 
-    @param only_installed consider only [installed=true] packages.
-      Default: false (i.e., consider all packages in the universe)
     @param include_features allow constraint to be satisfied by features
       (i.e., Provides). Default: true *)
-val mem_package :
-  ?only_installed:bool ->
-  ?include_features:bool ->
-  universe -> vpkg -> bool
+val mem_installed : ?include_features:bool -> universe -> vpkg -> bool
 
 (** lookup all available versions of a given package name *)
 val lookup_packages : universe -> pkgname -> package list
