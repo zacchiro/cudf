@@ -38,6 +38,16 @@ let arg_spec = [
   "-dump", Arg.Set dump_arg, "dump parse results to standard output" ;
 ]
 
+let usage_msg =
+"Usage: cudf-check [OPTION...]
+In particular:
+  cudf-check -cudf FILE               validate CUDF
+  cudf-check -cudf FILE -sol FILE     validate CUDF and its solution
+  cudf-check -univ FILE               validate package universe (no request)
+Options:"
+
+let die_usage () = Arg.usage arg_spec usage_msg ; exit 2
+
 let print_inst_info inst =
   let is_consistent, msg = Cudf_checker.is_consistent inst in
     if is_consistent then
@@ -100,14 +110,8 @@ let main () =
 	  print_cudf cudf
     | None, Some univ, None ->
 	print_inst_info univ
-    | _ -> failwith "Unsupported argument combination"
+    | _ -> die_usage ()
 
 let _ = 
-  Arg.parse arg_spec (fun _ -> ())
-"Usage: cudf-check [OPTION...]
-In particular:
-  cudf-check -cudf FILE               validate CUDF
-  cudf-check -cudf FILE -sol FILE     validate CUDF and its solution
-  cudf-check -univ FILE               validate package universe (no request)
-Options:";
+  Arg.parse arg_spec ignore usage_msg;
   main()
