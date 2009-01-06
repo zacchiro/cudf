@@ -75,6 +75,11 @@ let bad_parse ~parse_fun name = TestCase (fun _ ->
     ~exn:(Cudf_parser.Parse_error (0, ""))
     (fun () -> parse_test ~parse_fun name))
 
+let good_solution prob_name sol_name = TestCase (fun _ ->
+  let cudf, sol = load_cudf_test prob_name, load_univ_test sol_name in
+    sprintf "problem with correct solution: (%s,%s)" prob_name sol_name @?
+      fst (Cudf_checker.is_solution cudf sol))
+
 (** {5 Test suites} *)
 
 (** {6 Big suites} *)
@@ -189,6 +194,10 @@ let univ_sizes =
       "installed size" >:: (fun () -> assert_equal (installed_size  univ) 6);
     ]
 
+let good_solution_suite = "good solutions" >::: [
+  good_solution "legacy" "legacy-sol" ;
+]
+
 let feature_suite =
   "new feature tests" >::: [
     status_filtering ;
@@ -209,6 +218,7 @@ let all =
     bad_cudf_parse_suite ;
     good_pkgs_parse_suite ;
     bad_pkgs_parse_suite ;
+    good_solution_suite ;
     parse_reg_suite ;
     feature_suite ;
   ]
