@@ -16,15 +16,40 @@
 (*  along with this program.  If not, see <http://www.gnu.org/licenses/>.    *)
 (*****************************************************************************)
 
+open ExtLib
 open Printf
 
-(* TODO implement is_healthy *)
-let is_healthy univ =
-  eprintf "WARNING: Cudf_checker.is_healty not implement yet; dummy answer.";
-  true
+open Cudf
+
+type solution	(* TODO *)
+
+let solution univ = assert false	(* TODO *)
+
+let is_consistent univ =
+  let msg = ref "" in
+  let rec satisfied = function
+    | FTrue -> true
+    | FPkg pkg ->
+	mem_package ~only_installed:true ~include_features:true univ pkg
+    | FOr fmlas -> List.exists satisfied fmlas
+    | FAnd fmlas -> List.for_all satisfied fmlas in
+  let disjoint = List.for_all (fun pkg -> not (mem_package univ pkg)) in
+    try
+      iter_packages univ
+	(fun pkg ->
+	   if not (satisfied pkg.depends) then begin
+	     msg := sprintf "Cannot satisfy dependency: %s" (dump pkg.depends);
+	     raise Exit
+	   end;
+	   if not (disjoint pkg.conflicts) then begin
+	     msg := sprintf "Unsolved conflicts: %s" (dump pkg.conflicts);
+	     raise Exit
+	   end);
+      true, !msg
+    with Exit -> false, !msg
 
 (* TODO implement is_solution *)
-let is_solution cudf univ =
+let is_solution inst sol =
   eprintf "WARNING: Cudf_checker.is_solution not implement yet; dummy answer.";
-  true
+  true, ""
 

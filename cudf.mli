@@ -75,7 +75,6 @@ exception Constraint_violation of string
 
 (** package universe (including package status, i.e., installed packages) *)
 type universe
-type solution = universe
 type cudf = universe * request
 val load_cudf : cudf_doc -> cudf
 val load_universe : package list -> universe
@@ -84,16 +83,35 @@ val load_universe : package list -> universe
 
 (** lookup a specific package via a <name, version> key
     @raise Not_found *)
-val lookup_package : universe -> string * int -> package
+val lookup_package : universe -> pkgname * version -> package
+
+(** check wheather a given package constraint is satisfied in a given
+    universe
+
+    @param only_installed consider only [installed=true] packages.
+      Default: false (i.e., consider all packages in the universe)
+    @param include_features allow constraint to be satisfied by features
+      (i.e., Provides). Default: true *)
+val mem_package :
+  ?only_installed:bool ->
+  ?include_features:bool ->
+  universe -> vpkg -> bool
+
+(** lookup all available versions of a given package name *)
+val lookup_packages : universe -> pkgname -> package list
+
+(** lookup all installed versions of a given package name.
+    Shorthand for [lookup_packages] composed with filtering on installed=true *)
+val get_installed : universe -> pkgname -> package list
+
 val iter_packages : universe -> (package -> unit) -> unit
 val fold_packages : ('a -> package -> 'a) -> 'a -> universe -> 'a
+
+(** conversion from universe to plain package list *)
 val get_packages : universe -> package list
 
 (** project on packages having "installed: true".
     Inefficient (involves hashtbl cloning), use with care. *)
 val status : universe -> universe
 
-(** current installation: given a universe, return a lookup function
-    mapping package names to the list of their installed version *)
-val installation : universe -> (pkgname -> version list)
 

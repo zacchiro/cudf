@@ -125,11 +125,12 @@ let status_filtering =
 
 let inst_version_lookup =
   "lookup installed versions" >:: (fun () ->
-    let inst = installation (load_univ_test "multi-versions") in
-    assert_equal (List.sort (inst "gasoline-engine")) [1; 2];
-    assert_equal (inst "battery") [3];
-    assert_equal (inst "not-installed") [];
-    assert_equal (inst "not-existent") [])
+    let univ = load_univ_test "multi-versions" in
+    let versions pkg = List.map (fun p -> p.version) (get_installed univ pkg) in
+      assert_equal (List.sort (versions "gasoline-engine")) [1; 2];
+      assert_equal (versions "battery") [3];
+      assert_equal (versions "not-installed") [];
+      assert_equal (versions "not-existent") [])
 
 let feature_suite =
   "new feature tests" >::: [

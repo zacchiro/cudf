@@ -38,21 +38,22 @@ let arg_spec = [
   "-dump", Arg.Set dump_arg, "dump parse results to standard output" ;
 ]
 
-let print_univ_info univ =
-  if Cudf_checker.is_healthy univ then
-    printf "universe: healthy\n%!"
-  else
-    printf "universe: broken\n%!"
-
-let print_cudf_info (univ, _req) = print_univ_info univ
+let print_inst_info inst =
+  let is_consistent, msg = Cudf_checker.is_consistent inst in
+    if is_consistent then
+      printf "installation: consistent\n%!"
+    else
+      printf "installation: broken (reason: %s)\n%!" msg
 
 let print_cudf cudf =
   (* TODO dummy implementation, should pretty print here ... *)
   if !dump_arg then
     print_endline (dump cudf)
 
-let print_sol_info cudf sol =
-  printf "is_solution: %b\n%!" (Cudf_checker.is_solution cudf sol)
+let print_sol_info inst sol =
+  let is_sol, msg = Cudf_checker.is_solution inst sol in
+    printf "is_solution: %b%s\n%!" is_sol
+      (if is_sol then "" else sprintf " (reason: %s)" msg)
 
 let main () =
   if !cudf_arg <> "" then begin
@@ -90,14 +91,15 @@ let main () =
   end;
   match !cudf, !univ, !sol with
     | Some cudf, None, None ->
-	print_cudf_info cudf;
+	print_inst_info (fst cudf);
 	print_cudf cudf
     | Some cudf, None, Some sol ->
-	print_cudf_info cudf;
-	print_sol_info cudf sol;
-	print_cudf cudf
+	let sol = Cudf_checker.solution sol in
+	  print_inst_info (fst cudf);
+	  print_sol_info (fst cudf) sol;
+	  print_cudf cudf
     | None, Some univ, None ->
-	print_univ_info univ
+	print_inst_info univ
     | _ -> failwith "Unsupported argument combination"
 
 let _ = 

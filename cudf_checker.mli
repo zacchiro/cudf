@@ -16,5 +16,14 @@
 (*  along with this program.  If not, see <http://www.gnu.org/licenses/>.    *)
 (*****************************************************************************)
 
-val is_healthy : Cudf.universe -> bool
-val is_solution : Cudf.cudf -> Cudf.solution -> bool
+type solution
+
+val solution : Cudf.universe -> solution
+
+(** @return true if the given installation is consistent (in that case
+    the returned string is pointless), false and if it is not (in that
+    case the returned string is an explanation of why the installation
+    is inconsistent) *)
+val is_consistent : Cudf.universe -> bool * string
+
+val is_solution : Cudf.universe -> solution -> bool * string

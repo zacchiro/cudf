@@ -54,53 +54,76 @@ type request = {
   upgrade : vpkglist ;
 }
 type cudf_doc = package list * request
-type universe =
-    ((string * int), package) Hashtbl.t	(* <name, version> -> package *)
-    * (string, package) Hashtbl.t	(* name -> package (multi-bindings) *)
-type solution = universe
+type universe = {
+  id2pkg: ((string * int), package) Hashtbl.t;	(** <name, ver> -> pkg *)
+  name2pkgs: (string, package) Hashtbl.t; (** name -> pkg (multi-bindings) *)
+  features: (string, version option) Hashtbl.t;
+  (** feature -> avail feature versions (multi-bindings). Version
+    "None" means "all possible versions" *)
+}
 type cudf = universe * request
 
 let empty_universe () =
-  let id2pkg = Hashtbl.create 1023 in
-  let name2pkg = Hashtbl.create 1023 in
-    (id2pkg, name2pkg)
+  { id2pkg = Hashtbl.create 1023 ;
+    name2pkgs = Hashtbl.create 1023 ;
+    features = Hashtbl.create 1023 ;
+  }
+
+(** process all features (i.e., Provides) provided by a given package
+    and fill with them a given feature table *)
+let expand_features pkg features =
+  List.iter
+    (fun feat ->
+       match feat with
+	 | name, None -> Hashtbl.add features name None
+	 | name, Some (_, ver) ->
+	     Hashtbl.add features name (Some ver))
+    pkg.provides
 
 let load_universe pkgs =
-  let id2pkg, name2pkg = empty_universe () in
+  let univ = empty_universe () in
     List.iter
       (fun pkg ->
 	 let id = pkg.package, pkg.version in
-	   if Hashtbl.mem id2pkg id then
+	   if Hashtbl.mem univ.id2pkg id then
 	     raise (Constraint_violation
 		      (sprintf "duplicate package: <%s, %d>"
 			 pkg.package pkg.version));
-	   Hashtbl.add id2pkg id pkg;
-	   Hashtbl.add name2pkg pkg.package pkg)
+	   Hashtbl.add univ.id2pkg id pkg;
+	   Hashtbl.add univ.name2pkgs pkg.package pkg;
+	   expand_features pkg univ.features)
       pkgs;
-    (id2pkg, name2pkg)
+    univ
 
 let load_cudf (pkgs, req) = load_universe pkgs, req
 
-let lookup_package (univ, _) = Hashtbl.find univ
-let iter_packages (univ, _) f = Hashtbl.iter (fun _id pkg -> f pkg) univ
-let fold_packages f init (univ, _) =
-  Hashtbl.fold (fun _id pkg acc -> f acc pkg) univ init
+let lookup_package univ = Hashtbl.find univ.id2pkg
+let iter_packages univ f = Hashtbl.iter (fun _id pkg -> f pkg) univ.id2pkg
+let fold_packages f init univ =
+  Hashtbl.fold (fun _id pkg acc -> f acc pkg) univ.id2pkg init
 let get_packages = fold_packages (fun acc pkg -> pkg :: acc) []
 
-let status (univ, _) =
-  let id2pkg, name2pkg = empty_universe () in
+let mem_package ?(only_installed = false) ?(include_features = true) univ =
+  assert false
+  (* function *)
+  (*   | name, None -> Hashtbl.mem name univ.name2pkgs *)
+  (*   | name, Some constr -> *)
+
+let status univ =
+  let univ' = empty_universe () in
     Hashtbl.iter
       (fun id pkg ->
 	 match pkg with
 	   | { installed = true } ->
-	       Hashtbl.add id2pkg id pkg;
-	       Hashtbl.add name2pkg pkg.package pkg
+	       Hashtbl.add univ'.id2pkg id pkg;
+	       Hashtbl.add univ'.name2pkgs pkg.package pkg;
+	       expand_features pkg univ'.features
 	   | _ -> ())
-      univ;
-    (id2pkg, name2pkg)
+      univ.id2pkg;
+    univ'
 
-let installation (_, univ) pkgname =
-  List.filter_map
-    (function { installed = true ; version = v} as pkg -> Some v | _ -> None)
-    (Hashtbl.find_all univ pkgname)
+let lookup_packages univ pkgname = Hashtbl.find_all univ.name2pkgs pkgname
+
+let get_installed univ pkgname =
+  List.filter (fun { installed = i } -> i) (lookup_packages univ pkgname)
 
