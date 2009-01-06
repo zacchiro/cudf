@@ -75,7 +75,8 @@ let main () =
 	Cudf_parser.Parse_error _
       | Cudf.Constraint_violation _ as exn ->
 	  eprintf "Error while loading CUDF from %s: %s\n%!"
-	    !cudf_arg (Printexc.to_string exn)
+	    !cudf_arg (Printexc.to_string exn);
+	  exit 1
   end;
   if !univ_arg <> "" then begin
     try
@@ -86,7 +87,8 @@ let main () =
 	Cudf_parser.Parse_error _
       | Cudf.Constraint_violation _ as exn ->
 	  eprintf "Error while loading universe from %s: %s\n%!"
-	    !univ_arg (Printexc.to_string exn)
+	    !univ_arg (Printexc.to_string exn);
+	  exit 1
   end;
   if !sol_arg <> "" then begin
     try
@@ -97,7 +99,8 @@ let main () =
 	Cudf_parser.Parse_error _
       | Cudf.Constraint_violation _ as exn ->
 	  eprintf "Error while loading solution from %s: %s\n%!"
-	    !sol_arg (Printexc.to_string exn)
+	    !sol_arg (Printexc.to_string exn);
+	  exit 1
   end;
   match !cudf, !univ, !sol with
     | Some cudf, None, None ->
