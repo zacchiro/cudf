@@ -20,7 +20,8 @@ exception Parse_error of string * string
 let space_RE = Pcre.regexp " "
 let pkgname_RE = Pcre.regexp "^[a-z][a-z0-9.+-]+$"
 let vconstr_REs = "(=|!=|>=|>|<=|<)\\s+(\\d+)"
-let vpkg_RE = Pcre.regexp (sprintf "^([a-z][a-z0-9.-]+)(\\s+%s)?$" vconstr_REs)
+let vpkg_RE =
+  Pcre.regexp (sprintf "^([a-z][a-z0-9.+-]+)(\\s+%s)?$" vconstr_REs)
 let and_sep_RE = Pcre.regexp "\\s*,\\s*"
 let or_sep_RE = Pcre.regexp "\\s*\\|\\s*"
 
