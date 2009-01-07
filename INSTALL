@@ -3,12 +3,12 @@ To build
 ========
 
 Build dependencies:
-- ocaml		(Debian package: "ocaml-nox")
-- findlib	(Debian package: "ocaml-findlib")
-- pcre-ocaml	(Debian package: "libpcre-ocaml-dev")
-- extlib	(Debian package: "libextlib-ocaml-dev")
-- oUnit		(only needed to run the test suite
-  		 Debian package: "libounit-ocaml-dev")
+- ocaml	>= 3.10.2	(Debian package: "ocaml-nox")
+- findlib		(Debian package: "ocaml-findlib")
+- pcre-ocaml		(Debian package: "libpcre-ocaml-dev")
+- extlib		(Debian package: "libextlib-ocaml-dev")
+- oUnit			(only needed to run the test suite
+  		 	 Debian package: "libounit-ocaml-dev")
 
 To build run:
 
