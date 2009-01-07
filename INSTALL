@@ -7,12 +7,14 @@ Build dependencies:
 - findlib	(Debian package: "ocaml-findlib")
 - pcre-ocaml	(Debian package: "libpcre-ocaml-dev")
 - extlib	(Debian package: "libextlib-ocaml-dev")
+- oUnit		(only needed to run the test suite
+  		 Debian package: "libounit-ocaml-dev")
 
 To build run:
 
 - make all	# build bytecode libs and executables
 - make opt	# build native code libs and executables (if you have ocamlopt)
-- make test	# run the test suite
+- make test	# run the test suite (need oUnit)
 
 To install
 ==========
