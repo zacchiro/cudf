@@ -1,0 +1,16 @@
+#!/usr/bin/make -f
+include /usr/share/cdbs/1/rules/debhelper.mk
+include /usr/share/cdbs/1/class/makefile.mk
+include /usr/share/cdbs/1/class/ocaml.mk
+include /usr/share/cdbs/1/rules/dpatch.mk
+
+PKGNAME = libcudf-ocaml-dev
+DESTDIR := $(CURDIR)/debian/tmp$(OCAML_STDLIB_DIR)
+DOCDIR = $(CURDIR)/debian/doc/html
+OCAML_OCAMLDOC_PACKAGES = $(OCAML_LIBDEV_PACKAGES)
+
+DEB_MAKE_BUILD_TARGET = all
+ifeq ($(OCAML_HAVE_OCAMLOPT),yes)
+DEB_MAKE_BUILD_TARGET += opt
+endif
+DEB_MAKE_INSTALL_TARGET = install DESTDIR=$(DESTDIR)

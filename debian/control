@@ -1,0 +1,69 @@
+Source: cudf
+Section: devel
+Priority: optional
+Maintainer: Stefano Zacchiroli <zack@debian.org>
+Build-Depends:
+ debhelper (>= 7.0.0),
+ cdbs,
+ dh-ocaml,
+ ocaml-nox,
+ ocaml-findlib,
+ libpcre-ocaml-dev,
+ libextlib-ocaml-dev,
+ libounit-ocaml-dev
+Standards-Version: 3.8.0
+Vcs-Svn: https://gforge.info.ucl.ac.be/svn/mancoosi/trunk/updb/libcudf
+Vcs-Browser: http://gforge.info.ucl.ac.be/plugins/scmsvn/viewcvs.php/trunk/updb/libcudf/?root=mancoosi
+
+Package: libcudf-ocaml-dev
+Architecture: any
+Section: libs
+Depends:
+ ocaml-nox-${F:OCamlABI},
+ ocaml-findlib,
+ libpcre-ocaml-dev,
+ libextlib-ocaml-dev,
+ ${misc:Depends}
+Description: OCaml library to access descriptions of package upgrade problems
+ libCUDF is a library to manipulate so called CUDF documents. A CUDF
+ document describe an upgrade problem, as faced by package managers in
+ popular package-based GNU/Linux distributions.
+ .
+ A CUDF document consists of a package universe and of a user request.
+ The package universe describes all packages known to the package
+ manager, a subset of which (the package status) denotes the package
+ being currently installed on the target machine.  The user request
+ denotes a change to the package status as requested by the user.
+ .
+ A CUDF document is naturally complemented by a solution describing
+ the resulting package status (if any) implementing the user request,
+ as found by a package manager.
+ .
+ libCUDF enables manipulation of CUDF and related documents.
+ .
+ This package contains all the development stuff you need to use
+ libCUDF in your OCaml programs.
+
+Package: cudf-check
+Architecture: all
+Section: devel
+Depends:
+ ocaml-base-nox-${F:OCamlABI},
+ libpcre-ocaml,
+ ${misc:Depends}
+Description: command line checker for package upgrade problem descriptions
+ A CUDF document describe an upgrade problem, as faced by package
+ managers in popular package-based GNU/Linux distributions.
+ .
+ A CUDF document consists of a package universe and of a user request.
+ The package universe describes all packages known to the package
+ manager, a subset of which (the package status) denotes the package
+ being currently installed on the target machine.  The user request
+ denotes a change to the package status as requested by the user.
+ .
+ A CUDF document is naturally complemented by a solution describing
+ the resulting package status (if any) implementing the user request,
+ as found by a package manager.
+ .
+ This package contains a command line tool to check validity and other
+ properties of CUDF and related documents.
