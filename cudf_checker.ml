@@ -15,36 +15,84 @@ open Printf
 
 open Cudf
 
-(* XXX not tail-recursive *)
-let satisfy_formula univ =
-  let rec aux = function
+let (!!) pred = fun x -> not (pred x)
+
+type inconsistency_reason =
+  [ `Unsat_dep of (pkgname * version) * vpkgformula
+  | `Conflict of (pkgname * version) * vpkglist
+  ]
+
+type bad_solution_reason =
+  [ inconsistency_reason
+  | `Missing_install of vpkglist
+  | `Missing_upgrade of vpkglist
+  | `Unremoved of vpkglist
+  | `Downgrade of vpkglist
+  | `Multi_upgrade of pkgname list
+  ]
+
+let explain_reason = function
+  | `Unsat_dep ((name, ver), fmla) ->
+      sprintf "Cannot satisfy dependencies %s of package %s (version %d)"
+	(Cudf_types.string_of_vpkgformula fmla) name ver
+  | `Conflict ((name, ver), pkgs) ->
+      sprintf "Unresolved conflicts %s of package %s (version %d)"
+	(Cudf_types.string_of_vpkglist pkgs) name ver
+  | `Missing_install vpkgs ->
+      "Unmet installation request, missing packages: " ^
+	Cudf_types.string_of_vpkglist vpkgs
+  | `Missing_upgrade vpkgs ->
+      "Unmet upgrade request, missing packages: " ^
+	Cudf_types.string_of_vpkglist vpkgs
+  | `Unremoved vpkgs ->
+      "Unment remove request, still present packages: " ^
+	Cudf_types.string_of_vpkglist vpkgs
+  | `Downgrade vpkgs ->
+      "Unment upgrade request, not-upgraded: " ^
+	Cudf_types.string_of_vpkglist vpkgs
+  | `Multi_upgrade pkgs ->
+      "Unment upgrade request, not-unique: " ^ String.concat ", " pkgs
+
+	(* XXX not tail-recursive *)
+let satisfy_formula univ fmla =
+  let reason = ref None in
+  let rec is_sat = function (* ASSUMPTION (for explanation): fmla is in CNF *)
     | FTrue -> true
     | FPkg pkg -> mem_installed ~include_features:true univ pkg
-    | FOr fmlas -> List.exists aux fmlas
-    | FAnd fmlas -> List.for_all aux fmlas
+    | FOr fmlas -> List.exists is_sat fmlas
+    | FAnd fmlas ->
+	(match List.filter (!! is_sat) fmlas with
+	  | [] -> true
+	  | [unsat] -> reason := Some unsat ; false
+	  | unsat -> reason := Some (FAnd unsat) ; false)
   in
-    aux
-
-let disjoint univ ?ignore =
-  List.for_all
-    (fun vpkg -> not (mem_installed ?ignore ~include_features:true univ vpkg))
+  let sat = is_sat fmla in
+    sat, !reason
+      
+let disjoint univ ?ignore pkgs =
+  match
+    List.filter (mem_installed ?ignore ~include_features:true univ) pkgs
+  with
+    | [] -> true, []
+    | pkgs -> false, pkgs
 
 let is_consistent univ =
-  let msg = ref "" in
+  let msg = ref None in
     try
       iter_packages univ
 	(fun pkg ->
 	   if pkg.installed then begin
-	     if not (satisfy_formula univ pkg.depends) then begin
-	       msg := sprintf "Cannot satisfy dependency: (%s,%d) -> %s"
-		 pkg.package pkg.version (dump pkg.depends);
-	       raise Exit
-	     end;
-	     if not (disjoint univ ~ignore:((=%) pkg) pkg.conflicts) then begin
-	       msg := sprintf "Unsolved conflicts: (%s,%d) -#- %s"
-		 pkg.package pkg.version (dump pkg.conflicts);
-	       raise Exit
-	     end
+	     (match satisfy_formula univ pkg.depends with
+		| false, Some fmla ->
+		    msg := Some (`Unsat_dep ((pkg.package, pkg.version), fmla));
+		    raise Exit
+		| false, None -> assert false
+		| _ -> ());
+	     (match disjoint univ ~ignore:((=%) pkg) pkg.conflicts with
+		| false, pkgs ->
+		    msg := Some (`Conflict ((pkg.package, pkg.version), pkgs));
+		    raise Exit
+		| _ -> ());
 	   end);
       true, !msg
     with Exit -> false, !msg
@@ -56,60 +104,57 @@ let is_solution (univ, req) sol =
       prerr_endline ("WARNING: solution contains not-installed packages,"
 		     ^ " they have been ignored")
   in
-  let and_of_vpkglist l = FAnd (List.map (fun p -> FPkg p) l) in
-  let is_succ = (* XXX not implemented, as it will be pointless with a
-		   diff-like encoding of solutions *)
-    lazy (true, "") in
-  let is_cons = lazy (is_consistent sol) in
-  let install_ok = lazy (
-    if satisfy_formula sol (and_of_vpkglist req.install) then
-      true, ""
-    else
-      false, "requested _install_ packages missing"
-  ) in
-  let remove_ok = lazy (
-    if disjoint sol req.remove then
-      true, ""
-    else
-      false, "requested _remove_ packages still present"
-  ) in
-  let upgrade_ok = lazy (
-    if not (satisfy_formula sol (and_of_vpkglist req.upgrade)) then
-      false, "requested _upgrade_ packages missing"
-    else
-      let msg = ref "" in
-	try
-	  List.iter
-	    (fun (pkgname, _constr) ->
-	       match get_installed sol pkgname with
-		 | [pkg] ->
-		     let old_installed = get_installed univ pkgname in
-		       if not (List.for_all
-				 (fun pkg' -> pkg'.version <= pkg.version)
-				 old_installed) then begin
-			 msg := sprintf
-			   ("requested _upgrade_ packares are not newer"
-			    ^^ " than before (e.g.: %s)") pkgname;
-			 raise Exit
-		       end
-		 | [] -> (* impossible, since the upgrade fmla is satisfied *)
-		     assert false
-		 | _ ->
-		     msg := sprintf
-		       ("requested _upgrade_ packages are not singletons"
-			^^ " (e.g.: %s)") pkgname;
-		     raise Exit)
-	    req.upgrade;
-	  true, ""
-	with Exit -> false, !msg
-  ) in
-  let is_sol, msgs =
-    List.fold_left
-      (fun (is_sol, msgs) test ->
-	 let res, msg = Lazy.force test in
-	   res && is_sol, msg :: msgs)
-      (true, [])
-      [is_succ; is_cons; install_ok; remove_ok; upgrade_ok]
+  let sat vpkg = fst (satisfy_formula sol (FPkg vpkg)) in
+  let is_succ () = (* XXX not implemented, as it will be pointless with a
+		      diff-like encoding of solutions *)
+    true, [] in
+  let is_cons () =
+    match is_consistent sol with
+      | true, _ -> true, []
+      | false, None -> assert false
+      | false, Some reason -> false, [reason] in
+  let install_ok () =
+    match List.filter (!! sat) req.install with
+      | [] -> true, []
+      | l -> false, [`Missing_install l] in
+  let remove_ok () =
+    match disjoint sol req.remove with
+      | true, _ -> true, []
+      | false, pkgs -> false, [`Unremoved pkgs] in
+  let upgrade_ok () =
+    match List.filter (!! sat) req.upgrade with
+      | (_ :: _) as l -> false, [`Missing_upgrade l]
+      | [] ->
+	  let res =
+	    List.fold_left
+	      (fun (ok, downgrades, multi) ((pkgname, _constr) as vpkg) ->
+		 match get_installed sol pkgname with
+		   | [pkg] ->
+		       let old_installed = get_installed univ pkgname in
+			 if not (List.for_all
+				   (fun pkg' -> pkg'.version <= pkg.version)
+				   old_installed) then
+			   false, vpkg :: downgrades, multi
+			 else
+			   true && ok, downgrades, multi
+		   | [] -> (* impossible, since the upgrade fmla is satisfied *)
+		       assert false
+		   | _ ->
+		       false, downgrades, pkgname :: multi)
+	      (true, [], [])
+	      req.upgrade
+	  in
+	    (match res with
+	       | true, _, _ -> true, []
+	       | false, downgrades, multi ->
+		   false,
+		   (if downgrades <> [] then [`Downgrade downgrades] else [])
+		   @ (if multi <> [] then [`Multi_upgrade multi] else []))
   in
-    is_sol, String.concat "; " (List.filter ((<>) "") msgs)
+  List.fold_left
+    (fun (is_sol, msgs) test ->
+       let res, msg = test () in
+	 res && is_sol, msg @ msgs)
+    (true, [])
+    [is_succ; is_cons; install_ok; remove_ok; upgrade_ok]
 

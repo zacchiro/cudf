@@ -14,6 +14,7 @@ open ExtLib
 open Printf
 
 open Cudf
+open Cudf_checker
 
 let cudf_arg = ref ""
 let univ_arg = ref ""
@@ -43,11 +44,12 @@ Options:"
 let die_usage () = Arg.usage arg_spec usage_msg ; exit 2
 
 let print_inst_info inst =
-  let is_consistent, msg = Cudf_checker.is_consistent inst in
-    if is_consistent then
-      printf "installation: consistent\n%!"
-    else
-      printf "installation: broken (reason: %s)\n%!" msg
+  match is_consistent inst with
+    | true, _ -> printf "installation: consistent\n%!"
+    | false, Some r ->
+	printf "installation: broken (reason: %s)\n%!"
+	  (explain_reason (r :> bad_solution_reason))
+    | _ -> assert false
 
 let print_cudf cudf =
   (* TODO dummy implementation, should pretty print here ... *)
@@ -55,9 +57,11 @@ let print_cudf cudf =
     print_endline (dump cudf)
 
 let print_sol_info inst sol =
-  let is_sol, msg = Cudf_checker.is_solution inst sol in
-    printf "is_solution: %b%s\n%!" is_sol
-      (if is_sol then "" else sprintf " (reason: %s)" msg)
+  match is_solution inst sol with
+    | true, _ -> printf "is_solution: true\n%!"
+    | false, rs ->
+	printf "is: solution: false (reason: %s)\n%!"
+	  (String.concat "; " (List.map explain_reason rs))
 
 let main () =
   if !cudf_arg <> "" then begin

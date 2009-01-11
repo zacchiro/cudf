@@ -161,7 +161,7 @@ let mem_installed =
 let satisfy_formula =
   "check formula satisfaction" >:: (fun () ->
     let univ, _ = load_cudf_test "legacy" in
-    let sat = Cudf_checker.satisfy_formula univ in
+    let sat f = fst (Cudf_checker.satisfy_formula univ f) in
       "true unsatisfied (WTF?)" @? sat FTrue;
       "conjunction unsatisfied" @?
 	sat (FAnd [FPkg ("battery", None); FPkg ("wheel", None)]) ;
@@ -174,7 +174,7 @@ let satisfy_formula =
 let disjoint =
   "check package disjunction (i.e., conflicts)" >:: (fun () ->
     let univ, _ = load_cudf_test "legacy" in
-    let disj = Cudf_checker.disjoint univ in
+    let disj ps = fst (Cudf_checker.disjoint univ ps) in
       "missing package reported as existing" @? disj ["fubar", None];
       "undetected conflict" @? not (disj ["door", Some (`Eq, 1)]);
       "undetected partial conflict" @?

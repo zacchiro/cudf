@@ -12,14 +12,46 @@
 
 open Cudf
 
-val satisfy_formula : universe -> vpkgformula -> bool
-val disjoint : universe -> ?ignore:(package -> bool) -> vpkglist -> bool
+type inconsistency_reason =
+  [ `Unsat_dep of (pkgname * version) * vpkgformula	(** unsatisfied dep. *)
+  | `Conflict of (pkgname * version) * vpkglist	(** unsolved conflict(s) *)
+  ]
 
-(** @return [true, _] if the given installation is consistent, [false,
-    msg] otherwise, where msg is the inconsistency reason *)
-val is_consistent : universe -> bool * string
+type bad_solution_reason =
+  [ inconsistency_reason
+  | `Missing_install of vpkglist   (** install pkgs missing *)
+  | `Missing_upgrade of vpkglist   (** upgrade pkgs missing *)
+  | `Unremoved of vpkglist	   (** remove pkgs still there *)
+  | `Downgrade of vpkglist	   (** upgrade pkgs downgraded *)
+  | `Multi_upgrade of pkgname list (** upgrade pkgs aren't singleton *)
+  ]
+
+(** provide a string explaining a given reason, meant for error messages *)
+val explain_reason : bad_solution_reason -> string
+
+(** check whether a given package formula is satisfied by a given
+    package status
+
+    @return [true, None] if the formula is satisfied; [false, Some f]
+    otherwise, where f is a sub-formula of the input denoting an
+    unsatisfiable formula (ideally, a witness of the unsatisfiability
+    of the input formula) *)
+val satisfy_formula : universe -> vpkgformula -> bool * vpkgformula option
+
+(** check whether a package list is not satisfied by a given package
+    status
+
+    @return [true, []] if the list is disjoin; [false, l]
+    otherwise, where l is a list of packages satisfied by the universe
+    (ideally, the reason of the non-disjointness) *)
+val disjoint :
+  universe -> ?ignore:(package -> bool) -> vpkglist -> bool * vpkglist
+
+(** @return [true, None] if the given installation is consistent,
+    [false, Some r] otherwise, where r is the inconsistency reason *)
+val is_consistent : universe -> bool * inconsistency_reason option
 
 (** check whether a given solution fulfill the request of a given CUDF
-    @return [true, _] if this is the case, [false, msg] otherwise,
-    where msg is an explanatory message *)
-val is_solution : cudf -> solution -> bool * string
+    @return [true, []] if this is the case, [false, l]
+    otherwise, where r explains why the solution is bad *)
+val is_solution : cudf -> solution -> bool * bad_solution_reason list
