@@ -15,16 +15,15 @@ OBFLAGS =
 OCAMLFIND = ocamlfind
 
 DESTDIR =
+LIBDIR = $(DESTDIR)/$(shell ocamlc -where)
+BINDIR = $(DESTDIR)/usr/bin
 ifeq ($(DESTDIR),)
 INSTALL = $(OCAMLFIND) install
 UNINSTALL = $(OCAMLFIND) remove
 else
-INSTALL = $(OCAMLFIND) install -destdir $(DESTDIR)
-UNINSTALL = $(OCAMLFIND) remove -destdir $(DESTDIR)
+INSTALL = $(OCAMLFIND) install -destdir $(LIBDIR)
+UNINSTALL = $(OCAMLFIND) remove -destdir $(LIBDIR)
 endif
-
-LIBDIR = $(DESTDIR)/$(shell ocamlc -where)
-BINDIR = $(DESTDIR)/usr/local/bin
 
 all: $(RESULTS)
 opt: $(RESULTS_OPT)
@@ -61,6 +60,7 @@ INSTALL_STUFF += $(wildcard _build/cudf.o _build/cudf.cmx _build/cudf.cmi)
 install: all opt
 	test -d $(LIBDIR) || mkdir -p $(LIBDIR)
 	$(INSTALL) -patch-version $(VERSION) $(NAME) $(INSTALL_STUFF)
+	test -d $(BINDIR) || mkdir -p $(BINDIR)
 	if [ -f _build/cudf-check.native ] ; then \
 		cp _build/cudf-check.native $(BINDIR)/cudf-check ; \
 	else \

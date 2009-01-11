@@ -45,11 +45,11 @@ Description: OCaml library to access descriptions of package upgrade problems
  libCUDF in your OCaml programs.
 
 Package: cudf-check
-Architecture: all
+Architecture: any
 Section: devel
 Depends:
- ocaml-base-nox-${F:OCamlABI},
- libpcre-ocaml,
+ ${F:OCamlInterpDepends},
+ ${shlibs:Depends}
  ${misc:Depends}
 Description: command line checker for package upgrade problem descriptions
  A CUDF document describe an upgrade problem, as faced by package
