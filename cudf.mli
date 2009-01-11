@@ -92,7 +92,7 @@ val load_universe : package list -> universe
 (** {5 CUDF manipulation} *)
 
 (** lookup a specific package via a <name, version> key
-    @raise Not_found *)
+    @raise Not_found if the requested package cannot be found *)
 val lookup_package : universe -> pkgname * version -> package
 
 (** check wheather a given package constraint is satisfied in a given
