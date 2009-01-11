@@ -12,6 +12,8 @@
 
 open Printf
 
+open Cudf
+
 (* <type, literal> *)
 exception Parse_error of string * string
 
@@ -96,3 +98,51 @@ let parse_vpkgformula s =
       
 let parse_veqpkglist = list_parser ~sep:and_sep_RE parse_veqpkg
 
+(** Pretty printers *)
+
+let pp_pkgname fmt name = Format.fprintf fmt "%s" name
+let pp_version fmt ver = Format.fprintf fmt "%d" ver
+
+let string_of_relop = function
+    `Eq -> "="
+  | `Neq -> "!="
+  | `Geq -> ">="
+  | `Gt -> ">"
+  | `Leq -> "<="
+  | `Lt -> "<"
+
+let pp_vpkg fmt = function
+    (name, None) -> pp_pkgname fmt name
+  | (name, Some (relop, v)) ->
+      Format.fprintf fmt "%a %s %a"
+	pp_pkgname name (string_of_relop relop) pp_version v
+
+let pp_list fmt ~pp_item ~sep l =
+  let rec aux fmt = function
+      [] -> assert false
+    | [last] -> (* last item, no trailing sep *)
+	Format.fprintf fmt "@,%a" pp_item last
+    | vpkg :: tl -> (* at least one package in tl *)
+	Format.fprintf fmt "@,%a%s" pp_item vpkg sep ;
+	aux fmt tl
+  in
+    match l with
+      | [] -> ()
+      | [sole] -> pp_item fmt sole
+      | _ -> Format.fprintf fmt "@[<hv>%a@]" aux l
+
+let pp_vpkglist fmt = pp_list fmt ~pp_item:pp_vpkg ~sep:" , "
+
+(** ASSUMPTION: formula is in CNF *)
+let rec pp_vpkgformula fmt = function
+    FTrue -> ()
+  | FPkg vpkg -> pp_vpkg fmt vpkg
+  | FOr []
+  | FAnd [] -> assert false
+  | FOr [vpkg] -> pp_vpkgformula fmt vpkg
+  | FOr vpkgs -> pp_list fmt ~pp_item:pp_vpkgformula ~sep:" | " vpkgs
+  | FAnd [fmla] -> pp_vpkgformula fmt fmla
+  | FAnd fmlas -> pp_list fmt ~pp_item:pp_vpkgformula ~sep:" , " fmlas
+
+let pp_veqpkglist = pp_vpkglist
+let pp_veqpkg = pp_vpkg

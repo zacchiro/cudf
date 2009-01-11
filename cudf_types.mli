@@ -29,7 +29,7 @@ exception Parse_error of string * string
 
 val parse_bool : string -> bool
 
-val parse_pkgname : string -> string
+val parse_pkgname : string -> pkgname
 val parse_version : string -> version
 val parse_vpkg : string -> vpkg
 val parse_vpkglist : string -> vpkglist
@@ -45,3 +45,12 @@ val parse_relop : string -> relop
 
 (** {5 Pretty printers} *)
 
+open Format
+
+val pp_pkgname : formatter -> pkgname -> unit
+val pp_version : formatter -> version -> unit
+val pp_vpkg : formatter -> vpkg -> unit
+val pp_vpkglist : formatter -> vpkglist -> unit
+val pp_vpkgformula : formatter -> vpkgformula -> unit
+val pp_veqpkg : formatter -> veqpkg -> unit
+val pp_veqpkglist : formatter -> veqpkglist -> unit
