@@ -45,12 +45,24 @@ val parse_relop : string -> relop
 
 (** {5 Pretty printers} *)
 
-open Format
+(** {6 Pretty print to abstract formatters} *)
 
-val pp_pkgname : formatter -> pkgname -> unit
-val pp_version : formatter -> version -> unit
-val pp_vpkg : formatter -> vpkg -> unit
-val pp_vpkglist : formatter -> vpkglist -> unit
-val pp_vpkgformula : formatter -> vpkgformula -> unit
-val pp_veqpkg : formatter -> veqpkg -> unit
-val pp_veqpkglist : formatter -> veqpkglist -> unit
+val pp_pkgname : Format.formatter -> pkgname -> unit
+val pp_version : Format.formatter -> version -> unit
+val pp_vpkg : Format.formatter -> vpkg -> unit
+val pp_vpkglist : Format.formatter -> vpkglist -> unit
+val pp_vpkgformula : Format.formatter -> vpkgformula -> unit
+val pp_veqpkg : Format.formatter -> veqpkg -> unit
+val pp_veqpkglist : Format.formatter -> veqpkglist -> unit
+
+(** {6 Pretty print to string}
+
+    Shorthand functions. *)
+
+val string_of_pkgname : pkgname -> string
+val string_of_version : version -> string
+val string_of_vpkg : vpkg -> string
+val string_of_vpkglist : vpkglist -> string
+val string_of_vpkgformula : vpkgformula -> string
+val string_of_veqpkg : veqpkg -> string
+val string_of_veqpkglist : veqpkglist -> string

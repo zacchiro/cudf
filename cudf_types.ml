@@ -146,3 +146,20 @@ let rec pp_vpkgformula fmt = function
 
 let pp_veqpkglist = pp_vpkglist
 let pp_veqpkg = pp_vpkg
+
+let buf = Buffer.create 1024
+let buf_formatter = Format.formatter_of_buffer buf
+
+let string_of pp arg =
+  Buffer.clear buf;
+  pp buf_formatter arg;
+  Format.pp_print_flush buf_formatter ();
+  Buffer.contents buf
+
+let string_of_pkgname = string_of pp_pkgname
+let string_of_version = string_of pp_version
+let string_of_vpkg = string_of pp_vpkg
+let string_of_vpkglist = string_of pp_vpkglist
+let string_of_vpkgformula = string_of pp_vpkgformula
+let string_of_veqpkg = string_of pp_veqpkg
+let string_of_veqpkglist = string_of pp_veqpkglist
