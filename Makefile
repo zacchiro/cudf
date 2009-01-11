@@ -57,7 +57,7 @@ INSTALL_STUFF += $(wildcard _build/cudf_*.cmi) $(wildcard *.mli)
 INSTALL_STUFF += $(wildcard _build/cudf_*.cmx _build/cudf_*.o _build/cudf_*.a)
 INSTALL_STUFF += $(wildcard _build/cudf.o _build/cudf.cmx _build/cudf.cmi)
 
-install: all opt
+install:
 	test -d $(LIBDIR) || mkdir -p $(LIBDIR)
 	$(INSTALL) -patch-version $(VERSION) $(NAME) $(INSTALL_STUFF)
 	test -d $(BINDIR) || mkdir -p $(BINDIR)
