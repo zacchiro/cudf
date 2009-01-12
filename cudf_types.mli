@@ -47,6 +47,7 @@ val parse_relop : string -> relop
 
 (** {6 Pretty print to abstract formatters} *)
 
+val pp_bool : Format.formatter -> bool -> unit
 val pp_pkgname : Format.formatter -> pkgname -> unit
 val pp_version : Format.formatter -> version -> unit
 val pp_vpkg : Format.formatter -> vpkg -> unit
@@ -59,6 +60,7 @@ val pp_veqpkglist : Format.formatter -> veqpkglist -> unit
 
     Shorthand functions. *)
 
+val string_of_bool : bool -> string
 val string_of_pkgname : pkgname -> string
 val string_of_version : version -> string
 val string_of_vpkg : vpkg -> string

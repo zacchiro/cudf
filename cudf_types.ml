@@ -100,6 +100,10 @@ let parse_veqpkglist = list_parser ~sep:and_sep_RE parse_veqpkg
 
 (** Pretty printers *)
 
+let pp_bool fmt = function
+    true -> Format.fprintf fmt "true"
+  | false -> Format.fprintf fmt "false"
+
 let pp_pkgname fmt name = Format.fprintf fmt "%s" name
 let pp_version fmt ver = Format.fprintf fmt "%d" ver
 
@@ -159,6 +163,7 @@ let string_of pp arg =
   Format.pp_print_flush buf_formatter ();
   Buffer.contents buf
 
+let string_of_bool = string_of pp_bool
 let string_of_pkgname = string_of pp_pkgname
 let string_of_version = string_of pp_version
 let string_of_vpkg = string_of pp_vpkg
