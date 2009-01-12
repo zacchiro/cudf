@@ -44,14 +44,14 @@ Description: OCaml library to access descriptions of package upgrade problems
  This package contains all the development stuff you need to use
  libCUDF in your OCaml programs.
 
-Package: cudf-check
+Package: cudf-tools
 Architecture: any
 Section: devel
 Depends:
  ${F:OCamlInterpDepends},
  ${shlibs:Depends}
  ${misc:Depends}
-Description: command line checker for package upgrade problem descriptions
+Description: command line tools for package upgrade problem descriptions
  A CUDF document describe an upgrade problem, as faced by package
  managers in popular package-based GNU/Linux distributions.
  .
@@ -65,5 +65,8 @@ Description: command line checker for package upgrade problem descriptions
  the resulting package status (if any) implementing the user request,
  as found by a package manager.
  .
- This package contains a command line tool to check validity and other
- properties of CUDF and related documents.
+ This package contains command line tools to manipulate CUDF and
+ related documents. In particular it contains cudf-check, which
+ enables checking of document properties such as installation
+ consistency and matching of problems with their solutions.
+
