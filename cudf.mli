@@ -65,7 +65,9 @@ val default_package : package	(** implement package defaults *)
 val default_request : request	(** implement request defaults *)
 
 (** {6 Syntactic CUDF representation} *)
+
 type cudf_doc = package list * request
+type cudf_item = [ `Package of package | `Request of request ]
 
 (** {6 Semantic CUDF representation} *)
 

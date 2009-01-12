@@ -48,6 +48,7 @@ type request = {
   upgrade : vpkglist ;
 }
 type cudf_doc = package list * request
+type cudf_item = [ `Package of package | `Request of request ]
 type universe = {
   id2pkg: ((string * int), package) Hashtbl.t;	(** <name, ver> -> pkg *)
   name2pkgs: (string, package) Hashtbl.t; (** name -> pkg (multi-bindings) *)
