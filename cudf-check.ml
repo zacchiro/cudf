@@ -67,7 +67,9 @@ let main () =
   let load_univ p =
     match Cudf_parser.load p with
 	univ, None -> univ
-      | _, Some _ -> eprintf "Unexpected problem description item\n%!"; exit 1
+      | _, Some _ ->
+	  eprintf "Error: unexpected problem description item.\n%!";
+	  exit 1
   in
   if !cudf_arg <> "" then begin
     try
@@ -75,7 +77,7 @@ let main () =
 	eprintf "loading CUDF ...\n%!";
 	(match Cudf_parser.load p with
 	     univ, None -> 
-	       eprintf "Missing problem description item\n%!";
+	       eprintf "Error: problem description item.\n%!";
 	       exit 1
 	   | univ, Some req -> cudf := Some (univ, req))
     with
