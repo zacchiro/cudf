@@ -88,7 +88,6 @@ type cudf = universe * request
     status *)
 type solution = universe
 
-val load_cudf : cudf_doc -> cudf
 val load_universe : package list -> universe
 
 (** {5 CUDF manipulation} *)

@@ -64,11 +64,20 @@ let print_sol_info inst sol =
 	  (String.concat "; " (List.map explain_reason rs))
 
 let main () =
+  let load_univ p =
+    match Cudf_parser.load p with
+	univ, None -> univ
+      | _, Some _ -> eprintf "Unexpected problem description item\n%!"; exit 1
+  in
   if !cudf_arg <> "" then begin
     try
       let p = Cudf_parser.from_in_channel (open_in !cudf_arg) in
-	eprintf "parsing CUDF ...\n%!";
-	cudf := Some (Cudf_parser.load_cudf p)
+	eprintf "loading CUDF ...\n%!";
+	(match Cudf_parser.load p with
+	     univ, None -> 
+	       eprintf "Missing problem description item\n%!";
+	       exit 1
+	   | univ, Some req -> cudf := Some (univ, req))
     with
 	Cudf_parser.Parse_error _
       | Cudf.Constraint_violation _ as exn ->
@@ -79,8 +88,8 @@ let main () =
   if !univ_arg <> "" then begin
     try
       let p = Cudf_parser.from_in_channel (open_in !univ_arg) in
-	eprintf "parsing package universe ...\n%!";
-	univ := Some (Cudf_parser.load_universe p)
+	eprintf "loading package universe ...\n%!";
+	univ := Some (load_univ p)
     with
 	Cudf_parser.Parse_error _
       | Cudf.Constraint_violation _ as exn ->
@@ -91,8 +100,8 @@ let main () =
   if !sol_arg <> "" then begin
     try
       let p = Cudf_parser.from_in_channel (open_in !sol_arg) in
-	eprintf "parsing solution ...\n%!";
-	sol := Some (Cudf_parser.load_universe p)
+	eprintf "loading solution ...\n%!";
+	sol := Some (load_univ p)
     with
 	Cudf_parser.Parse_error _
       | Cudf.Constraint_violation _ as exn ->

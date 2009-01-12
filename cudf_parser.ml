@@ -129,7 +129,7 @@ let parse_items p =
       assert false	(* unreachable *)
     with End_of_file -> List.rev !items
 
-let parse_cudf p =
+let parse p =
   let pkg_items, req_items =
     List.partition (function `Package _ -> true | _ -> false) (parse_items p)
   in
@@ -137,18 +137,10 @@ let parse_cudf p =
     List.map (function `Package pkg -> pkg | _ -> assert false) pkg_items
   in
     match req_items with
-      | [`Request req] -> pkgs, req
-      | [] -> parse_error p "missing problem description item"
+      | [`Request req] -> pkgs, Some req
+      | [] -> pkgs, None
       | _ -> parse_error p "too many problem description items (1 expected)"
 
-let parse_packages p =
-  List.map
-    (function
-       | `Package pkg -> pkg
-       | `Request _ ->
-	   raise (Parse_error (-1, "unexpected problem description item")))
-    (parse_items p)
-
-let load_cudf p = Cudf.load_cudf (parse_cudf p)
-let load_universe p = Cudf.load_universe (parse_packages p)
-
+let load p =
+  let pkgs, req = parse p in
+    Cudf.load_universe pkgs, req

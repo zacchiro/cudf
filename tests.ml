@@ -59,10 +59,27 @@ let parse_test ~parse_fun name =
     close_in ic;
     out
 
-let parse_cudf_test = parse_test ~parse_fun:Cudf_parser.parse_cudf
-let parse_pkgs_test = parse_test ~parse_fun:Cudf_parser.parse_packages
-let load_cudf_test = parse_test ~parse_fun:Cudf_parser.load_cudf
-let load_univ_test = parse_test ~parse_fun:Cudf_parser.load_universe
+let parse_cudf_wrapper p =
+  match Cudf_parser.parse p with
+      pkgs, Some req -> pkgs, req
+    | pkgs, None -> raise (Cudf_parser.Parse_error (-1, ""))
+let parse_pkgs_wrapper p =
+  match Cudf_parser.parse p with
+      pkgs, Some req -> raise (Cudf_parser.Parse_error (-1, ""))
+    | pkgs, None -> pkgs
+let load_cudf_wrapper p =
+  match Cudf_parser.load p with
+      pkgs, Some req -> pkgs, req
+    | pkgs, None -> raise (Cudf_parser.Parse_error (-1, ""))
+let load_pkgs_wrapper p =
+  match Cudf_parser.load p with
+      pkgs, Some req -> raise (Cudf_parser.Parse_error (-1, ""))
+    | pkgs, None -> pkgs
+
+let parse_cudf_test = parse_test ~parse_fun:parse_cudf_wrapper
+let parse_pkgs_test = parse_test ~parse_fun:parse_pkgs_wrapper
+let load_cudf_test = parse_test ~parse_fun:load_cudf_wrapper
+let load_univ_test = parse_test ~parse_fun:load_pkgs_wrapper
 
 (** {5 Test builders} *)
 
@@ -94,22 +111,22 @@ let bad_solution prob_name sol_name = TestCase (fun _ ->
 
 let good_cudf_parse_suite =
   "parsing of good CUDFs" >::: List.map
-      (fun n -> n >: good_parse ~parse_fun:Cudf_parser.parse_cudf n)
+      (fun n -> n >: good_parse ~parse_fun:parse_cudf_wrapper n)
       good_cudfs
 
 let bad_cudf_parse_suite =
   "parsing of bad CUDFs" >::: List.map
-      (fun n -> n >: bad_parse ~parse_fun:Cudf_parser.parse_cudf n)
+      (fun n -> n >: bad_parse ~parse_fun:parse_cudf_wrapper n)
       bad_cudfs
 
 let good_pkgs_parse_suite =
   "parsing of good package universes" >::: List.map
-      (fun n -> n >: good_parse ~parse_fun:Cudf_parser.parse_packages n)
+      (fun n -> n >: good_parse ~parse_fun:parse_pkgs_wrapper n)
       good_pkgs
 
 let bad_pkgs_parse_suite =
   "parsing of bad package universes" >::: List.map
-      (fun n -> n >: bad_parse ~parse_fun:Cudf_parser.parse_packages n)
+      (fun n -> n >: bad_parse ~parse_fun:parse_pkgs_wrapper n)
       bad_pkgs
 
 (** {6 Regression tests} *)

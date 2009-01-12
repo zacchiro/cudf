@@ -124,8 +124,6 @@ let load_universe pkgs =
       pkgs;
     univ
 
-let load_cudf (pkgs, req) = load_universe pkgs, req
-
 let lookup_package univ = Hashtbl.find univ.id2pkg
 let iter_packages f univ = Hashtbl.iter (fun _id pkg -> f pkg) univ.id2pkg
 let fold_packages f init univ =

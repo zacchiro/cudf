@@ -27,14 +27,17 @@ exception Parse_error of int * string
     the lack of key duplication).
 *)
 
-(** parse a CUDF document as a whole *)
-val parse_cudf : cudf_parser -> cudf_doc
+(** parse a CUDF document (or a universe) as a whole
 
-(** parse a CUDF document missing the request information item *)
-val parse_packages : cudf_parser -> package list
+    @return a pair [packages, Some req] if a complete CUDF (i.e., with
+    a request part) is found, otherwise return a pair [package, None]
+    if the request part is missing. Note that a document with no
+    request part is not a valid CUDF document. *)
+val parse : cudf_parser -> package list * request option
 
-val load_cudf : cudf_parser -> cudf
-val load_universe : cudf_parser -> universe
+(** same as {!Cudf_parser.parse}, but additionally loads the package
+    list as an abstract {!Cudf.universe} *)
+val load : cudf_parser -> universe * request option
 
 (** {6 Item-by-item CUDF parsing} *)
 
