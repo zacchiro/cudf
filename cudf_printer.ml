@@ -46,6 +46,9 @@ let pp_request fmt req =
 let pp_universe fmt =
   iter_packages (fun pkg -> Format.fprintf fmt "%a@\n" pp_package pkg)
 
+let pp_packages fmt =
+  List.iter (fun pkg -> Format.fprintf fmt "%a@\n" pp_package pkg)
+
 let pp_cudf fmt (univ, req) =
   Format.fprintf fmt "%a@\n%a" pp_universe univ pp_request req
 
@@ -73,6 +76,7 @@ let string_of_cudf = string_of pp_cudf
 let string_of_doc = string_of pp_doc
 let string_of_item = string_of pp_item
 let string_of_package = string_of pp_package
+let string_of_packages = string_of pp_packages
 let string_of_request = string_of pp_request
 let string_of_universe = string_of pp_universe
 
