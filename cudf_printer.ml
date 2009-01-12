@@ -43,8 +43,8 @@ let pp_request fmt req =
     if req.upgrade <> default_request.upgrade then
       pp ("Upgrade", string_of_vpkglist req.upgrade)
 
-let pp_universe fmt univ =
-  iter_packages univ (fun pkg -> Format.fprintf fmt "%a@\n" pp_package pkg)
+let pp_universe fmt =
+  iter_packages (fun pkg -> Format.fprintf fmt "%a@\n" pp_package pkg)
 
 let pp_cudf fmt (univ, req) =
   Format.fprintf fmt "%a@\n%a" pp_universe univ pp_request req

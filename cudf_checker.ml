@@ -79,7 +79,7 @@ let disjoint univ ?ignore pkgs =
 let is_consistent univ =
   let msg = ref None in
     try
-      iter_packages univ
+      iter_packages
 	(fun pkg ->
 	   if pkg.installed then begin
 	     (match satisfy_formula univ pkg.depends with
@@ -93,7 +93,8 @@ let is_consistent univ =
 		    msg := Some (`Conflict ((pkg.package, pkg.version), pkgs));
 		    raise Exit
 		| _ -> ());
-	   end);
+	   end)
+	univ;
       true, !msg
     with Exit -> false, !msg
 

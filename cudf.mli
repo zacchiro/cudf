@@ -116,7 +116,7 @@ val lookup_packages : universe -> pkgname -> package list
     Shorthand for [lookup_packages] composed with filtering on installed=true *)
 val get_installed : universe -> pkgname -> package list
 
-val iter_packages : universe -> (package -> unit) -> unit
+val iter_packages : (package -> unit) -> universe -> unit
 val fold_packages : ('a -> package -> 'a) -> 'a -> universe -> 'a
 
 (** conversion from universe to plain package list *)
