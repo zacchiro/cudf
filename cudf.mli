@@ -61,8 +61,8 @@ type request = {
   upgrade : vpkglist ;	(* default : [] *)
 }
 
-val dummy_package : package	(** implement package defaults *)
-val dummy_request : request	(** implement request defaults *)
+val default_package : package	(** implement package defaults *)
+val default_request : request	(** implement request defaults *)
 
 (** {6 Syntactic CUDF representation} *)
 type cudf_doc = package list * request

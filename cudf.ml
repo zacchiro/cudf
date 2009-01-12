@@ -69,7 +69,7 @@ let installed_size univ = univ.inst_size
 let (=%) pkg1 pkg2 =
   pkg1.package = pkg2.package && pkg1.version = pkg2.version
 
-let dummy_package = {
+let default_package = {
   package = "" ;
   version = 0 ;
   depends = FTrue ;
@@ -80,7 +80,7 @@ let dummy_package = {
   extra = [] ;
 }
 
-let dummy_request = {
+let default_request = {
   problem_id = "" ;
   install = [] ;
   remove = [] ;

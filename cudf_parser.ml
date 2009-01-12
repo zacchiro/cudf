@@ -108,9 +108,10 @@ let parse_item p =
 	| [] -> parse_error p "empty file stanza"
 	| ("Package", n) :: tl ->
 	    `Package
-	      (aux_package { dummy_package with package = parse_pkgname n } tl)
+	      (aux_package { default_package with package = parse_pkgname n }
+		 tl)
 	| ("Problem", id) :: tl ->
-	    `Request (aux_request { dummy_request with problem_id = id } tl)
+	    `Request (aux_request { default_request with problem_id = id } tl)
 	| (prop_name, _) :: _ ->
 	    parse_error p
 	      (sprintf "unexpected stanza starting with postmark '%s'"
