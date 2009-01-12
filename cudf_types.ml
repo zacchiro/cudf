@@ -148,7 +148,10 @@ let pp_veqpkglist = pp_vpkglist
 let pp_veqpkg = pp_vpkg
 
 let buf = Buffer.create 1024
-let buf_formatter = Format.formatter_of_buffer buf
+let buf_formatter =
+  let fmt = Format.formatter_of_buffer buf in
+    Format.pp_set_margin fmt max_int;
+    fmt
 
 let string_of pp arg =
   Buffer.clear buf;
