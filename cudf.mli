@@ -111,6 +111,9 @@ val mem_installed :
 (** lookup all available versions of a given package name *)
 val lookup_packages : universe -> pkgname -> package list
 
+(** find all available packages matching the constraint *)
+val find_packages : universe -> pkgname * constr -> package list
+
 (** lookup all installed versions of a given package name.
     Shorthand for [lookup_packages] composed with filtering on installed=true *)
 val get_installed : universe -> pkgname -> package list

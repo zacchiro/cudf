@@ -154,6 +154,23 @@ let status univ =
 
 let lookup_packages univ pkgname = Hashtbl.find_all univ.name2pkgs pkgname
 
+let find_packages univ (pkgname,constr) = 
+    let filter (pkgname,version) op =
+        List.filter (fun p -> op p.version version)
+        (lookup_packages univ pkgname)
+    in
+    match (pkgname,constr) with
+    |(pkgname,None) -> lookup_packages univ pkgname
+    |(pkgname,Some(relop,version)) ->
+            begin match relop with
+            |`Eq -> [lookup_package univ (pkgname,version)]
+            |`Neq -> filter (pkgname,version) (<>)
+            |`Geq -> filter (pkgname,version) (>=)
+            |`Gt -> filter (pkgname,version) (>)
+            |`Leq -> filter (pkgname,version) (<=)
+            |`Lt -> filter (pkgname,version) (<)
+            end
+
 let get_installed univ pkgname =
   List.filter (fun { installed = i } -> i) (lookup_packages univ pkgname)
 
