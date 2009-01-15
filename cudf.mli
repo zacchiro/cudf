@@ -108,7 +108,10 @@ val mem_installed :
   ?ignore:(package -> bool) ->
   universe -> vpkg -> bool
 
-(** lookup all available versions of a given package name *)
+(** lookup all available versions of a given package name
+
+    @param filter filter the found packages according to the given
+    version constraint. Default: None (i.e., no filtering) *)
 val lookup_packages : ?filter:constr -> universe -> pkgname -> package list
 
 (** lookup all installed versions of a given package name.

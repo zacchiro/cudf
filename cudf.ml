@@ -153,8 +153,10 @@ let status univ =
     univ'
 
 let lookup_packages ?(filter=None) univ pkgname = 
-    List.filter (fun p -> p.version |= filter ) 
-    (Hashtbl.find_all univ.name2pkgs pkgname)
+  let packages = Hashtbl.find_all univ.name2pkgs pkgname in
+    match filter with
+	None -> packages
+      | Some _ as pred -> List.filter (fun p -> p.version |= pred) packages
 
 let get_installed univ pkgname =
   List.filter (fun { installed = i } -> i) (lookup_packages univ pkgname)
