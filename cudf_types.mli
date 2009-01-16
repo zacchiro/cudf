@@ -10,12 +10,30 @@
 (*  library, see the COPYING file for more information.                      *)
 (*****************************************************************************)
 
-open Cudf
-
 (** CUDF type library
 
-    Implement parsing and pretty printing of core CUDF types (see CUDF
-    spec. §3.2.2) *)
+    Implement core CUDF types (see CUDF spec. §3.2.2), together with
+    parsing and pretty printing for them *)
+
+(** {5 CUDF types} *)
+
+type version = int	(* required to be non 0 *)
+type relop = [`Eq|`Neq|`Geq|`Gt|`Leq|`Lt]
+type constr = (relop * version) option
+
+(** {6 CUDF spec. types} *)
+
+type pkgname = string
+type vpkg = pkgname * constr
+type vpkglist = vpkg list
+type vpkgformula = (* XXX does not enforce CNF, whereas the spec requires it *)
+    FTrue
+  | FPkg of vpkg
+  | FOr of vpkgformula list
+  | FAnd of vpkgformula list
+type veqpkg = pkgname * ([`Eq] * version) option
+type veqpkglist = veqpkg list
+type enum_keep = [ `Keep_version | `Keep_package | `Keep_feature ]
 
 (** {5 Parsers} *)
 

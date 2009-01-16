@@ -14,6 +14,7 @@ open ExtLib
 open OUnit
 open Printf
 
+open Cudf_types
 open Cudf
 
 let cudf_test_path name = sprintf "./tests/%s.cudf" name

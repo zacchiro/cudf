@@ -12,7 +12,21 @@
 
 open Printf
 
-open Cudf
+type version = int
+type relop = [`Eq|`Neq|`Geq|`Gt|`Leq|`Lt]
+type constr = (relop * version) option
+
+type pkgname = string
+type vpkg = pkgname * constr
+type vpkglist = vpkg list
+type vpkgformula =
+    FTrue
+  | FPkg of vpkg
+  | FOr of vpkgformula list
+  | FAnd of vpkgformula list
+type veqpkg = pkgname * ([`Eq] * version) option
+type veqpkglist = veqpkg list
+type enum_keep = [ `Keep_version | `Keep_package | `Keep_feature ]
 
 (* <type, literal> *)
 exception Parse_error of string * string
@@ -89,11 +103,11 @@ let parse_veqpkg s =
 
 let parse_vpkgformula s =
   let and_args = Pcre.split ~rex:and_sep_RE s in
-    Cudf.FAnd
+    FAnd
       (List.map
 	 (fun and_arg ->
 	    let or_args = Pcre.split ~rex:or_sep_RE and_arg in
-	      Cudf.FOr (List.map (fun s -> Cudf.FPkg (parse_vpkg s)) or_args))
+	      FOr (List.map (fun s -> FPkg (parse_vpkg s)) or_args))
 	 and_args)
       
 let parse_veqpkglist = list_parser ~sep:and_sep_RE parse_veqpkg

@@ -13,23 +13,9 @@
 open ExtLib
 open Printf
 
+open Cudf_types
+
 exception Constraint_violation of string
-
-type version = int
-type relop = [`Eq|`Neq|`Geq|`Gt|`Leq|`Lt]
-type constr = (relop * version) option
-
-type pkgname = string
-type vpkg = pkgname * constr
-type vpkglist = vpkg list
-type vpkgformula =
-    FTrue
-  | FPkg of vpkg
-  | FOr of vpkgformula list
-  | FAnd of vpkgformula list
-type veqpkg = pkgname * ([`Eq] * version) option
-type veqpkglist = veqpkg list
-type enum_keep = [ `Keep_version | `Keep_package | `Keep_feature ]
 
 type package = {
   package : pkgname ;

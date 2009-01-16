@@ -10,28 +10,11 @@
 (*  library, see the COPYING file for more information.                      *)
 (*****************************************************************************)
 
-(** {5 CUDF types} *)
+(** CUDF library *)
 
-type version = int	(* required to be non 0 *)
-type relop = [`Eq|`Neq|`Geq|`Gt|`Leq|`Lt]
-type constr = (relop * version) option
-
-(** {6 CUDF spec. types} *)
-
-type pkgname = string
-type vpkg = pkgname * constr
-type vpkglist = vpkg list
-type vpkgformula = (* XXX does not enforce CNF, whereas the spec requires it *)
-    FTrue
-  | FPkg of vpkg
-  | FOr of vpkgformula list
-  | FAnd of vpkgformula list
-type veqpkg = pkgname * ([`Eq] * version) option
-type veqpkglist = veqpkg list
+open Cudf_types
 
 (** {6 CUDF documents} *)
-
-type enum_keep = [ `Keep_version | `Keep_package | `Keep_feature ]
 
 (** Representation of a parsed package description item.
 

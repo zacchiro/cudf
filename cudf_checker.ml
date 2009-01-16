@@ -13,6 +13,7 @@
 open ExtLib
 open Printf
 
+open Cudf_types
 open Cudf
 
 let (!!) pred = fun x -> not (pred x)

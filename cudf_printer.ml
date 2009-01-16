@@ -26,7 +26,7 @@ let pp_package fmt pkg =
     if pkg.conflicts <> default_package.conflicts then
       pp ("Conflicts", string_of_vpkglist pkg.conflicts);
     if pkg.provides <> default_package.provides then
-      pp ("Provides", string_of_vpkglist (pkg.provides :> Cudf.vpkg list));
+      pp ("Provides", string_of_vpkglist (pkg.provides :> vpkg list));
     if pkg.installed <> default_package.installed then
       pp ("Installed", string_of_bool pkg.installed);
     if pkg.keep <> default_package.keep then

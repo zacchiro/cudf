@@ -10,6 +10,7 @@
 (*  library, see the COPYING file for more information.                      *)
 (*****************************************************************************)
 
+open Cudf_types
 open Cudf
 
 type inconsistency_reason =
