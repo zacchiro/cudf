@@ -161,3 +161,15 @@ let mem_installed ?(include_features = true) ?(ignore = fun _ -> false)
     List.exists (fun pkg -> pkg.version |= constr) pkgs
     || (include_features && mem_feature constr)
 
+
+let lookup_package_property pkg = function
+    "Package" -> string_of_pkgname pkg.package
+  | "Version" -> string_of_version pkg.version
+  | "Depends" -> string_of_vpkgformula pkg.depends
+  | "Conflicts" -> string_of_vpkglist pkg.conflicts
+  | "Provides" -> string_of_veqpkglist pkg.provides
+  | "Installed" -> string_of_bool pkg.installed
+  | "Keep" ->
+      (try string_of_keep (Option.get pkg.keep)
+       with Option.No_value -> raise Not_found)
+  | prop_name -> List.assoc prop_name pkg.extra

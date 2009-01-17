@@ -118,3 +118,18 @@ val installed_size : universe -> int
     Inefficient (involves hashtbl cloning), use with care. *)
 val status : universe -> universe
 
+(** {5 Low-level stanza manipulation} *)
+
+(** low-level property lookup: given a package, lookup on it a
+    property by name, returning its (pretty-printed, see
+    {!Cudf_types}) value as a string
+
+    @param pkg package to be inspected
+    @param property property name to be lookup (case-sensitive)
+
+    @raise Not_found if the given property name is not associated to
+    the given package (note that "being associated with" does not
+    necessarily mean that the property appears in the stanza, due to
+    default values) *)
+val lookup_package_property : package -> string -> string
+
