@@ -173,3 +173,11 @@ let lookup_package_property pkg = function
       (try string_of_keep (Option.get pkg.keep)
        with Option.No_value -> raise Not_found)
   | prop_name -> List.assoc prop_name pkg.extra
+
+let lookup_request_property req = function
+    "Problem" -> req.problem_id
+  | "Install" -> string_of_vpkglist req.install
+  | "Remove" -> string_of_vpkglist req.remove
+  | "Upgrade" -> string_of_vpkglist req.upgrade
+  | _ -> raise Not_found
+

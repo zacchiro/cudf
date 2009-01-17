@@ -133,3 +133,10 @@ val status : universe -> universe
     default values) *)
 val lookup_package_property : package -> string -> string
 
+(** Same as {!Cudf.lookup_package_property}, but acting on request
+    information items.
+
+    To lookup the problem identifier as a string (which strictly
+    speaking is not a property) you should lookup "Problem" *)
+val lookup_request_property : request -> string -> string
+
