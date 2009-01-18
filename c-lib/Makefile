@@ -1,7 +1,9 @@
+NULL =
 CFLAGS = -I .
 LDFLAGS = \
 	-L$(shell ocamlc -where) \
-	-L$(shell ocamlfind query pcre)
+	-L$(shell ocamlfind query pcre) \
+	$(NULL)
 CLIBS = -lpcre -lm -ldl -lpcre_stubs -lunix -lncurses
 OCAMLC = ocamlfind ocamlc -package unix,extlib,pcre
 
