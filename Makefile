@@ -32,6 +32,7 @@ $(RESULTS): $(SOURCES)
 $(RESULTS_OPT): $(SOURCES)
 
 clean:
+	make -C c-lib/ clean
 	$(OCAMLBUILD) $(OBFLAGS) -clean
 
 _build/%:

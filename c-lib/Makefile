@@ -14,6 +14,9 @@ libcudf.a: cudf-caml.o cudf.o
 	cp "$(shell ocamlc -where)"/libcamlrun.a $@
 	ar r $@ $^
 
+../_build/%:
+	cd .. && ocamlbuild $*
+
 cudf-caml.o: ../_build/cudf.cma ../_build/cudf_c.cmo
 	$(OCAMLC) -linkpkg -output-obj -o $@ $^
 

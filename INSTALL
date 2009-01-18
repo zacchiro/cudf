@@ -16,6 +16,13 @@ To build run:
 - make opt	# build native code libs and executables (if you have ocamlopt)
 - make test	# run the test suite (need oUnit)
 
+C bindings
+----------
+
+To build the C bindings to the OCaml library run:
+
+- make -C c-lib/
+
 To install
 ==========
 
