@@ -39,6 +39,12 @@ val parse : cudf_parser -> package list * request option
     list as an abstract {!Cudf.universe} *)
 val load : cudf_parser -> universe * request option
 
+(** shorthand: parse a file given its name *)
+val parse_from_file : string -> package list * request option
+
+(** shorthand: load from a file given its name *)
+val load_from_file : string -> universe * request option
+
 (** {6 Item-by-item CUDF parsing} *)
 
 (** parse the next information item (either a package description or a

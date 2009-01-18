@@ -144,3 +144,11 @@ let parse p =
 let load p =
   let pkgs, req = parse p in
     Cudf.load_universe pkgs, req
+
+let parser_wrapper fname f =
+  let ic = open_in fname in
+  let p = from_in_channel ic in
+    finally (fun () -> close_in ic ; close p) f p
+
+let parse_from_file fname = parser_wrapper fname parse
+let load_from_file fname = parser_wrapper fname load
