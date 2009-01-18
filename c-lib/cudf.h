@@ -39,5 +39,20 @@ cudf cudf_load_from_file(char *fname);
 void free_cudf_doc(cudf_doc doc);
 void free_cudf(cudf doc);
 
+/** Macros for accessing package_t values */
+
+#define PKG_NAME(p)	(String_val(Field(p, 0)))	/* char *  */
+#define PKG_VERSION(p)	(Int_val(Field(p, 1)))		/* int */
+#define PKG_INST(p)	(Int_val(Field(p, 5)))		/* int (i.e., bool) */
+
+/** Possible values returned by PKG_EXTRA */
+
+#define KEEP_NONE	0	/* no "Keep" property */
+#define KEEP_VERSION	1	/* "Keep: version" */
+#define	KEEP_PACKAGE	2	/* "Keep: package" */
+#define	KEEP_FEATURE	3	/* "Keep: feature" */
+
+int cudf_pkg_keep(package_t pkg);	/* "Keep" property, see KEEP_* macros */
 
 #endif	/* end of cudf.h */
+

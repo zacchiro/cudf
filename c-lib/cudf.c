@@ -10,6 +10,8 @@
 /*  library, see the COPYING file for more information.                      */
 /*****************************************************************************/
 
+#include <stdio.h>
+
 #include <caml/alloc.h>
 #include <caml/callback.h>
 #include <caml/memory.h>
@@ -17,7 +19,14 @@
 
 #include <cudf.h>
 
-#define Val_none Val_int(0)
+#define Val_none	Val_int(0)
+#define Some_val(v)	Field(v,0)
+
+#define MLPVAR_version     (-251800451)    /* caml hash for "Keep_version" */
+#define MLPVAR_package     (2054970713)    /* caml hash for "Keep_package" */
+#define MLPVAR_feature     (739503033)     /* caml hash for "Keep_feature" */
+
+
 
 static int caml_list_length(value l)
 {
@@ -43,8 +52,13 @@ cudf_doc cudf_parse_from_file(char *fname)
   
   ml_doc = caml_callback(*closure_f, caml_copy_string(fname));	/* request */
   caml_register_global_root(&doc.request);
-  doc.request = Field(ml_doc, 1);
-  doc.has_request = (doc.request != Val_none);
+  if (Field(ml_doc, 1) != Val_none) {
+    doc.has_request = 1;
+    doc.request = Some_val(Field(ml_doc, 1));
+  } else {
+    doc.has_request = 0;
+    doc.request = Val_none;
+  }
 
   ml_pkgs = Field(ml_doc, 0);					/* packages */
   doc.length = caml_list_length(ml_pkgs);
@@ -72,5 +86,23 @@ void free_cudf_doc(cudf_doc doc)
     caml_remove_global_root(&doc.packages[i]);
   }
   free(doc.packages);
+}
+
+int cudf_pkg_keep(package_t p)
+{
+  value keep = Field(p, 6);
+
+  if (keep == Val_none)
+    return KEEP_NONE;
+  else
+    switch (Some_val(keep)) {
+    case MLPVAR_version : return KEEP_VERSION;
+    case MLPVAR_package : return KEEP_PACKAGE;
+    case MLPVAR_feature : return KEEP_FEATURE;
+    default:
+      fprintf(stderr, "Internal error: unexpected variant for \"keep\": %d\n",
+	      Some_val(p));
+      exit(3);
+    }
 }
 
