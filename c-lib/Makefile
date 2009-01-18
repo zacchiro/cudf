@@ -17,7 +17,7 @@ test.o: test.c
 	$(CC) $(CFLAGS) -c $<
 
 test: cudf-caml.o cudf.o test.o
-	$(CC) $(CFLAGS) $(LDFLAGS) $^ $(CLIBS)
+	$(CC) -o $@ $(CFLAGS) $(LDFLAGS) $^ $(CLIBS)
 
 
 clean:
