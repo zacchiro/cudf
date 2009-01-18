@@ -3,8 +3,9 @@ CFLAGS = -I .
 LDFLAGS = \
 	-L$(shell ocamlc -where) \
 	-L$(shell ocamlfind query pcre) \
+	-L$(CURDIR) \
 	$(NULL)
-CLIBS = -lpcre -lm -ldl -lpcre_stubs -lunix -lncurses
+CLIBS = -lcudf -lpcre -lm -ldl -lpcre_stubs -lunix -lncurses
 OCAMLC = ocamlfind ocamlc -package unix,extlib,pcre
 
 all: libcudf.a test
@@ -23,7 +24,7 @@ test.o: test.c
 	$(CC) $(CFLAGS) -c $<
 
 test: test.o libcudf.a
-	$(CC) -o $@ $(CFLAGS) $(LDFLAGS) $^ $(CLIBS)
+	$(CC) -o $@ $(CFLAGS) $(LDFLAGS) $< $(CLIBS)
 
 caml_hash_variant: caml_hash_variant.o
 	> dummy.ml
