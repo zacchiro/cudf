@@ -2,10 +2,14 @@ CFLAGS = -I .
 LDFLAGS = \
 	-L$(shell ocamlc -where) \
 	-L$(shell ocamlfind query pcre)
-CLIBS = -lpcre -lm -ldl -lpcre_stubs -lunix -lcamlrun -lncurses
+CLIBS = -lpcre -lm -ldl -lpcre_stubs -lunix -lncurses
 OCAMLC = ocamlfind ocamlc -package unix,extlib,pcre
 
-all: cudf.o cudf-caml.o test
+all: libcudf.a test
+
+libcudf.a: cudf-caml.o cudf.o
+	cp "$(shell ocamlc -where)"/libcamlrun.a $@
+	ar r $@ $^
 
 cudf-caml.o: ../_build/cudf.cma ../_build/cudf_c.cmo
 	$(OCAMLC) -linkpkg -output-obj -o $@ $^
@@ -16,7 +20,7 @@ cudf.o: cudf.c cudf.h
 test.o: test.c
 	$(CC) $(CFLAGS) -c $<
 
-test: cudf-caml.o cudf.o test.o
+test: test.o libcudf.a
 	$(CC) -o $@ $(CFLAGS) $(LDFLAGS) $^ $(CLIBS)
 
 caml_hash_variant: caml_hash_variant.o
@@ -26,7 +30,7 @@ caml_hash_variant: caml_hash_variant.o
 	@rm -f dummy.*
 
 clean:
-	rm -f *.o *.cmo *.cmi
+	rm -f *.a *.o *.cmo *.cmi
 	rm -f caml_hash_variant test
 	rm -f dummy.*
 
