@@ -1,5 +1,8 @@
 CFLAGS = -I .
-LDFLAGS = -L$(shell ocamlc -where) -lunix -lcamlrun -lpcre
+LDFLAGS = \
+	-L$(shell ocamlc -where) \
+	-L$(shell ocamlfind query pcre)
+CLIBS = -lpcre -lm -ldl -lpcre_stubs -lunix -lcamlrun -lncurses
 OCAMLC = ocamlfind ocamlc -package unix,extlib,pcre
 
 all: cudf.o cudf-caml.o test
@@ -11,10 +14,10 @@ cudf.o: cudf.c cudf.h
 	$(CC) $(CFLAGS) -c $<
 
 test.o: test.c
-	$(CC) $(CFLAGS) $<
+	$(CC) $(CFLAGS) -c $<
 
-test: cudf-caml.o cudf.o
-	$(CC) $(CFLAGS) $(LDFLAGS) $^
+test: cudf-caml.o cudf.o test.o
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ $(CLIBS)
 
 
 clean:
