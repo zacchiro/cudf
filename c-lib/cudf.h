@@ -13,21 +13,31 @@
 #ifndef _CUDF_H
 #define _CUDF_H
 
-typedef void* package_t;
-typedef void* universe_t;
-typedef void* request_t;
+#include <caml/mlvalues.h>
+
+typedef value package_t;
+typedef value universe_t;
+typedef value request_t;
 
 typedef struct cudf_doc {
-  package_t *packages;		/* Array of packages */
-  request_t request;		/* User request */
+  package_t *packages;	/* Array of packages */
+  int length;		/* Number of packages */
+  int has_request;	/* Whether user request was provided or not */
+  request_t request;	/* User request (meaningful iff has_request != 0) */
 } cudf_doc;
 
 typedef struct cudf {
-  universe_t universe;		/* Abstract package universe */
-  request_t request;		/* User request */
+  universe_t universe;	/* Abstract package universe */
+  int length;		/* Number of packages */
+  int has_request;	/* Whether user request was provided or not */
+  request_t request;	/* User request (meaningful iff has_request != 0) */
 } cudf;
 
-cudf_doc *cudf_parse_from_file(char *fname);
-cudf *cudf_load_from_file(char *fname);
+cudf_doc cudf_parse_from_file(char *fname);
+cudf cudf_load_from_file(char *fname);
+
+void free_cudf_doc(cudf_doc doc);
+void free_cudf(cudf doc);
+
 
 #endif	/* end of cudf.h */

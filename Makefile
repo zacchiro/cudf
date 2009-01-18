@@ -5,8 +5,8 @@ LIBS = _build/cudf.cma
 LIBS_OPT = _build/cudf.cmxa
 PROGS = _build/cudf-check.byte
 PROGS_OPT = _build/cudf-check.native
-RESULTS = $(LIBS) $(PROGS)
-RESULTS_OPT = $(LIBS_OPT) $(PROGS_OPT)
+RESULTS = $(LIBS) $(PROGS) _build/cudf_c.cmo
+RESULTS_OPT = $(LIBS_OPT) $(PROGS_OPT) _build/cudf_c.cmx
 SOURCES = $(wildcard *.ml *.mli)
 
 OCAMLBUILD = ocamlbuild
