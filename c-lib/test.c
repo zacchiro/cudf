@@ -8,6 +8,7 @@ int main(int argc, char **argv)
   cudf_doc doc;
   package_t pkg;
   int i;
+  char *prop_val;
 
   caml_startup(argv);
   if (argc < 2) {
@@ -22,6 +23,11 @@ int main(int argc, char **argv)
   for (i = 0; i < doc.length; i++) {
     pkg = doc.packages[i];
     printf("  Package: %s\n", PKG_NAME(pkg));
+    prop_val = cudf_pkg_property(pkg, "Foo");
+    if (prop_val != NULL) {
+      printf("  Depends: %s\n", prop_val);
+      free(prop_val);
+    }
     switch (cudf_pkg_keep(pkg)) {
     case KEEP_NONE :
       break;

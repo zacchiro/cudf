@@ -54,5 +54,13 @@ void free_cudf(cudf doc);
 
 int cudf_pkg_keep(package_t pkg);	/* "Keep" property, see KEEP_* macros */
 
+/* Lookup package property by name. Returned string should be manually freed.
+   Return NULL if the property is missing (and had no default value). */
+char *cudf_pkg_property(package_t pkg, const char *prop);
+
+/* Lookup request property by name. Returned string should be manually freed.
+   Return NULL if the property is missing (and had no default value). */
+char *cudf_req_property(request_t req, const char *prop);
+
 #endif	/* end of cudf.h */
 

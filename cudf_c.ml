@@ -13,4 +13,6 @@
 let () =
   Callback.register "parse_from_file" Cudf_parser.parse_from_file;
   Callback.register "load_from_file" Cudf_parser.load_from_file;
+  Callback.register "lookup_package_property" Cudf.lookup_package_property;
+  Callback.register "lookup_request_property" Cudf.lookup_request_property;
 

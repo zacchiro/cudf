@@ -10,7 +10,10 @@
 /*  library, see the COPYING file for more information.                      */
 /*****************************************************************************/
 
+// TODO should check / handle exceptions for all invoked caml_callback-s
+
 #include <stdio.h>
+#include <string.h>
 
 #include <caml/alloc.h>
 #include <caml/callback.h>
@@ -41,8 +44,8 @@ static int caml_list_length(value l)
 
 cudf_doc cudf_parse_from_file(char *fname)
 {
-  cudf_doc doc;
   static value *closure_f = NULL;
+  cudf_doc doc;
   value ml_doc, ml_pkgs;
   int i = 0;
   
@@ -104,5 +107,29 @@ int cudf_pkg_keep(package_t p)
 	      Some_val(p));
       exit(3);
     }
+}
+
+char *cudf_pkg_property(package_t pkg, const char *prop)
+{
+  static value *closure_f = NULL;
+  value prop_val;
+  
+  if (closure_f == NULL) {
+    closure_f = caml_named_value("lookup_package_property");
+  }
+  prop_val = caml_callback2_exn(*closure_f, pkg, caml_copy_string(prop));
+  return Is_exception_result(prop_val) ? NULL : strdup(String_val(prop_val));
+}
+
+char *cudf_req_property(request_t req, const char *prop)
+{
+  static value *closure_f = NULL;
+  value prop_val;
+  
+  if (closure_f == NULL) {
+    closure_f = caml_named_value("lookup_request_property");
+  }
+  prop_val = caml_callback2_exn(*closure_f, req, caml_copy_string(prop));
+  return Is_exception_result(prop_val) ? NULL : strdup(String_val(prop_val));
 }
 
