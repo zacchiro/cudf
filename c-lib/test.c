@@ -1,3 +1,11 @@
+
+/* Compile with:
+
+   CUDF_LIBS="-lcudf -lpcre -lm -ldl -lpcre_stubs -lunix -lncurses"
+   CUDF_PATHS="-L$(ocamlc -where) -L$(ocamlfind query pcre)"
+   cc -o test $(CUDF_PATHS) test.o $(CUDF_LIBS)
+ */
+
 #include <stdio.h>
 #include <caml/callback.h>
 
