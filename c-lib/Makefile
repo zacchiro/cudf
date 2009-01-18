@@ -19,6 +19,11 @@ test.o: test.c
 test: cudf-caml.o cudf.o test.o
 	$(CC) -o $@ $(CFLAGS) $(LDFLAGS) $^ $(CLIBS)
 
+caml_hash_variant: caml_hash_variant.o
+	> dummy.ml
+	ocamlc -o dummy.o -output-obj dummy.ml
+	$(CC) -o $@ $< dummy.o -L"$(shell ocamlc -where)" -lcamlrun -lm -lcurses
+	@rm -f dummy.*
 
 clean:
 	rm -f cudf.o
