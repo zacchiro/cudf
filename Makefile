@@ -8,6 +8,7 @@ PROGS_OPT = _build/cudf-check.native
 RESULTS = $(LIBS) $(PROGS) _build/cudf_c.cmo
 RESULTS_OPT = $(LIBS_OPT) $(PROGS_OPT) _build/cudf_c.cmx
 SOURCES = $(wildcard *.ml *.mli)
+C_LIB_SOURCES = $(wildcard c-lib/*.c c-lib/*.h)
 
 OCAMLBUILD = ocamlbuild
 # OBFLAGS = -classic-display
@@ -41,7 +42,7 @@ top-level: _build/cudf.cma _build/tests.cmo
 	ledit ocaml -I ./_build/ -init ./.ocamlinit-cudf
 
 headers: header.txt .headache.conf
-	headache -h header.txt -c .headache.conf $(SOURCES)
+	headache -h header.txt -c .headache.conf $(SOURCES) $(C_LIB_SOURCES)
 
 test: _build/test.byte
 	$<
