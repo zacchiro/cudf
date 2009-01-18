@@ -136,8 +136,7 @@ let or_dep =
   "disjunctive dependencies" >:: (fun () ->
     assert_equal
       (lookup_package (load_univ_test "or-dep") ("electric-engine", 1)).depends
-      (FAnd [
-	 FOr [FPkg ("solar-collector", None) ; FPkg ("huge-battery", None)]]))
+      [["solar-collector", None; "huge-battery", None]])
 
 let parse_reg_suite =
   "regression tests - parsing" >::: [
@@ -180,13 +179,12 @@ let satisfy_formula =
   "check formula satisfaction" >:: (fun () ->
     let univ, _ = load_cudf_test "legacy" in
     let sat f = fst (Cudf_checker.satisfy_formula univ f) in
-      "true unsatisfied (WTF?)" @? sat FTrue;
-      "conjunction unsatisfied" @?
-	sat (FAnd [FPkg ("battery", None); FPkg ("wheel", None)]) ;
+      "true unsatisfied (WTF?)" @? sat [];
+      "conjunction unsatisfied" @? sat [["battery", None]; ["wheel", None]];
       "disjunction unsatisfied" @?
-	sat (FOr [FPkg ("solar-collectore", None); FPkg ("wheel", None)]) ;
+	sat [["solar-collector", None; "wheel", None]];
       "unsat formula satisfied" @?
-	not (sat (FOr [FPkg ("wheel", Some (`Gt, 2)); FPkg ("tire", None)])) ;
+	not (sat [["wheel", Some (`Gt, 2); "tire", None]]);
   )
 
 let disjoint =

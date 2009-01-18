@@ -1,11 +1,11 @@
 NULL =
-CFLAGS = -I .
+CFLAGS = -I . $(shell pkg-config --cflags glib-2.0)
 LDFLAGS = \
 	-L$(shell ocamlc -where) \
 	-L$(shell ocamlfind query pcre) \
 	-L$(CURDIR) \
 	$(NULL)
-CLIBS = -lcudf -lpcre -lm -ldl -lpcre_stubs -lunix -lncurses
+CLIBS = -lcudf -lpcre -lm -ldl -lpcre_stubs -lunix -lncurses -lglib-2.0
 OCAMLC = ocamlfind ocamlc -package unix,extlib,pcre
 
 all: libcudf.a test

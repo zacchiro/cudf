@@ -12,22 +12,83 @@
 
 /* Compile with:
 
-   CUDF_LIBS="-lcudf -lpcre -lm -ldl -lpcre_stubs -lunix -lncurses"
+   CUDF_LIBS="-lcudf -lpcre -lm -ldl -lpcre_stubs -lunix -lncurses -lglib-2.0"
    CUDF_PATHS="-L$(ocamlc -where) -L$(ocamlfind query pcre)"
-   cc -o test $(CUDF_PATHS) test.o $(CUDF_LIBS)
+   cc -o test `pkg-config --cflags glib-2.0` $CUDF_PATHS test.o $CUDF_LIBS
  */
 
 #include <stdio.h>
 #include <caml/callback.h>
+#include <glib.h>
 
 #include <cudf.h>
 
-int main(int argc, char **argv)
-{
+/** Print to stdout a relational operator (on versions) */
+void print_relop(int relop) {
+  switch (relop) {
+  case RELOP_EQ : printf("=") ; break ;
+  case RELOP_NEQ : printf("!=") ; break ;
+  case RELOP_GEQ : printf(">=") ; break ;
+  case RELOP_GT	: printf(">") ; break ;
+  case RELOP_LEQ : printf("<=") ; break ;
+  case RELOP_LT : printf("<") ; break ;
+  case RELOP_NOP :
+  default : g_error("Unexpected integer, which is not a RELOP_*: %d", relop);
+  }
+}
+
+/** Print to stdout a list of package predicates, separated by a given
+    separator */
+void print_vpkglist(cudf_vpkglist l, const char *sep) {
+  cudf_vpkg *vpkg;
+  GList *last;
+
+  last = g_list_last(l);
+  while (l != NULL) {
+    vpkg = g_list_nth_data(l, 0);
+    printf("%s", vpkg->name);
+    if (vpkg->relop) {
+      printf(" ");
+      print_relop(vpkg->relop);
+      printf(" %d", vpkg->version);
+    }
+    if (l != last)
+      printf(sep);
+    l = g_list_next(l);
+  }
+}
+
+/** Print to stdout a package formula */
+void print_vpkgformula(cudf_vpkgformula fmla) {
+  GList *last;
+
+  last = g_list_last(fmla);
+  while (fmla != NULL) {
+    print_vpkglist(g_list_nth_data(fmla, 0), " | ");
+    if (fmla != last)
+      printf(", ");
+    fmla = g_list_next(fmla);
+  }
+}
+
+void print_keep(int keep) {
+  switch (keep) {
+  case KEEP_NONE : break;
+  case KEEP_VERSION : printf("  Keep: version\n"); break;
+  case KEEP_PACKAGE : printf("  Keep: package\n"); break;
+  case KEEP_FEATURE : printf("  Keep: feature\n"); break;
+  default : g_error("Unexpected \"keep\" value: %d", keep);
+  }
+}
+
+
+int main(int argc, char **argv) {
   cudf_doc doc;
-  package_t pkg;
+  cudf_package pkg;
   int i;
   char *prop_val;
+  cudf_vpkglist vpkglist;
+  cudf_vpkgformula fmla;
 
   caml_startup(argv);
   if (argc < 2) {
@@ -42,24 +103,33 @@ int main(int argc, char **argv)
   for (i = 0; i < doc.length; i++) {
     pkg = doc.packages[i];
     printf("  Package: %s\n", PKG_NAME(pkg));
-    prop_val = cudf_pkg_property(pkg, "Foo");
+
+    fmla = cudf_pkg_depends(pkg);
+    printf("  Depends: ");
+    print_vpkgformula(fmla);
+    printf("\n");
+    cudf_free_vpkgformula(fmla);
+
+    prop_val = cudf_pkg_property(pkg, "Depends (string)");
     if (prop_val != NULL) {
       printf("  Depends: %s\n", prop_val);
       free(prop_val);
     }
-    switch (cudf_pkg_keep(pkg)) {
-    case KEEP_NONE :
-      break;
-    case KEEP_VERSION :
-      printf("  Keep: version\n");
-      break;
-    case KEEP_PACKAGE :
-      printf("  Keep: package\n");
-      break;
-    case KEEP_FEATURE :
-      printf("  Keep: feature\n");
-      break;
-    }
+
+    vpkglist = cudf_pkg_conflicts(pkg);		/* Conflicts */
+    printf("  Conflicts: ");
+    print_vpkglist(vpkglist, ", ");
+    printf("\n");
+    cudf_free_vpkglist(vpkglist);
+
+    vpkglist = cudf_pkg_provides(pkg);		/* Provides */
+    printf("  Provides: ");
+    print_vpkglist(vpkglist, ", ");
+    printf("\n");
+    cudf_free_vpkglist(vpkglist);
+
+    print_keep(cudf_pkg_keep(pkg));		/* Keep */
     printf("\n");
   }
+  cudf_free_cudf_doc(doc);
 }

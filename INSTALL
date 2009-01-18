@@ -9,6 +9,8 @@ Build dependencies:
 - extlib		(Debian package: "libextlib-ocaml-dev")
 - oUnit			(only needed to run the test suite
   		 	 Debian package: "libounit-ocaml-dev")
+- glib			(only needed to build the C bindings
+			 Debian package: "libglib2.0-dev")
 
 To build run:
 

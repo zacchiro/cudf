@@ -26,11 +26,13 @@ type constr = (relop * version) option
 type pkgname = string
 type vpkg = pkgname * constr
 type vpkglist = vpkg list
-type vpkgformula = (* XXX does not enforce CNF, whereas the spec requires it *)
-    FTrue
-  | FPkg of vpkg
-  | FOr of vpkgformula list
-  | FAnd of vpkgformula list
+
+(** CNF formula. Inner lists are OR-ed, outer AND-ed.
+    E.g.:
+    - "Depends: foo, baz | baz"		-->	[ [ foo ] ; [ bar ; baz ] ]
+*)
+type vpkgformula = vpkg list list
+
 type veqpkg = pkgname * ([`Eq] * version) option
 type veqpkglist = veqpkg list
 type enum_keep = [ `Keep_version | `Keep_package | `Keep_feature ]

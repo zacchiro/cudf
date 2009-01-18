@@ -59,7 +59,7 @@ let (=%) pkg1 pkg2 =
 let default_package = {
   package = "" ;
   version = 0 ;
-  depends = FTrue ;
+  depends = [] ;
   conflicts = [] ;
   provides = [] ;
   installed = false ;

@@ -13,33 +13,56 @@
 #ifndef _CUDF_H
 #define _CUDF_H
 
+#include <glib.h>
 #include <caml/mlvalues.h>
 
-typedef value package_t;
-typedef value universe_t;
-typedef value request_t;
+typedef value cudf_package;
+typedef value cudf_universe;
+typedef value cudf_request;
 
 typedef struct cudf_doc {
-  package_t *packages;	/* Array of packages */
+  cudf_package *packages;	/* Array of packages */
   int length;		/* Number of packages */
   int has_request;	/* Whether user request was provided or not */
-  request_t request;	/* User request (meaningful iff has_request != 0) */
+  cudf_request request;	/* User request (meaningful iff has_request != 0) */
 } cudf_doc;
 
 typedef struct cudf {
-  universe_t universe;	/* Abstract package universe */
+  cudf_universe universe;	/* Abstract package universe */
   int length;		/* Number of packages */
   int has_request;	/* Whether user request was provided or not */
-  request_t request;	/* User request (meaningful iff has_request != 0) */
+  cudf_request request;	/* User request (meaningful iff has_request != 0) */
 } cudf;
 
 cudf_doc cudf_parse_from_file(char *fname);
 cudf cudf_load_from_file(char *fname);
 
-void free_cudf_doc(cudf_doc doc);
-void free_cudf(cudf doc);
+/** Examples:
+    - foo >= 2	--->	{ name="foo" ; relop=RELOP_GEQ ; version = 2 }
+    - bar	--->	{ name="bar" ; relop=0 ; version = UNSPECIFIED }
+*/
+typedef struct cudf_vpkg {
+  char *name;	/* Package name */
+  int relop;	/* Version constraint operator, see RELOP_* constants.
+		   0 (i.e. RELOP_NOP) means no constraint */
+  int version;	/* Version constraint value. Meaningful only if constr != 0 */
+} cudf_vpkg;
 
-/** Macros for accessing package_t values */
+typedef GList *cudf_vpkglist;	/* List of cudf_vpkg */
+
+/* List of cudf_vpkg lists.
+   CNF encoding: the inner lists are OR-ed, while the outer are AND-ed */
+typedef GList *cudf_vpkgformula;
+
+#define RELOP_EQ	1
+#define RELOP_NEQ	2
+#define RELOP_GEQ	3
+#define RELOP_GT	4
+#define RELOP_LEQ	5
+#define RELOP_LT	6
+#define RELOP_NOP	0	/* 0 can be used safely instead */
+
+/** Macros for accessing cudf_package values */
 
 #define PKG_NAME(p)	(String_val(Field(p, 0)))	/* char *  */
 #define PKG_VERSION(p)	(Int_val(Field(p, 1)))		/* int */
@@ -52,15 +75,24 @@ void free_cudf(cudf doc);
 #define	KEEP_PACKAGE	2	/* "Keep: package" */
 #define	KEEP_FEATURE	3	/* "Keep: feature" */
 
-int cudf_pkg_keep(package_t pkg);	/* "Keep" property, see KEEP_* macros */
+int cudf_pkg_keep(cudf_package pkg);	/* "Keep" prop. See KEEP_* macros */
+cudf_vpkgformula cudf_pkg_depends(cudf_package pkg);	/* "Depends" prop. */
+cudf_vpkglist cudf_pkg_conflicts(cudf_package pkg);	/* "Conflicts" prop. */
+cudf_vpkglist cudf_pkg_provides(cudf_package pkg);	/* "Provides" prop. */
 
 /* Lookup package property by name. Returned string should be manually freed.
    Return NULL if the property is missing (and had no default value). */
-char *cudf_pkg_property(package_t pkg, const char *prop);
+char *cudf_pkg_property(cudf_package pkg, const char *prop);
 
 /* Lookup request property by name. Returned string should be manually freed.
    Return NULL if the property is missing (and had no default value). */
-char *cudf_req_property(request_t req, const char *prop);
+char *cudf_req_property(cudf_request req, const char *prop);
+
+
+void cudf_free_cudf_doc(cudf_doc doc);
+void cudf_free_cudf(cudf doc);
+void cudf_free_vpkglist(cudf_vpkglist l);
+void cudf_free_vpkgformula(cudf_vpkgformula fmla);
 
 #endif	/* end of cudf.h */
 

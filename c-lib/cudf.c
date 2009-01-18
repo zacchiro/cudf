@@ -25,14 +25,20 @@
 #define Val_none	Val_int(0)
 #define Some_val(v)	Field(v,0)
 
-#define MLPVAR_version     (-251800451)    /* caml hash for "Keep_version" */
-#define MLPVAR_package     (2054970713)    /* caml hash for "Keep_package" */
-#define MLPVAR_feature     (739503033)     /* caml hash for "Keep_feature" */
+#define MLPVAR_version	(-251800451)    /* caml hash for "Keep_version" */
+#define MLPVAR_package	(2054970713)    /* caml hash for "Keep_package" */
+#define MLPVAR_feature	(739503033)     /* caml hash for "Keep_feature" */
+#define	MLPVAR_eq	(31001)		/* caml hash for "Eq" */
+#define	MLPVAR_neq	(7802997)	/* caml hash for "Neq" */
+#define	MLPVAR_geq	(7106791)	/* caml hash for "Geq" */
+#define	MLPVAR_gt	(31899)		/* caml hash for "Gt" */
+#define	MLPVAR_leq	(7604081)	/* caml hash for "Leq" */
+#define	MLPVAR_lt	(34129)		/* caml hash for "Lt" */
 
 
+/** generic OCaml binding helpers */
 
-static int caml_list_length(value l)
-{
+static int caml_list_length(value l) {
   int length = 0;
 
   while (l != Val_emptylist) {
@@ -42,8 +48,55 @@ static int caml_list_length(value l)
   return length;
 }
 
-cudf_doc cudf_parse_from_file(char *fname)
-{
+/** CUDF-specific binding helpers */
+
+static int relop_val(value v) {
+  switch (v) {
+  case MLPVAR_eq : return RELOP_EQ ;
+  case MLPVAR_neq : return RELOP_NEQ ;
+  case MLPVAR_geq : return RELOP_GEQ ;
+  case MLPVAR_gt : return RELOP_GT ;
+  case MLPVAR_leq : return RELOP_LEQ ;
+  case MLPVAR_lt : return RELOP_LT ;
+  default :
+    g_error("Internal error: unexpected variant for \"relop\": %d", Int_val(v));
+  }
+}
+
+cudf_vpkg *vpkg_val(value ml_vpkg) {
+  cudf_vpkg *vpkg;
+  value ml_constr;
+
+  vpkg = malloc(sizeof(cudf_vpkg));
+  vpkg->name = strdup(String_val(Field(ml_vpkg, 0)));
+  if (Field(ml_vpkg, 1) != Val_none) {	/* version constraint */
+    ml_constr = Some_val(Field(ml_vpkg, 1));
+    vpkg->relop = relop_val(Field(ml_constr, 0));
+    vpkg->version = Int_val(Field(ml_constr, 1));
+  } else {	/* no version constraint */
+    vpkg->relop = 0;
+    vpkg->version = -1;
+  }
+}
+
+cudf_vpkglist cudf_pkg_vpkglist(cudf_package pkg, int field) {
+  GList *l = NULL;
+  value ml_vpkg, ml_vpkgs;
+  cudf_vpkg *vpkg;
+
+  ml_vpkgs = Field(pkg, field);
+  while (ml_vpkgs != Val_emptylist) {
+    ml_vpkg = Field(ml_vpkgs, 0);
+    vpkg = vpkg_val(ml_vpkg);
+    l = g_list_append(l, vpkg);
+    ml_vpkgs = Field(ml_vpkgs, 1);
+  }
+  return l;
+}
+
+/** libCUDF binding public interface */
+
+cudf_doc cudf_parse_from_file(char *fname) {
   static value *closure_f = NULL;
   cudf_doc doc;
   value ml_doc, ml_pkgs;
@@ -80,19 +133,7 @@ cudf_doc cudf_parse_from_file(char *fname)
   return doc;
 }
 
-void free_cudf_doc(cudf_doc doc)
-{
-  int i;
-
-  caml_remove_global_root(&doc.request);
-  for (i = 0; i < doc.length ; i++) {
-    caml_remove_global_root(&doc.packages[i]);
-  }
-  free(doc.packages);
-}
-
-int cudf_pkg_keep(package_t p)
-{
+int cudf_pkg_keep(cudf_package p) {
   value keep = Field(p, 6);
 
   if (keep == Val_none)
@@ -103,14 +144,43 @@ int cudf_pkg_keep(package_t p)
     case MLPVAR_package : return KEEP_PACKAGE;
     case MLPVAR_feature : return KEEP_FEATURE;
     default:
-      fprintf(stderr, "Internal error: unexpected variant for \"keep\": %d\n",
-	      Some_val(p));
-      exit(3);
+      g_error("Internal error: unexpected variant for \"keep\": %d",
+	      Int_val(Some_val(p)));
     }
 }
 
-char *cudf_pkg_property(package_t pkg, const char *prop)
-{
+cudf_vpkgformula cudf_pkg_depends(cudf_package pkg) {
+  GList *and_l = NULL;	/* top-level formula (CNF) */
+  GList *or_l;		/* OR-ed deps */
+  value ml_and;	/* iterates over OR-ed deps (which are AND-ed together) */
+  value ml_or;	/* iterates over vpkg-s (which are OR-ed together) */
+  cudf_vpkg *vpkg;
+
+  ml_and = Field(pkg, 2);	/* 3rd field of "package": "depends" */
+  while (ml_and != Val_emptylist) {
+    ml_or = Field(ml_and, 0);
+    or_l = NULL;
+    while (ml_or != Val_emptylist) {
+      vpkg = vpkg_val(Field(ml_or, 0));
+      or_l = g_list_append(or_l, vpkg);
+      ml_or = Field(ml_or, 1);
+    }
+    and_l = g_list_append(and_l, or_l);
+    ml_and = Field(ml_and, 1);
+  }
+
+  return and_l;
+}
+
+cudf_vpkglist cudf_pkg_conflicts(cudf_package pkg) {
+  return cudf_pkg_vpkglist(pkg, 3);	/* 4th package field: conflicts */
+}
+
+cudf_vpkglist cudf_pkg_provides(cudf_package pkg) {
+  return cudf_pkg_vpkglist(pkg, 4);	/* 5th package field: conflicts */
+}
+
+char *cudf_pkg_property(cudf_package pkg, const char *prop) {
   static value *closure_f = NULL;
   value prop_val;
   
@@ -121,8 +191,7 @@ char *cudf_pkg_property(package_t pkg, const char *prop)
   return Is_exception_result(prop_val) ? NULL : strdup(String_val(prop_val));
 }
 
-char *cudf_req_property(request_t req, const char *prop)
-{
+char *cudf_req_property(cudf_request req, const char *prop) {
   static value *closure_f = NULL;
   value prop_val;
   
@@ -131,5 +200,42 @@ char *cudf_req_property(request_t req, const char *prop)
   }
   prop_val = caml_callback2_exn(*closure_f, req, caml_copy_string(prop));
   return Is_exception_result(prop_val) ? NULL : strdup(String_val(prop_val));
+}
+
+
+/** Memory management.
+    free-like functions to free binding-specific data structures */
+
+void cudf_free_cudf_doc(cudf_doc doc) {
+  int i;
+
+  caml_remove_global_root(&doc.request);
+  for (i = 0; i < doc.length ; i++) {
+    caml_remove_global_root(&doc.packages[i]);
+  }
+  free(doc.packages);
+}
+
+
+void cudf_free_vpkglist(cudf_vpkglist l) {
+  cudf_vpkg *vpkg;
+
+  vpkg = (cudf_vpkg *) l;
+  while (vpkg != NULL) {
+    if (vpkg->name != NULL)
+      free(vpkg->name);
+    vpkg = (cudf_vpkg *) g_list_next(vpkg);
+  }
+  g_list_free(l);
+}
+
+void cudf_free_vpkgformula(cudf_vpkgformula fmla) {
+  GList *l = fmla;
+
+  while (l != NULL) {
+    cudf_free_vpkglist(g_list_nth_data(l, 0));
+    l = g_list_next(l);
+  }
+  g_list_free(fmla);
 }
 

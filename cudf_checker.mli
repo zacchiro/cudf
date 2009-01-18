@@ -33,11 +33,11 @@ val explain_reason : bad_solution_reason -> string
 (** check whether a given package formula is satisfied by a given
     package status
 
-    @return [true, None] if the formula is satisfied; [false, Some f]
+    @return [true, []] if the formula is satisfied; [false, f]
     otherwise, where f is a sub-formula of the input denoting an
     unsatisfiable formula (ideally, a witness of the unsatisfiability
     of the input formula) *)
-val satisfy_formula : universe -> vpkgformula -> bool * vpkgformula option
+val satisfy_formula : universe -> vpkgformula -> bool * vpkgformula
 
 (** check whether a package list is not satisfied by a given package
     status

@@ -25,7 +25,7 @@ open Cudf_types
 type package = {
   package : pkgname ;
   version : version ;
-  depends : vpkgformula ;	(* default : FTrue *)
+  depends : vpkgformula ;	(* default : [] *)
   conflicts : vpkglist ;	(* default : [] *)
   provides : veqpkglist ;	(* default : [] *)
   installed : bool ;		(* default : false *)

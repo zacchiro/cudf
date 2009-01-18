@@ -54,22 +54,17 @@ let explain_reason = function
   | `Multi_upgrade pkgs ->
       "Unment upgrade request, not-unique: " ^ String.concat ", " pkgs
 
-	(* XXX not tail-recursive *)
+(* XXX not tail-recursive *)
 let satisfy_formula univ fmla =
-  let reason = ref None in
-  let rec is_sat = function (* ASSUMPTION (for explanation): fmla is in CNF *)
-    | FTrue -> true
-    | FPkg pkg -> mem_installed ~include_features:true univ pkg
-    | FOr fmlas -> List.exists is_sat fmlas
-    | FAnd fmlas ->
-	(match List.filter (!! is_sat) fmlas with
-	  | [] -> true
-	  | [unsat] -> reason := Some unsat ; false
-	  | unsat -> reason := Some (FAnd unsat) ; false)
+  let reason = ref [] in
+  let sat_pkg = mem_installed ~include_features:true univ in
+  let sat =
+    match List.filter (!! (List.exists sat_pkg)) fmla with
+	[] -> true
+      | unsat -> reason := unsat ; false
   in
-  let sat = is_sat fmla in
     sat, !reason
-      
+
 let disjoint univ ?ignore pkgs =
   match
     List.filter (mem_installed ?ignore ~include_features:true univ) pkgs
@@ -84,10 +79,9 @@ let is_consistent univ =
 	(fun pkg ->
 	   if pkg.installed then begin
 	     (match satisfy_formula univ pkg.depends with
-		| false, Some fmla ->
+		  false, fmla ->
 		    msg := Some (`Unsat_dep ((pkg.package, pkg.version), fmla));
 		    raise Exit
-		| false, None -> assert false
 		| _ -> ());
 	     (match disjoint univ ~ignore:((=%) pkg) pkg.conflicts with
 		| false, pkgs ->
@@ -106,7 +100,7 @@ let is_solution (univ, req) sol =
       prerr_endline ("WARNING: solution contains not-installed packages,"
 		     ^ " they have been ignored")
   in
-  let sat vpkg = fst (satisfy_formula sol (FPkg vpkg)) in
+  let sat vpkg = fst (satisfy_formula sol [[vpkg]]) in
   let is_succ () = (* XXX not implemented, as it will be pointless with a
 		      diff-like encoding of solutions *)
     true, [] in

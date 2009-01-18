@@ -19,11 +19,7 @@ type constr = (relop * version) option
 type pkgname = string
 type vpkg = pkgname * constr
 type vpkglist = vpkg list
-type vpkgformula =
-    FTrue
-  | FPkg of vpkg
-  | FOr of vpkgformula list
-  | FAnd of vpkgformula list
+type vpkgformula = vpkg list list
 type veqpkg = pkgname * ([`Eq] * version) option
 type veqpkglist = veqpkg list
 type enum_keep = [ `Keep_version | `Keep_package | `Keep_feature ]
@@ -103,12 +99,11 @@ let parse_veqpkg s =
 
 let parse_vpkgformula s =
   let and_args = Pcre.split ~rex:and_sep_RE s in
-    FAnd
-      (List.map
-	 (fun and_arg ->
-	    let or_args = Pcre.split ~rex:or_sep_RE and_arg in
-	      FOr (List.map (fun s -> FPkg (parse_vpkg s)) or_args))
-	 and_args)
+    List.map
+      (fun and_arg ->
+	 let or_args = Pcre.split ~rex:or_sep_RE and_arg in
+	   List.map parse_vpkg or_args)
+      and_args
       
 let parse_veqpkglist = list_parser ~sep:and_sep_RE parse_veqpkg
 
@@ -157,15 +152,10 @@ let pp_list fmt ~pp_item ~sep l =
 let pp_vpkglist fmt = pp_list fmt ~pp_item:pp_vpkg ~sep:" , "
 
 (** ASSUMPTION: formula is in CNF *)
-let rec pp_vpkgformula fmt = function
-    FTrue -> ()
-  | FPkg vpkg -> pp_vpkg fmt vpkg
-  | FOr []
-  | FAnd [] -> assert false
-  | FOr [vpkg] -> pp_vpkgformula fmt vpkg
-  | FOr vpkgs -> pp_list fmt ~pp_item:pp_vpkgformula ~sep:" | " vpkgs
-  | FAnd [fmla] -> pp_vpkgformula fmt fmla
-  | FAnd fmlas -> pp_list fmt ~pp_item:pp_vpkgformula ~sep:" , " fmlas
+let rec pp_vpkgformula =
+  let pp_or fmt = pp_list fmt ~pp_item:pp_vpkg ~sep:" | " in
+  let pp_and fmt = pp_list fmt ~pp_item:pp_or ~sep:" , " in
+    pp_and
 
 let pp_veqpkglist = pp_vpkglist
 let pp_veqpkg = pp_vpkg
