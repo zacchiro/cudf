@@ -22,6 +22,7 @@
 static int caml_list_length(value l)
 {
   int length = 0;
+
   while (l != Val_emptylist) {
     length++;
     l = Field(l, 1);
@@ -52,6 +53,7 @@ cudf_doc cudf_parse_from_file(char *fname)
     while (ml_pkgs != Val_emptylist) {
       caml_register_global_root(&doc.packages[i]);
       doc.packages[i] = Field(ml_pkgs, 0);
+      i++;
       ml_pkgs = Field(ml_pkgs, 1);
     }
   } else {
