@@ -26,6 +26,8 @@ caml_hash_variant: caml_hash_variant.o
 	@rm -f dummy.*
 
 clean:
-	rm -f cudf.o
+	rm -f *.o *.cmo *.cmi
+	rm -f caml_hash_variant test
+	rm -f dummy.*
 
 .PHONY: all clean
