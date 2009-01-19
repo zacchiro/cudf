@@ -29,7 +29,6 @@ typedef struct cudf_doc {
 
 typedef struct cudf {
   cudf_universe universe;	/* Abstract package universe */
-  int length;		/* Number of packages */
   int has_request;	/* Whether user request was provided or not */
   cudf_request request;	/* User request (meaningful iff has_request != 0) */
 } cudf;
@@ -89,10 +88,21 @@ char *cudf_pkg_property(cudf_package pkg, const char *prop);
 char *cudf_req_property(cudf_request req, const char *prop);
 
 
+/** Universe management */
+
+int cudf_universe_size(cudf_universe univ);
+int cudf_installed_size(cudf_universe univ);
+int cudf_is_consistent(cudf_universe univ);
+int cudf_is_solution(cudf cudf, cudf_universe solution);
+
+
+/** Memory management */
+
 void cudf_free_cudf_doc(cudf_doc doc);
 void cudf_free_cudf(cudf doc);
 void cudf_free_vpkglist(cudf_vpkglist l);
 void cudf_free_vpkgformula(cudf_vpkgformula fmla);
+
 
 #endif	/* end of cudf.h */
 

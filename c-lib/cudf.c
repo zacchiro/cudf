@@ -102,12 +102,11 @@ cudf_doc cudf_parse_from_file(char *fname) {
   value ml_doc, ml_pkgs;
   int i = 0;
   
-  if (closure_f == NULL) {
+  if (closure_f == NULL)
     closure_f = caml_named_value("parse_from_file");
-  }
+  ml_doc = caml_callback(*closure_f, caml_copy_string(fname));
   
-  ml_doc = caml_callback(*closure_f, caml_copy_string(fname));	/* request */
-  caml_register_global_root(&doc.request);
+  caml_register_global_root(&doc.request);	/* request */
   if (Field(ml_doc, 1) != Val_none) {
     doc.has_request = 1;
     doc.request = Some_val(Field(ml_doc, 1));
@@ -116,7 +115,7 @@ cudf_doc cudf_parse_from_file(char *fname) {
     doc.request = Val_none;
   }
 
-  ml_pkgs = Field(ml_doc, 0);					/* packages */
+  ml_pkgs = Field(ml_doc, 0);			/* packages */
   doc.length = caml_list_length(ml_pkgs);
   if (doc.length > 0) {
     doc.packages = malloc(doc.length * sizeof(value));
@@ -131,6 +130,31 @@ cudf_doc cudf_parse_from_file(char *fname) {
   }
 
   return doc;
+}
+
+cudf cudf_load_from_file(char *fname) {
+  static value *closure_f = NULL;
+  cudf cudf;
+  value ml_cudf, ml_univ;
+  
+  if (closure_f == NULL)
+    closure_f = caml_named_value("load_from_file");
+  ml_cudf = caml_callback(*closure_f, caml_copy_string(fname));
+
+  caml_register_global_root(&cudf.request);	/* request */
+  if (Field(ml_cudf, 1) != Val_none) {
+    cudf.has_request = 1;
+    cudf.request = Some_val(Field(ml_cudf, 1));
+  } else {
+    cudf.has_request = 0;
+    cudf.request = Val_none;
+  }
+
+  ml_univ = Field(ml_cudf, 0);			/* universe */
+  caml_register_global_root(&cudf.universe);
+  cudf.universe = ml_univ;
+
+  return cudf;
 }
 
 int cudf_pkg_keep(cudf_package p) {
@@ -184,9 +208,8 @@ char *cudf_pkg_property(cudf_package pkg, const char *prop) {
   static value *closure_f = NULL;
   value prop_val;
   
-  if (closure_f == NULL) {
+  if (closure_f == NULL)
     closure_f = caml_named_value("lookup_package_property");
-  }
   prop_val = caml_callback2_exn(*closure_f, pkg, caml_copy_string(prop));
   return Is_exception_result(prop_val) ? NULL : strdup(String_val(prop_val));
 }
@@ -195,13 +218,53 @@ char *cudf_req_property(cudf_request req, const char *prop) {
   static value *closure_f = NULL;
   value prop_val;
   
-  if (closure_f == NULL) {
+  if (closure_f == NULL)
     closure_f = caml_named_value("lookup_request_property");
-  }
   prop_val = caml_callback2_exn(*closure_f, req, caml_copy_string(prop));
   return Is_exception_result(prop_val) ? NULL : strdup(String_val(prop_val));
 }
 
+
+/** Universe management */
+
+int cudf_universe_size(cudf_universe univ) {
+  static value *closure_f = NULL;
+
+  if (closure_f == NULL)
+    closure_f = caml_named_value("universe_size");
+  return Int_val(caml_callback(*closure_f, univ));
+}
+
+int cudf_installed_size(cudf_universe univ) {
+  static value *closure_f = NULL;
+
+  if (closure_f == NULL)
+    closure_f = caml_named_value("installed_size");
+  return Int_val(caml_callback(*closure_f, univ));
+}
+
+int cudf_is_consistent(cudf_universe univ) {
+  static value *closure_f = NULL;
+
+  if (closure_f == NULL)
+    closure_f = caml_named_value("is_consistent");
+  return Bool_val(Field(caml_callback(*closure_f, univ), 0));
+}
+
+int cudf_is_solution(cudf cudf, cudf_universe solution) {
+  static value *closure_f = NULL;
+  value ml_cudf;
+
+  if (closure_f == NULL)
+    closure_f = caml_named_value("is_solution");
+  if (! cudf.has_request)
+    g_error("Given CUDF has no request: cannot compare it with a solution.");
+  ml_cudf = caml_alloc(2, 0);
+  Store_field(ml_cudf, 0, cudf.universe);
+  Store_field(ml_cudf, 1, cudf.request);
+
+  return Bool_val(Field(caml_callback2(*closure_f, ml_cudf, solution), 0));
+}
 
 /** Memory management.
     free-like functions to free binding-specific data structures */
@@ -216,6 +279,10 @@ void cudf_free_cudf_doc(cudf_doc doc) {
   free(doc.packages);
 }
 
+void cudf_free_cudf(cudf cudf) {
+  caml_remove_global_root(&cudf.request);
+  caml_remove_global_root(&cudf.universe);
+}
 
 void cudf_free_vpkglist(cudf_vpkglist l) {
   cudf_vpkg *vpkg;
