@@ -38,6 +38,7 @@
 
 /** generic OCaml binding helpers */
 
+#if 0
 static int caml_list_length(value l) {
   int length = 0;
 
@@ -47,6 +48,7 @@ static int caml_list_length(value l) {
   }
   return length;
 }
+#endif
 
 /** CUDF-specific binding helpers */
 
@@ -102,7 +104,8 @@ cudf_doc cudf_parse_from_file(char *fname) {
   static value *closure_f = NULL;
   cudf_doc doc;
   value ml_doc, ml_pkgs;
-  int i = 0;
+  GList *l = NULL;
+  value *pkg;
   
   if (closure_f == NULL)
     closure_f = caml_named_value("parse_from_file");
@@ -118,18 +121,14 @@ cudf_doc cudf_parse_from_file(char *fname) {
   }
 
   ml_pkgs = Field(ml_doc, 0);			/* packages */
-  doc.length = caml_list_length(ml_pkgs);
-  if (doc.length > 0) {
-    doc.packages = malloc(doc.length * sizeof(value));
-    while (ml_pkgs != Val_emptylist) {
-      caml_register_global_root(&doc.packages[i]);
-      doc.packages[i] = Field(ml_pkgs, 0);
-      i++;
-      ml_pkgs = Field(ml_pkgs, 1);
-    }
-  } else {
-    doc.packages = NULL;
+  while (ml_pkgs != Val_emptylist) {
+    pkg = malloc(sizeof(value));
+    caml_register_global_root(pkg);
+    *pkg = Field(ml_pkgs, 0);
+    l = g_list_append(l, pkg);
+    ml_pkgs = Field(ml_pkgs, 1);
   }
+  doc.packages = l;
 
   return doc;
 }
@@ -271,13 +270,14 @@ int cudf_is_solution(cudf cudf, cudf_universe solution) {
     free-like functions to free binding-specific data structures */
 
 void cudf_free_doc(cudf_doc doc) {
-  int i;
+  GList *l;
 
-  caml_remove_global_root(&doc.request);
-  for (i = 0; i < doc.length ; i++) {
-    caml_remove_global_root(&doc.packages[i]);
+  l = doc.packages;
+  while (l != NULL) {
+    caml_remove_global_root(g_list_nth_data(l, 0));
+    l = g_list_next(l);
   }
-  free(doc.packages);
+  g_list_free(l);
 }
 
 void cudf_free_cudf(cudf cudf) {

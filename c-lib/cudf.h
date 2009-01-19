@@ -21,8 +21,7 @@ typedef value cudf_universe;
 typedef value cudf_request;
 
 typedef struct cudf_doc {
-  cudf_package *packages;	/* Array of packages */
-  int length;		/* Number of packages */
+  GList *packages;	/* List of packages */
   int has_request;	/* Whether user request was provided or not */
   cudf_request request;	/* User request (meaningful iff has_request != 0) */
 } cudf_doc;

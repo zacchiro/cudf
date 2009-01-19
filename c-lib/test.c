@@ -86,9 +86,9 @@ int main(int argc, char **argv) {
   cudf_doc doc;
   cudf cudf, sol;
   cudf_package pkg;
-  int i;
   cudf_vpkglist vpkglist;
   cudf_vpkgformula fmla;
+  GList *l;
 
   caml_startup(argv);
   if (argc < 2) {
@@ -98,11 +98,11 @@ int main(int argc, char **argv) {
 
   g_message("Parsing CUDF document and do \"stuff\" on it ...");
   doc = cudf_parse_from_file(argv[1]);
-  printf("Universe size: %d\n", doc.length);
   printf("Has request: %s\n", doc.has_request ? "yes" : "no");
   printf("Universe:\n");
-  for (i = 0; i < doc.length; i++) {
-    pkg = doc.packages[i];
+  l = doc.packages;
+  while (l != NULL) {
+    pkg = * (cudf_package *) g_list_nth_data(l, 0);
     printf("  Package: %s\n", cudf_pkg_name(pkg));
     printf("  Version: %d\n", cudf_pkg_version(pkg));
     printf("  Installed: %s\n", cudf_pkg_installed(pkg) ? "true" : "false");
@@ -127,6 +127,8 @@ int main(int argc, char **argv) {
 
     print_keep(cudf_pkg_keep(pkg));		/* Keep */
     printf("\n");
+
+    l = g_list_next(l);
   }
   cudf_free_doc(doc);
 
