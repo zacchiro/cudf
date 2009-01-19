@@ -111,12 +111,6 @@ int main(int argc, char **argv) {
     printf("\n");
     cudf_free_vpkgformula(fmla);
 
-    prop_val = cudf_pkg_property(pkg, "Depends (string)");
-    if (prop_val != NULL) {
-      printf("  Depends: %s\n", prop_val);
-      free(prop_val);
-    }
-
     vpkglist = cudf_pkg_conflicts(pkg);		/* Conflicts */
     printf("  Conflicts: ");
     print_vpkglist(vpkglist, ", ");
