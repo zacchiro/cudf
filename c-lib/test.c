@@ -104,6 +104,8 @@ int main(int argc, char **argv) {
   for (i = 0; i < doc.length; i++) {
     pkg = doc.packages[i];
     printf("  Package: %s\n", cudf_pkg_name(pkg));
+    printf("  Version: %d\n", cudf_pkg_version(pkg));
+    printf("  Installed: %s\n", cudf_pkg_installed(pkg) ? "true" : "false");
 
     fmla = cudf_pkg_depends(pkg);
     printf("  Depends: ");
