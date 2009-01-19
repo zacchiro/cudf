@@ -96,13 +96,14 @@ int main(int argc, char **argv) {
     exit(2);
   }
 
+  g_message("Parsing CUDF document and do \"stuff\" on it ...\n");
   doc = cudf_parse_from_file(argv[1]);
   printf("Universe size: %d\n", doc.length);
   printf("Has request: %s\n", doc.has_request ? "yes" : "no");
   printf("Universe:\n");
   for (i = 0; i < doc.length; i++) {
     pkg = doc.packages[i];
-    printf("  Package: %s\n", PKG_NAME(pkg));
+    printf("  Package: %s\n", cudf_pkg_name(pkg));
 
     fmla = cudf_pkg_depends(pkg);
     printf("  Depends: ");

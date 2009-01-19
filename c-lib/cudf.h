@@ -63,9 +63,9 @@ typedef GList *cudf_vpkgformula;
 
 /** Macros for accessing cudf_package values */
 
-#define PKG_NAME(p)	(String_val(Field(p, 0)))	/* char *  */
-#define PKG_VERSION(p)	(Int_val(Field(p, 1)))		/* int */
-#define PKG_INST(p)	(Int_val(Field(p, 5)))		/* int (i.e., bool) */
+#define cudf_pkg_name(p)	(String_val(Field(p, 0)))	/* char *  */
+#define cudf_pkg_version(p)	(Int_val(Field(p, 1)))	/* int */
+#define cudf_pkg_installed(p)	(Int_val(Field(p, 5)))	/* int (i.e., bool) */
 
 /** Possible values returned by PKG_EXTRA */
 
