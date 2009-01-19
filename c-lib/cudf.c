@@ -137,7 +137,7 @@ cudf_doc cudf_parse_from_file(char *fname) {
 cudf cudf_load_from_file(char *fname) {
   static value *closure_f = NULL;
   cudf cudf;
-  value ml_cudf, ml_univ;
+  value ml_cudf;
   
   if (closure_f == NULL)
     closure_f = caml_named_value("load_from_file");
@@ -152,9 +152,8 @@ cudf cudf_load_from_file(char *fname) {
     cudf.request = Val_none;
   }
 
-  ml_univ = Field(ml_cudf, 0);			/* universe */
-  caml_register_global_root(&cudf.universe);
-  cudf.universe = ml_univ;
+  caml_register_global_root(&cudf.universe);	/* universe */
+  cudf.universe = Field(ml_cudf, 0);
 
   return cudf;
 }
