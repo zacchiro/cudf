@@ -1,5 +1,5 @@
 NULL =
-CFLAGS = -I . $(shell pkg-config --cflags glib-2.0)
+CFLAGS = -I . $(shell pkg-config --cflags glib-2.0) -Wall
 LDFLAGS = \
 	-L$(shell ocamlc -where) \
 	-L$(shell ocamlfind query pcre) \
