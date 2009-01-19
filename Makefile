@@ -1,5 +1,5 @@
 NAME = cudf
-VERSION = 0.2
+VERSION = 0.3
 
 LIBS = _build/cudf.cma
 LIBS_OPT = _build/cudf.cmxa
