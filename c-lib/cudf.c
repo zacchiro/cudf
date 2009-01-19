@@ -77,6 +77,8 @@ cudf_vpkg *vpkg_val(value ml_vpkg) {
     vpkg->relop = 0;
     vpkg->version = -1;
   }
+
+  return vpkg;
 }
 
 cudf_vpkglist cudf_pkg_vpkglist(cudf_package pkg, int field) {
