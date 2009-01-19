@@ -270,7 +270,7 @@ int cudf_is_solution(cudf cudf, cudf_universe solution) {
 /** Memory management.
     free-like functions to free binding-specific data structures */
 
-void cudf_free_cudf_doc(cudf_doc doc) {
+void cudf_free_doc(cudf_doc doc) {
   int i;
 
   caml_remove_global_root(&doc.request);

@@ -98,8 +98,8 @@ int cudf_is_solution(cudf cudf, cudf_universe solution);
 
 /** Memory management */
 
-void cudf_free_cudf_doc(cudf_doc doc);
-void cudf_free_cudf(cudf doc);
+void cudf_free_doc(cudf_doc doc);
+void cudf_free_cudf(cudf cudf);
 void cudf_free_vpkglist(cudf_vpkglist l);
 void cudf_free_vpkgformula(cudf_vpkgformula fmla);
 

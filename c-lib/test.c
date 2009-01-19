@@ -84,19 +84,19 @@ void print_keep(int keep) {
 
 int main(int argc, char **argv) {
   cudf_doc doc;
+  cudf cudf, sol;
   cudf_package pkg;
   int i;
-  char *prop_val;
   cudf_vpkglist vpkglist;
   cudf_vpkgformula fmla;
 
   caml_startup(argv);
   if (argc < 2) {
-    printf("Usage: %s CUDF_FILE\n", argv[0]);
+    printf("Usage: %s CUDF_FILE [ SOLUTION_FILE ]\n", argv[0]);
     exit(2);
   }
 
-  g_message("Parsing CUDF document and do \"stuff\" on it ...\n");
+  g_message("Parsing CUDF document and do \"stuff\" on it ...");
   doc = cudf_parse_from_file(argv[1]);
   printf("Universe size: %d\n", doc.length);
   printf("Has request: %s\n", doc.has_request ? "yes" : "no");
@@ -128,5 +128,23 @@ int main(int argc, char **argv) {
     print_keep(cudf_pkg_keep(pkg));		/* Keep */
     printf("\n");
   }
-  cudf_free_cudf_doc(doc);
+  cudf_free_doc(doc);
+
+  g_message("Try direct CUDF loading and its memory management ...");
+  cudf = cudf_load_from_file(argv[1]);
+  printf("Universe size: %d/%d (installed/total)\n",
+	 cudf_installed_size(cudf.universe),
+	 cudf_universe_size(cudf.universe));
+  printf("Universe consistent: %s\n",
+	 cudf_is_consistent(cudf.universe) ? "yes" : "no");
+  if (argc >= 3) {
+    g_message("Loading solution ...");
+    sol = cudf_load_from_file(argv[2]);
+    printf("Is solution: %s\n",
+	   cudf_is_solution(cudf, sol.universe) ? "yes" : "no");
+  }
+  cudf_free_cudf(sol);
+  cudf_free_cudf(cudf);
+
+  return(0);
 }
