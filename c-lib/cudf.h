@@ -89,6 +89,12 @@ char *cudf_req_property(cudf_request req, const char *prop);
 
 /** Universe management */
 
+/** @param univ pointer to a cudf_universe which will be filled. After
+      use the universe should be freed using cudf_free_universe.
+    @param packages list of (pointers to) cudf_package-s; the packages
+      member of a cudf_doc structure is a suitable value */
+void cudf_load_universe(cudf_universe *univ, GList *packages);
+
 int cudf_universe_size(cudf_universe univ);
 int cudf_installed_size(cudf_universe univ);
 int cudf_is_consistent(cudf_universe univ);
@@ -99,6 +105,7 @@ int cudf_is_solution(cudf cudf, cudf_universe solution);
 
 void cudf_free_doc(cudf_doc doc);
 void cudf_free_cudf(cudf cudf);
+void cudf_free_universe(cudf_universe *univ);
 void cudf_free_vpkglist(cudf_vpkglist l);
 void cudf_free_vpkgformula(cudf_vpkgformula fmla);
 

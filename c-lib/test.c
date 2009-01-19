@@ -88,6 +88,7 @@ int main(int argc, char **argv) {
   cudf_package pkg;
   cudf_vpkglist vpkglist;
   cudf_vpkgformula fmla;
+  cudf_universe univ;
   GList *l;
 
   caml_startup(argv);
@@ -130,9 +131,16 @@ int main(int argc, char **argv) {
 
     l = g_list_next(l);
   }
+  g_message("Try packages -> universe conversion ...");
+  cudf_load_universe(&univ, doc.packages);
+  printf("Universe size: %d/%d (installed/total)\n",
+	 cudf_installed_size(univ), cudf_universe_size(univ));
+  printf("Universe consistent: %s\n", cudf_is_consistent(univ) ? "yes" : "no");
+
+  cudf_free_universe(&univ);
   cudf_free_doc(doc);
 
-  g_message("Try direct CUDF loading and its memory management ...");
+  g_message("Try direct CUDF loading ...");
   cudf = cudf_load_from_file(argv[1]);
   printf("Universe size: %d/%d (installed/total)\n",
 	 cudf_installed_size(cudf.universe),

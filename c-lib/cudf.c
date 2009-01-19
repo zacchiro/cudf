@@ -227,6 +227,26 @@ char *cudf_req_property(cudf_request req, const char *prop) {
 
 /** Universe management */
 
+void cudf_load_universe(cudf_universe *univ, GList *packages) {
+  static value *closure_f = NULL;
+  value ml_pkgs = Val_emptylist;
+  value cons;
+  GList *l = packages;
+
+  while (l != NULL) {
+    cons = caml_alloc(2, 0);
+    Store_field(cons, 0, * (cudf_package *) g_list_nth_data(l, 0));
+    Store_field(cons, 1, ml_pkgs);
+    ml_pkgs = cons;
+    l = g_list_next(l);
+  }
+
+  if (closure_f == NULL)
+    closure_f = caml_named_value("load_universe");
+  caml_register_global_root(univ);
+  *univ = caml_callback(*closure_f, ml_pkgs);
+}
+
 int cudf_universe_size(cudf_universe univ) {
   static value *closure_f = NULL;
 
@@ -283,6 +303,10 @@ void cudf_free_doc(cudf_doc doc) {
 void cudf_free_cudf(cudf cudf) {
   caml_remove_global_root(&cudf.request);
   caml_remove_global_root(&cudf.universe);
+}
+
+void cudf_free_universe(cudf_universe *univ) {
+  caml_remove_global_root(univ);
 }
 
 void cudf_free_vpkglist(cudf_vpkglist l) {
