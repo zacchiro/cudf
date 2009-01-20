@@ -1,0 +1,2 @@
+c-lib/libcudf.a		usr/lib/
+c-lib/cudf.h		usr/include/

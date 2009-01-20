@@ -31,6 +31,10 @@ opt: $(RESULTS_OPT)
 $(RESULTS): $(SOURCES)
 $(RESULTS_OPT): $(SOURCES)
 
+.PHONY: c-lib
+c-lib:
+	make -C c-lib/
+
 clean:
 	make -C c-lib/ clean
 	$(OCAMLBUILD) $(OBFLAGS) -clean

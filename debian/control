@@ -17,7 +17,7 @@ Vcs-Browser: http://gforge.info.ucl.ac.be/plugins/scmsvn/viewcvs.php/trunk/updb/
 
 Package: libcudf-ocaml-dev
 Architecture: any
-Section: libs
+Section: libdevel
 Depends:
  ocaml-nox-${F:OCamlABI},
  ocaml-findlib,
@@ -43,6 +43,35 @@ Description: OCaml library to access descriptions of package upgrade problems
  .
  This package contains all the development stuff you need to use
  libCUDF in your OCaml programs.
+
+Package: libcudf-dev
+Architecture: any
+Section: libdevel
+Depends:
+ libc6-dev,
+ libpcre-ocaml-dev,
+ libglib2.0-dev,
+ libncurses5-dev
+Description: OCaml library to access descriptions of package upgrade problems
+ libCUDF is a library to manipulate so called CUDF documents. A CUDF
+ document describe an upgrade problem, as faced by package managers in
+ popular package-based GNU/Linux distributions.
+ .
+ A CUDF document consists of a package universe and of a user request.
+ The package universe describes all packages known to the package
+ manager, a subset of which (the package status) denotes the package
+ being currently installed on the target machine.  The user request
+ denotes a change to the package status as requested by the user.
+ .
+ A CUDF document is naturally complemented by a solution describing
+ the resulting package status (if any) implementing the user request,
+ as found by a package manager.
+ .
+ libCUDF enables manipulation of CUDF and related documents.
+ .
+ This package contains a C static library binding the OCaml
+ implementation of libCUDF so that it can be used from the C
+ programming language.
 
 Package: cudf-tools
 Architecture: any

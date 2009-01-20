@@ -1,6 +1,6 @@
-cudf (0.2-1) UNRELEASED; urgency=low
+cudf (0.3-1) UNRELEASED; urgency=low
 
   * Initial release
 
- -- Stefano Zacchiroli <zack@debian.org>  Fri, 09 Jan 2009 22:03:00 +0100
+ -- Stefano Zacchiroli <zack@debian.org>  Tue, 20 Jan 2009 16:25:58 +0100
 
