@@ -1,0 +1,14 @@
+prefix=/usr
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+datarootdir=${prefix}/share
+datadir=${datarootdir}
+ocaml_libdir=@OCAML_LIBDIR@
+ocaml_pcre_libdir=@OCAML_PCRE_LIBDIR@
+
+Name: CUDF
+Description: access descriptions of package upgrade problems
+Version: @VERSION@
+Requires: glib-2.0 libpcre
+Libs: -L${libdir} -L${ocaml_libdir} -L${ocaml_pcre_libdir} -lcudf -lm -ldl -lpcre_stubs -lunix -lncurses

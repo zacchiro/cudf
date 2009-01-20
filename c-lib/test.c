@@ -12,9 +12,7 @@
 
 /* Compile with:
 
-   CUDF_LIBS="-lcudf -lpcre -lm -ldl -lpcre_stubs -lunix -lncurses -lglib-2.0"
-   CUDF_PATHS="-L$(ocamlc -where) -L$(ocamlfind query pcre)"
-   cc -o test `pkg-config --cflags glib-2.0` $CUDF_PATHS test.c $CUDF_LIBS
+   cc -o test test.c `pkg-config --cflags cudf` `pkg-config --cflags cudf`
  */
 
 #include <stdio.h>
