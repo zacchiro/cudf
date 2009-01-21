@@ -91,6 +91,16 @@ val mem_installed :
   ?ignore:(package -> bool) ->
   universe -> vpkg -> bool
 
+(** Ask who provides a given feature (predicate).
+    Note: only installed=true packages are considered by this function.
+
+    @return a list of packages providing the requested feature. Each
+    package is paired with an optional version; if it is None, the
+    given package provides all possible version of the feature; it if
+    is Some v, the given package only provides version [v] of the
+    feature. *)
+val who_provides : universe -> vpkg -> (package * version option) list
+
 (** lookup all available versions of a given package name
 
     @param filter filter the found packages according to the given

@@ -168,6 +168,10 @@ let mem_installed ?(include_features = true) ?(ignore = fun _ -> false)
     List.exists (fun pkg -> pkg.version |= constr) pkgs
     || (include_features && mem_feature constr)
 
+let who_provides univ (pkg, constr) =
+  List.filter
+    (function _, None -> true | _, Some v -> v |= constr)
+    (Hashtbl.find_all univ.inst_features pkg)
 
 let lookup_package_property pkg = function
     "Package" -> string_of_pkgname pkg.package
