@@ -13,5 +13,20 @@ Installed: true
 Keep: package
 
 
+Package: keep-feature
+Version: 1
+Provides: foo, bar
+Installed: true
+Keep: feature
+
+Package: provide-foo
+Provides: foo
+Version: 1
+
+Package: provide-bar
+Provides: bar
+Version: 1
+
+
 Problem: source: Debian/DUDF 733fffffb9fe1f78fd551ad20485b217
 Upgrade: keep-version
