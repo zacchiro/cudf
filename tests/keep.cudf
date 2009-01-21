@@ -6,5 +6,12 @@ Keep: version
 Package: keep-version
 Version: 2
 
+
+Package: keep-package
+Version: 1
+Installed: true
+Keep: package
+
+
 Problem: source: Debian/DUDF 733fffffb9fe1f78fd551ad20485b217
 Upgrade: keep-version

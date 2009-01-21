@@ -2,3 +2,7 @@ Package: keep-version
 Version: 1
 Installed: true
 Keep: version
+
+Package: keep-package
+Version: 1
+Installed: true
