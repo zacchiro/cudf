@@ -52,9 +52,8 @@ let print_inst_info inst =
     | _ -> assert false
 
 let print_cudf cudf =
-  (* TODO dummy implementation, should pretty print here ... *)
   if !dump_arg then
-    print_endline (dump cudf)
+    print_endline (Cudf_printer.string_of_cudf cudf)
 
 let print_sol_info inst sol =
   match is_solution inst sol with
