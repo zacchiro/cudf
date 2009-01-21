@@ -1,0 +1,4 @@
+Package: baz
+Version: 1
+Provides: virtual
+Installed: true
