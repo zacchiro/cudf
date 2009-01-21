@@ -8,6 +8,8 @@ open ExtLib;;
 
 open Cudf_parser;;
 open Cudf_checker;;
-let p = Cudf_parser.from_in_channel (open_in "examples/legacy.cudf");;
-let cudf_doc = Cudf_parser.parse_cudf p;;
-let (univ, req) as cudf = Cudf.load_cudf cudf_doc;;
+let (pkgs, req) as cudf_doc =
+  match Cudf_parser.parse_from_file "examples/legacy.cudf" with
+    | pkgs, Some req -> pkgs, req
+    | _ -> assert false ;;
+let (univ, _) as cudf = Cudf.load_universe pkgs, req
