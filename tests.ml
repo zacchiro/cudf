@@ -42,6 +42,7 @@ let bad_prob_sol = [	(* pairs cudf/sol, with sol being a bad solution *)
   "upgrade-singleton", "upgrade-singleton-sol-bad" ;
   "keep", "keep-sol-bad";
   "keep", "keep-sol-bad2";
+  "keep", "keep-sol-bad3";
 ]
 
 (** {5 Helpers} *)

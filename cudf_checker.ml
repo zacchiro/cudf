@@ -30,6 +30,7 @@ type bad_solution_reason =
   | `Unremoved of vpkglist
   | `Downgrade of vpkglist
   | `Multi_upgrade of pkgname list
+  | `Not_kept of pkgname * version * enum_keep
   ]
 
 let explain_reason = function
@@ -53,6 +54,9 @@ let explain_reason = function
 	Cudf_types.string_of_vpkglist vpkgs
   | `Multi_upgrade pkgs ->
       "Unment upgrade request, not-unique: " ^ String.concat ", " pkgs
+  | `Not_kept (name, ver, keep) ->
+      sprintf "Unmet \"Keep\" request %s of package %s (version %d)"
+	(Cudf_types.string_of_keep keep) name ver
 
 (* XXX not tail-recursive *)
 let satisfy_formula univ fmla =
@@ -101,23 +105,24 @@ let is_solution (univ, req) sol =
 		     ^ " they have been ignored")
   in
   let sat vpkg = fst (satisfy_formula sol [[vpkg]]) in
+  let and_formula = List.map (fun vpkg -> [(vpkg :> vpkg)]) in
   let is_succ () = (* XXX not implemented, as it will be pointless with a
 		      diff-like encoding of solutions *)
     true, [] in
-  let is_cons () =
+  let is_cons () =	(* check solution consistency (i.e., dep./conflicts) *)
     match is_consistent sol with
       | true, _ -> true, []
       | false, None -> assert false
       | false, Some reason -> false, [reason] in
-  let install_ok () =
+  let install_ok () =	(* check "Install" property semantics *)
     match List.filter (!! sat) req.install with
       | [] -> true, []
       | l -> false, [`Missing_install l] in
-  let remove_ok () =
+  let remove_ok () =	(* check "Remove" property semantics *)
     match disjoint sol req.remove with
       | true, _ -> true, []
       | false, pkgs -> false, [`Unremoved pkgs] in
-  let upgrade_ok () =
+  let upgrade_ok () =	(* check "Upgrade" property semantics *)
     match List.filter (!! sat) req.upgrade with
       | (_ :: _) as l -> false, [`Missing_upgrade l]
       | [] ->
@@ -147,10 +152,35 @@ let is_solution (univ, req) sol =
 		   (if downgrades <> [] then [`Downgrade downgrades] else [])
 		   @ (if multi <> [] then [`Multi_upgrade multi] else []))
   in
-  List.fold_left
-    (fun (is_sol, msgs) test ->
-       let res, msg = test () in
-	 res && is_sol, msg @ msgs)
-    (true, [])
-    [is_succ; is_cons; install_ok; remove_ok; upgrade_ok]
+  let keep_ok () =	(* check "Keep" property semantics *)
+    let to_be_kept = get_packages ~filter:(fun pkg -> pkg.keep <> None) univ in
+      List.fold_left
+	(fun (ok, reasons) pkg ->
+	   let pkg_ok =
+	     match pkg.keep with
+	       | Some `Keep_version ->
+		   (try
+		      (lookup_package sol (pkg.package, pkg.version)).installed
+		    with Not_found -> false)
+	       | Some `Keep_package ->
+		   mem_installed ~include_features:false sol (pkg.package, None)
+	       | Some `Keep_feature ->
+		   fst (satisfy_formula sol (and_formula pkg.provides))
+	       | _ -> assert false	(* [get_packages ~filter] is broken *)
+	   in
+	     if pkg_ok then
+	       ok, reasons
+	     else
+	       false,
+	       (`Not_kept (pkg.package, pkg.version, Option.get pkg.keep))
+	         :: reasons)
+	(true, [])
+	to_be_kept
+  in
+    List.fold_left
+      (fun (is_sol, msgs) test ->
+	 let res, msg = test () in
+	   res && is_sol, msg @ msgs)
+      (true, [])
+      [is_succ; is_cons; install_ok; remove_ok; upgrade_ok; keep_ok]
 

@@ -25,6 +25,7 @@ type bad_solution_reason =
   | `Unremoved of vpkglist	   (** remove pkgs still there *)
   | `Downgrade of vpkglist	   (** upgrade pkgs downgraded *)
   | `Multi_upgrade of pkgname list (** upgrade pkgs aren't singleton *)
+  | `Not_kept of pkgname * version * enum_keep	(** unattended "Keep" *)
   ]
 
 (** provide a string explaining a given reason, meant for error messages *)
