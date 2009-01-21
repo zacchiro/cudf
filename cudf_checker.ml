@@ -126,22 +126,32 @@ let is_solution (univ, req) sol =
     match List.filter (!! sat) req.upgrade with
       | (_ :: _) as l -> false, [`Missing_upgrade l]
       | [] ->
+	  let versions_of univ name =
+	    List.map	(* real packages *)
+	      (fun pkg -> Some pkg.version)
+	      (get_installed univ name)
+	    @ List.map	(* virtual packages; "None" means "all versions" *)
+	      (fun (_pkg, version) -> version)
+	      (who_provides univ (name, None)) in
 	  let res =
 	    List.fold_left
-	      (fun (ok, downgrades, multi) ((pkgname, _constr) as vpkg) ->
-		 match get_installed sol pkgname with
-		   | [pkg] ->
-		       let old_installed = get_installed univ pkgname in
+	      (fun (ok, downgrades, multi) ((name, _constr) as vpkg) ->
+		 match versions_of sol name with
+		   | [Some v] ->
+		       let old_installed = versions_of univ name in
 			 if not (List.for_all
-				   (fun pkg' -> pkg'.version <= pkg.version)
-				   old_installed) then
+				   (function Some v' -> v' <= v | None -> false)
+				   (* XXX: this None will report attempted
+				      upgrade of unversioned virtual packages
+				      as downgrades. Maybe right, maybe not *)
+				   old_installed)
+			 then
 			   false, vpkg :: downgrades, multi
 			 else
 			   true && ok, downgrades, multi
-		   | [] -> (* impossible, since the upgrade fmla is satisfied *)
+		   | [] -> (* impossible: cause the formula is satisfied *)
 		       assert false
-		   | _ ->
-		       false, downgrades, pkgname :: multi)
+		   | _ -> false, downgrades, name :: multi)
 	      (true, [], [])
 	      req.upgrade
 	  in
