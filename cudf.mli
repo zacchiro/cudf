@@ -85,7 +85,7 @@ val lookup_package : universe -> pkgname * version -> package
     @param include_features allow constraint to be satisfied by features
     (i.e., Provides). Default: true
     @param ignore make the lookup skip over all packages matching the given
-    package predicate *)
+    package predicate. Default: do not ignore any package *)
 val mem_installed :
   ?include_features: bool ->
   ?ignore:(package -> bool) ->
