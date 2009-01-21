@@ -35,10 +35,12 @@ let good_prob_sol = [	(* pairs cudf/sol, with sol being a good solution *)
   "legacy", "legacy-sol" ;
   "fresher", "fresher-sol-good" ;
   "upgrade-singleton", "upgrade-singleton-sol-good" ;
+  "keep", "keep-sol-good";
 ]
 let bad_prob_sol = [	(* pairs cudf/sol, with sol being a bad solution *)
   "fresher", "fresher-sol-bad" ;
   "upgrade-singleton", "upgrade-singleton-sol-bad" ;
+  "keep", "keep-sol-bad";
 ]
 
 (** {5 Helpers} *)
