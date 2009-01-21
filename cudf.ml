@@ -114,7 +114,14 @@ let lookup_package univ = Hashtbl.find univ.id2pkg
 let iter_packages f univ = Hashtbl.iter (fun _id pkg -> f pkg) univ.id2pkg
 let fold_packages f init univ =
   Hashtbl.fold (fun _id pkg acc -> f acc pkg) univ.id2pkg init
-let get_packages = fold_packages (fun acc pkg -> pkg :: acc) []
+
+let get_packages ?filter univ =
+  match filter with
+    | None -> fold_packages (fun acc pkg -> pkg :: acc) [] univ
+    | Some test ->
+	fold_packages
+	  (fun acc pkg -> if test pkg then pkg :: acc else acc)
+	  [] univ
 
 let (|=) v = function
   | None -> true

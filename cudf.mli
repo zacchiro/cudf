@@ -104,8 +104,11 @@ val get_installed : universe -> pkgname -> package list
 val iter_packages : (package -> unit) -> universe -> unit
 val fold_packages : ('a -> package -> 'a) -> 'a -> universe -> 'a
 
-(** conversion from universe to plain package list *)
-val get_packages : universe -> package list
+(** conversion from universe to plain package list
+
+    @param filter only return packages matching a given
+    predicate. Default is to return all packages *)
+val get_packages : ?filter:(package -> bool) -> universe -> package list
 
 (** total numer of available packages (no matter whether they are
     installed or not) *)
