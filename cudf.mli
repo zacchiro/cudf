@@ -153,3 +153,9 @@ val lookup_package_property : package -> string -> string
     speaking is not a property) you should lookup "Problem" *)
 val lookup_request_property : request -> string -> string
 
+(** [ version_matches c v ] return true if the version v matchs the 
+    constraint constr c . Ex. version_matches 1 (Some(`Eq, 2)) == false *)
+val version_matches : version -> constr -> bool
+
+(** Same as {!Cudf.version_matches} *)
+val ( |= ) : version -> constr -> bool
