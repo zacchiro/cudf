@@ -132,7 +132,7 @@ let (|=) v = function
   | Some (`Leq, v') -> v <= v'
   | Some (`Lt, v') -> v < v'
 
-let version_matches p q = p |= q
+let version_matches = (|=)
 
 let status univ =
   let univ' = empty_universe () in
