@@ -94,4 +94,13 @@ dist: ./$(DIST_TARBALL)
 	rm -rf ./$(DIST_DIR)
 	@echo "Distribution tarball: ./$(DIST_TARBALL)"
 
+distcheck: ./$(DIST_TARBALL)
+	tar xzf $<
+	$(MAKE) -C ./$(DIST_DIR) all
+	if which ocamlopt > /dev/null ; then $(MAKE) -C ./$(DIST_DIR) opt ; fi
+	$(MAKE) -C ./$(DIST_DIR) test
+	$(MAKE) -C ./$(DIST_DIR)/c-lib/ all
+	$(MAKE) -C ./$(DIST_DIR) install DESTDIR=$(CURDIR)/$(DIST_DIR)/tmp
+	rm -rf ./$(DIST_DIR)
+
 .PHONY: all opt clean top-level headers test tags install uninstall dist
