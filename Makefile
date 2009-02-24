@@ -27,6 +27,9 @@ INSTALL = $(OCAMLFIND) install -destdir $(LIBDIR)
 UNINSTALL = $(OCAMLFIND) remove -destdir $(LIBDIR)
 endif
 
+DIST_DIR = $(NAME)-$(VERSION)
+DIST_TARBALL = $(DIST_DIR).tar.gz
+
 all: $(RESULTS)
 opt: $(RESULTS_OPT)
 $(RESULTS): $(SOURCES)
@@ -82,4 +85,13 @@ uninstall:
 	fi
 	@echo "Removed $(BINDIR)/cudf-check"
 
-.PHONY: all clean top-level headers test tags
+dist: ./$(DIST_TARBALL)
+./$(DIST_TARBALL):
+	if [ -d ./$(DIST_DIR)/ ] ; then rm -rf ./$(DIST_DIR)/ ; fi
+	if [ -d ./$(DIST_TARBALL) ] ; then rm -f ./$(DIST_TARBALL) ; fi
+	svn export . ./$(DIST_DIR)
+	tar cvzf ./$(DIST_TARBALL) ./$(DIST_DIR)
+	rm -rf ./$(DIST_DIR)
+	@echo "Distribution tarball: ./$(DIST_TARBALL)"
+
+.PHONY: all opt clean top-level headers test tags install uninstall dist
