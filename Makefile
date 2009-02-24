@@ -90,6 +90,7 @@ dist: ./$(DIST_TARBALL)
 	if [ -d ./$(DIST_DIR)/ ] ; then rm -rf ./$(DIST_DIR)/ ; fi
 	if [ -d ./$(DIST_TARBALL) ] ; then rm -f ./$(DIST_TARBALL) ; fi
 	svn export . ./$(DIST_DIR)
+	rm -rf ./$(DIST_DIR)/debian
 	tar cvzf ./$(DIST_TARBALL) ./$(DIST_DIR)
 	rm -rf ./$(DIST_DIR)
 	@echo "Distribution tarball: ./$(DIST_TARBALL)"
