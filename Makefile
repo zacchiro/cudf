@@ -104,4 +104,7 @@ distcheck: ./$(DIST_TARBALL)
 	$(MAKE) -C ./$(DIST_DIR) install DESTDIR=$(CURDIR)/$(DIST_DIR)/tmp
 	rm -rf ./$(DIST_DIR)
 
-.PHONY: all opt clean top-level headers test tags install uninstall dist
+doc:
+	$(OCAMLBUILD) $(OBFLAGS) cudf.docdir/index.html
+
+.PHONY: all opt clean top-level headers test tags install uninstall dist doc
