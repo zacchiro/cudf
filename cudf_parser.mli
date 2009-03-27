@@ -10,6 +10,8 @@
 (*  library, see the COPYING file for more information.                      *)
 (*****************************************************************************)
 
+(** Parser for CUDF related documents *)
+
 open Cudf
 
 type cudf_parser

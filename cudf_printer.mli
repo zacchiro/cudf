@@ -10,9 +10,9 @@
 (*  library, see the COPYING file for more information.                      *)
 (*****************************************************************************)
 
-(** Pretty printing of CUDF macro-components (documents, stanzas, ...).
+(** Pretty printing of CUDF macro-components (documents, stanzas, ...)
 
-    For pretyt printing of micro-components see {!Cudf_types}. *)
+    For pretty printing of micro-components see {!Cudf_types}. *)
 
 open Cudf
 

@@ -10,6 +10,10 @@
 (*  library, see the COPYING file for more information.                      *)
 (*****************************************************************************)
 
+(** Checkers for CUDF documents
+
+    Consistency and problem-solution matching. *)
+
 open Cudf_types
 open Cudf
 
