@@ -3,7 +3,7 @@ Section: devel
 Priority: optional
 Maintainer: Stefano Zacchiroli <zack@debian.org>
 Build-Depends:
- debhelper (>= 7.0.0),
+ debhelper (>= 7),
  cdbs,
  dh-ocaml,
  ocaml-nox,
@@ -11,7 +11,7 @@ Build-Depends:
  libpcre-ocaml-dev,
  libextlib-ocaml-dev,
  libounit-ocaml-dev
-Standards-Version: 3.8.0
+Standards-Version: 3.8.1
 Vcs-Svn: https://gforge.info.ucl.ac.be/svn/mancoosi/trunk/updb/libcudf
 Vcs-Browser: http://gforge.info.ucl.ac.be/plugins/scmsvn/viewcvs.php/trunk/updb/libcudf/?root=mancoosi
 
