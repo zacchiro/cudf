@@ -79,7 +79,7 @@ Architecture: any
 Section: devel
 Depends:
  ${F:OCamlInterpDepends},
- ${shlibs:Depends}
+ ${shlibs:Depends},
  ${misc:Depends}
 Description: command line tools for package upgrade problem descriptions
  A CUDF document describe an upgrade problem, as faced by package
