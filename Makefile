@@ -29,6 +29,7 @@ endif
 
 DIST_DIR = $(NAME)-$(VERSION)
 DIST_TARBALL = $(DIST_DIR).tar.gz
+DEB_TARBALL = $(subst -,_,$(DIST_DIR).orig.tar.gz)
 
 all: $(RESULTS)
 opt: $(RESULTS_OPT)
@@ -94,6 +95,14 @@ dist: ./$(DIST_TARBALL)
 	tar cvzf ./$(DIST_TARBALL) ./$(DIST_DIR)
 	rm -rf ./$(DIST_DIR)
 	@echo "Distribution tarball: ./$(DIST_TARBALL)"
+
+./$(DEB_TARBALL): ./$(DIST_TARBALL)
+	cp $< $@
+deb: ./$(DEB_TARBALL)
+	rm -rf ./$(DIST_DIR)
+	tar xvzf $<
+	svn export debian/ $(DIST_DIR)/debian
+	cd $(DIST_DIR) && dpkg-buildpackage -rfakeroot
 
 distcheck: ./$(DIST_TARBALL)
 	tar xzf $<
