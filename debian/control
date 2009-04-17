@@ -18,7 +18,7 @@ Homepage: http://www.mancoosi.org/software/
 
 Package: libcudf-ocaml-dev
 Architecture: any
-Section: libdevel
+Section: ocaml
 Depends:
  ocaml-nox-${F:OCamlABI},
  ocaml-findlib,
