@@ -52,7 +52,8 @@ Depends:
  libc6-dev,
  libpcre-ocaml-dev,
  libglib2.0-dev,
- libncurses5-dev
+ libncurses5-dev,
+ ${misc:Depends}
 Description: C library to access descriptions of package upgrade problems
  libCUDF is a library to manipulate so called CUDF documents. A CUDF
  document describe an upgrade problem, as faced by package managers in
