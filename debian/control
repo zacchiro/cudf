@@ -10,7 +10,8 @@ Build-Depends:
  ocaml-findlib,
  libpcre-ocaml-dev,
  libextlib-ocaml-dev,
- libounit-ocaml-dev
+ libounit-ocaml-dev,
+ libglib2.0-dev
 Standards-Version: 3.8.1
 Vcs-Svn: https://gforge.info.ucl.ac.be/svn/mancoosi/trunk/updb/libcudf
 Vcs-Browser: http://gforge.info.ucl.ac.be/plugins/scmsvn/viewcvs.php/trunk/updb/libcudf/?root=mancoosi
