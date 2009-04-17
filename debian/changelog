@@ -1,6 +1,5 @@
-cudf (0.3-1) UNRELEASED; urgency=low
+cudf (0.4-1) unstable; urgency=low
 
-  * Initial release
+  * First public release.
 
- -- Stefano Zacchiroli <zack@debian.org>  Tue, 20 Jan 2009 16:25:58 +0100
-
+ -- Stefano Zacchiroli <zack@debian.org>  Fri, 17 Apr 2009 12:00:51 +0200
