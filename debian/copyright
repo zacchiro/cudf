@@ -25,8 +25,8 @@ it under the terms of the GNU Lesser General Public License as
 published by the Free Software Foundation, either version 3 of the
 License, or (at your option) any later version.
 
-The full text of the GNU Lessere General Public License can be found
-in `/usr/share/common-licenses/LGPL'.
+The full text of the license can be found in
+`/usr/share/common-licenses/LGPL-3'.
 
 Files: debian/*
 Copyright: © 2009 Stefano Zacchiroli <zack@debian.org>
@@ -34,4 +34,4 @@ License: GPL-3+
 
   The Debian packaging is copyright Stefano Zacchiroli, and licensed
   under the GNU General Public License, see
-  `/usr/share/common-licenses/GPL' for the full text.
+  `/usr/share/common-licenses/GPL-3' for the full text.
