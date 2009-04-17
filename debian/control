@@ -14,6 +14,7 @@ Build-Depends:
 Standards-Version: 3.8.1
 Vcs-Svn: https://gforge.info.ucl.ac.be/svn/mancoosi/trunk/updb/libcudf
 Vcs-Browser: http://gforge.info.ucl.ac.be/plugins/scmsvn/viewcvs.php/trunk/updb/libcudf/?root=mancoosi
+Homepage: http://www.mancoosi.org/software/
 
 Package: libcudf-ocaml-dev
 Architecture: any
