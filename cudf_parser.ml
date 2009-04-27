@@ -87,8 +87,8 @@ let parse_item p =
 	aux_package { pkg with installed = parse_bool s } tl
     | ("Keep" , s) :: tl ->
 	aux_package { pkg with keep = Some (parse_keep s) } tl
-    | prop :: tl ->
-	aux_package { pkg with extra = prop :: pkg.extra } tl
+    | (k,v) :: tl ->
+	aux_package { pkg with extra = (k,`Unparsed v) :: pkg.extra } tl
     | [] -> pkg
   in
   let rec aux_request req = function

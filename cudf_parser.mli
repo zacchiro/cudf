@@ -14,53 +14,59 @@
 
 open Cudf
 
-type cudf_parser
-val from_in_channel : in_channel -> cudf_parser
-val close : cudf_parser -> unit
+module type T = sig
 
-(** Parse error. Arguments: line numnber and error message *)
-exception Parse_error of int * string
+  open Cudf
+  type cudf_parser
+  val from_in_channel : in_channel -> cudf_parser
+  val close : cudf_parser -> unit
 
-(** {6 Full CUDF document parsing}
+  (** Parse error. Arguments: line numnber and error message *)
+  exception Parse_error of int * string
 
-    "parse_*" functions offer plain syntax parsing, with no semantic
-    interpretation of what is being parsed. "load_*" functions offer
-    the latter, hence also checking for semantic constraints (such as
-    the lack of key duplication).
-*)
+  (** {6 Full CUDF document parsing}
 
-(** parse a CUDF document (or a universe) as a whole
+      "parse_*" functions offer plain syntax parsing, with no semantic
+      interpretation of what is being parsed. "load_*" functions offer
+      the latter, hence also checking for semantic constraints (such as
+      the lack of key duplication).
+  *)
 
-    @return a pair [packages, Some req] if a complete CUDF (i.e., with
-    a request part) is found, otherwise return a pair [package, None]
-    if the request part is missing. Note that a document with no
-    request part is not a valid CUDF document. *)
-val parse : cudf_parser -> package list * request option
+  (** parse a CUDF document (or a universe) as a whole
 
-(** same as {!Cudf_parser.parse}, but additionally loads the package
-    list as an abstract {!Cudf.universe} *)
-val load : cudf_parser -> universe * request option
+      @return a pair [packages, Some req] if a complete CUDF (i.e., with
+      a request part) is found, otherwise return a pair [package, None]
+      if the request part is missing. Note that a document with no
+      request part is not a valid CUDF document. *)
+  val parse : cudf_parser -> package list * request option
 
-(** shorthand: parse a file given its name *)
-val parse_from_file : string -> package list * request option
+  (** same as {!Cudf_parser.parse}, but additionally loads the package
+      list as an abstract {!Cudf.universe} *)
+  val load : cudf_parser -> universe * request option
 
-(** shorthand: load from a file given its name *)
-val load_from_file : string -> universe * request option
+  (** shorthand: parse a file given its name *)
+  val parse_from_file : string -> package list * request option
 
-(** {6 Item-by-item CUDF parsing} *)
+  (** shorthand: load from a file given its name *)
+  val load_from_file : string -> universe * request option
 
-(** parse the next information item (either a package description or a
-    user request) from the given input channel. *)
-val parse_item :
-  cudf_parser -> [ `Package of package | `Request of request ]
+  (** {6 Item-by-item CUDF parsing} *)
 
-(** {6 Low-level parsing functions} *)
+  (** parse the next information item (either a package description or a
+      user request) from the given input channel. *)
+  val parse_item :
+    cudf_parser -> [ `Package of package | `Request of request ]
 
-(** Parse a file stanza (i.e., a RFC822-like stanza, with the notable
-    simplification that all field/value pairs are one-liners). Strip
-    any heading blanks lines leading to the first available
-    field/value pair.
-    
-    @return an associative list mapping field name to field values*)
-val parse_stanza : cudf_parser -> (string * string) list
+  (** {6 Low-level parsing functions} *)
+
+  (** Parse a file stanza (i.e., a RFC822-like stanza, with the notable
+      simplification that all field/value pairs are one-liners). Strip
+      any heading blanks lines leading to the first available
+      field/value pair.
+      
+      @return an associative list mapping field name to field values*)
+  val parse_stanza : cudf_parser -> (string * string) list
+end
+
+module Make : functor (Extra : Extra) -> T with type extra = Extra.t
 

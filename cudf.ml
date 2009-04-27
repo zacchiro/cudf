@@ -13,184 +13,199 @@
 open ExtLib
 open Printf
 
-open Cudf_types
+module type Extra = sig
+  type t
+  val to_string : t -> string
+end
 
-exception Constraint_violation of string
+module Make (Extra : Extra with type t = private [>]) = struct
 
-type package = {
-  package : pkgname ;
-  version : version ;
-  depends : vpkgformula ;
-  conflicts : vpkglist ;
-  provides : veqpkglist ;
-  installed : bool ;
-  keep : enum_keep option ;
-  extra : (string * string) list
-}
-type request = {
-  problem_id : string ;
-  install : vpkglist ;
-  remove : vpkglist ;
-  upgrade : vpkglist ;
-}
-type cudf_doc = package list * request
-type cudf_item = [ `Package of package | `Request of request ]
-type universe = {
-  id2pkg: ((string * int), package) Hashtbl.t;	(** <name, ver> -> pkg *)
-  name2pkgs: (string, package) Hashtbl.t; (** name -> pkg (multi-bindings) *)
-  inst_features: (string, (package * version option)) Hashtbl.t;
-  (** feature -> avail feature versions (multi-bindings) among
-      installed packages only. Each available feature is reported as a
-      pair <owner, provided version>, where owner is the package
-      providing it. Provided version "None" means "all possible
-      versions" *)
-  mutable univ_size : int;
-  mutable inst_size : int;
-}
-type cudf = universe * request
-type solution = universe
+  open Cudf_types
 
-let universe_size univ = univ.univ_size
-let installed_size univ = univ.inst_size
+  exception Constraint_violation of string
 
-let (=%) pkg1 pkg2 =
-  pkg1.package = pkg2.package && pkg1.version = pkg2.version
+  type package = {
+    package : pkgname ;
+    version : version ;
+    depends : vpkgformula ;
+    conflicts : vpkglist ;
+    provides : veqpkglist ;
+    installed : bool ;
+    keep : enum_keep option ;
+    extra : (string * Extra.t) list
+  }
+  type request = {
+    problem_id : string ;
+    install : vpkglist ;
+    remove : vpkglist ;
+    upgrade : vpkglist ;
+  }
+  type cudf_doc = package list * request
+  type cudf_item = [ `Package of package | `Request of request ]
+  type universe = {
+    id2pkg: ((string * int), package) Hashtbl.t;	(** <name, ver> -> pkg *)
+    name2pkgs: (string, package) Hashtbl.t; (** name -> pkg (multi-bindings) *)
+    inst_features: (string, (package * version option)) Hashtbl.t;
+    (** feature -> avail feature versions (multi-bindings) among
+        installed packages only. Each available feature is reported as a
+        pair <owner, provided version>, where owner is the package
+        providing it. Provided version "None" means "all possible
+        versions" *)
+    mutable univ_size : int;
+    mutable inst_size : int;
+  }
+  type cudf = universe * request
+  type solution = universe
 
-let default_package = {
-  package = "" ;
-  version = 0 ;
-  depends = [] ;
-  conflicts = [] ;
-  provides = [] ;
-  installed = false ;
-  keep = None ;
-  extra = [] ;
-}
+  let universe_size univ = univ.univ_size
+  let installed_size univ = univ.inst_size
 
-let default_request = {
-  problem_id = "" ;
-  install = [] ;
-  remove = [] ;
-  upgrade = [] ;
-}
+  let (=%) pkg1 pkg2 =
+    pkg1.package = pkg2.package && pkg1.version = pkg2.version
 
-let empty_universe () =
-  { id2pkg = Hashtbl.create 1023 ;
-    name2pkgs = Hashtbl.create 1023 ;
-    inst_features = Hashtbl.create 1023 ;
-    univ_size = 0 ; inst_size = 0 ;
+  let default_package = {
+    package = "" ;
+    version = 0 ;
+    depends = [] ;
+    conflicts = [] ;
+    provides = [] ;
+    installed = false ;
+    keep = None ;
+    extra = [] ;
   }
 
-(** process all features (i.e., Provides) provided by a given package
-    and fill with them a given feature table *)
-let expand_features pkg features =
-  if pkg.installed then
-    List.iter
-      (fun feat ->
-	 match feat with
-	   | name, None -> Hashtbl.add features name (pkg, None)
-	   | name, Some (_, ver) -> Hashtbl.add features name (pkg, (Some ver)))
-      pkg.provides
+  let default_request = {
+    problem_id = "" ;
+    install = [] ;
+    remove = [] ;
+    upgrade = [] ;
+  }
 
-let load_universe pkgs =
-  let univ = empty_universe () in
-    List.iter
-      (fun pkg ->
-	 let id = pkg.package, pkg.version in
-	   if Hashtbl.mem univ.id2pkg id then
-	     raise (Constraint_violation
-		      (sprintf "duplicate package: <%s, %d>"
-			 pkg.package pkg.version));
-	   Hashtbl.add univ.id2pkg id pkg;
-	   Hashtbl.add univ.name2pkgs pkg.package pkg;
-	   expand_features pkg univ.inst_features;
-	   univ.univ_size <- univ.univ_size + 1;
-	   if pkg.installed then
-	     univ.inst_size <- univ.inst_size + 1)
-      pkgs;
-    univ
+  let empty_universe () =
+    { id2pkg = Hashtbl.create 1023 ;
+      name2pkgs = Hashtbl.create 1023 ;
+      inst_features = Hashtbl.create 1023 ;
+      univ_size = 0 ; inst_size = 0 ;
+    }
 
-let lookup_package univ = Hashtbl.find univ.id2pkg
-let iter_packages f univ = Hashtbl.iter (fun _id pkg -> f pkg) univ.id2pkg
-let fold_packages f init univ =
-  Hashtbl.fold (fun _id pkg acc -> f acc pkg) univ.id2pkg init
+  (** process all features (i.e., Provides) provided by a given package
+      and fill with them a given feature table *)
+  let expand_features pkg features =
+    if pkg.installed then
+      List.iter
+        (fun feat ->
+     match feat with
+       | name, None -> Hashtbl.add features name (pkg, None)
+       | name, Some (_, ver) -> Hashtbl.add features name (pkg, (Some ver)))
+        pkg.provides
 
-let get_packages ?filter univ =
-  match filter with
-    | None -> fold_packages (fun acc pkg -> pkg :: acc) [] univ
-    | Some test ->
-	fold_packages
-	  (fun acc pkg -> if test pkg then pkg :: acc else acc)
-	  [] univ
+  let load_universe pkgs =
+    let univ = empty_universe () in
+      List.iter
+        (fun pkg ->
+     let id = pkg.package, pkg.version in
+       if Hashtbl.mem univ.id2pkg id then
+         raise (Constraint_violation
+            (sprintf "duplicate package: <%s, %d>"
+         pkg.package pkg.version));
+       Hashtbl.add univ.id2pkg id pkg;
+       Hashtbl.add univ.name2pkgs pkg.package pkg;
+       expand_features pkg univ.inst_features;
+       univ.univ_size <- univ.univ_size + 1;
+       if pkg.installed then
+         univ.inst_size <- univ.inst_size + 1)
+        pkgs;
+      univ
 
-let (|=) v = function
-  | None -> true
-  | Some (`Eq, v') -> v = v'
-  | Some (`Neq, v') -> v <> v'
-  | Some (`Geq, v') -> v >= v'
-  | Some (`Gt, v') -> v > v'
-  | Some (`Leq, v') -> v <= v'
-  | Some (`Lt, v') -> v < v'
+  let lookup_package univ = Hashtbl.find univ.id2pkg
+  let iter_packages f univ = Hashtbl.iter (fun _id pkg -> f pkg) univ.id2pkg
+  let fold_packages f init univ =
+    Hashtbl.fold (fun _id pkg acc -> f acc pkg) univ.id2pkg init
 
-let version_matches = (|=)
-
-let status univ =
-  let univ' = empty_universe () in
-    Hashtbl.iter
-      (fun id pkg ->
-	 match pkg with
-	   | { installed = true } ->
-	       Hashtbl.add univ'.id2pkg id pkg;
-	       Hashtbl.add univ'.name2pkgs pkg.package pkg;
-	       expand_features pkg univ'.inst_features
-	   | _ -> ())
-      univ.id2pkg;
-    univ'
-
-let lookup_packages ?(filter=None) univ pkgname = 
-  let packages = Hashtbl.find_all univ.name2pkgs pkgname in
+  let get_packages ?filter univ =
     match filter with
-	None -> packages
-      | Some _ as pred -> List.filter (fun p -> p.version |= pred) packages
+      | None -> fold_packages (fun acc pkg -> pkg :: acc) [] univ
+      | Some test ->
+    fold_packages
+      (fun acc pkg -> if test pkg then pkg :: acc else acc)
+      [] univ
 
-let get_installed univ pkgname =
-  List.filter (fun { installed = i } -> i) (lookup_packages univ pkgname)
+  let (|=) v = function
+    | None -> true
+    | Some (`Eq, v') -> v = v'
+    | Some (`Neq, v') -> v <> v'
+    | Some (`Geq, v') -> v >= v'
+    | Some (`Gt, v') -> v > v'
+    | Some (`Leq, v') -> v <= v'
+    | Some (`Lt, v') -> v < v'
 
-let mem_installed ?(include_features = true) ?(ignore = fun _ -> false)
-    univ (name, constr) =
-  let pkg_filter = fun pkg -> not (ignore pkg) in
-  let mem_feature constr =
-    let feats = Hashtbl.find_all univ.inst_features name in
-      List.exists
-	(function
-	     owner_pkg, None -> pkg_filter owner_pkg
-	   | owner_pkg, Some v -> pkg_filter owner_pkg && v |= constr)
-	feats in
-  let pkgs = List.filter pkg_filter (get_installed univ name) in
-    List.exists (fun pkg -> pkg.version |= constr) pkgs
-    || (include_features && mem_feature constr)
+  let version_matches = (|=)
 
-let who_provides univ (pkg, constr) =
-  List.filter
-    (function _, None -> true | _, Some v -> v |= constr)
-    (Hashtbl.find_all univ.inst_features pkg)
+  let status univ =
+    let univ' = empty_universe () in
+      Hashtbl.iter
+        (fun id pkg ->
+     match pkg with
+       | { installed = true } ->
+           Hashtbl.add univ'.id2pkg id pkg;
+           Hashtbl.add univ'.name2pkgs pkg.package pkg;
+           expand_features pkg univ'.inst_features
+       | _ -> ())
+        univ.id2pkg;
+      univ'
 
-let lookup_package_property pkg = function
-    "Package" -> string_of_pkgname pkg.package
-  | "Version" -> string_of_version pkg.version
-  | "Depends" -> string_of_vpkgformula pkg.depends
-  | "Conflicts" -> string_of_vpkglist pkg.conflicts
-  | "Provides" -> string_of_veqpkglist pkg.provides
-  | "Installed" -> string_of_bool pkg.installed
-  | "Keep" ->
-      (try string_of_keep (Option.get pkg.keep)
-       with Option.No_value -> raise Not_found)
-  | prop_name -> List.assoc prop_name pkg.extra
+  let lookup_packages ?(filter=None) univ pkgname = 
+    let packages = Hashtbl.find_all univ.name2pkgs pkgname in
+      match filter with
+    None -> packages
+        | Some _ as pred -> List.filter (fun p -> p.version |= pred) packages
 
-let lookup_request_property req = function
-    "Problem" -> req.problem_id
-  | "Install" -> string_of_vpkglist req.install
-  | "Remove" -> string_of_vpkglist req.remove
-  | "Upgrade" -> string_of_vpkglist req.upgrade
-  | _ -> raise Not_found
+  let get_installed univ pkgname =
+    List.filter (fun { installed = i } -> i) (lookup_packages univ pkgname)
 
+  let mem_installed ?(include_features = true) ?(ignore = fun _ -> false)
+      univ (name, constr) =
+    let pkg_filter = fun pkg -> not (ignore pkg) in
+    let mem_feature constr =
+      let feats = Hashtbl.find_all univ.inst_features name in
+        List.exists
+    (function
+         owner_pkg, None -> pkg_filter owner_pkg
+       | owner_pkg, Some v -> pkg_filter owner_pkg && v |= constr)
+    feats in
+    let pkgs = List.filter pkg_filter (get_installed univ name) in
+      List.exists (fun pkg -> pkg.version |= constr) pkgs
+      || (include_features && mem_feature constr)
+
+  let who_provides univ (pkg, constr) =
+    List.filter
+      (function _, None -> true | _, Some v -> v |= constr)
+      (Hashtbl.find_all univ.inst_features pkg)
+
+  let lookup_package_property pkg = function
+      "Package" -> string_of_pkgname pkg.package
+    | "Version" -> string_of_version pkg.version
+    | "Depends" -> string_of_vpkgformula pkg.depends
+    | "Conflicts" -> string_of_vpkglist pkg.conflicts
+    | "Provides" -> string_of_veqpkglist pkg.provides
+    | "Installed" -> string_of_bool pkg.installed
+    | "Keep" ->
+        (try string_of_keep (Option.get pkg.keep)
+         with Option.No_value -> raise Not_found)
+    | prop_name -> Extra.to_string (List.assoc prop_name pkg.extra)
+
+  let lookup_request_property req = function
+      "Problem" -> req.problem_id
+    | "Install" -> string_of_vpkglist req.install
+    | "Remove" -> string_of_vpkglist req.remove
+    | "Upgrade" -> string_of_vpkglist req.upgrade
+    | _ -> raise Not_found
+
+end
+
+module ExtraDefault = struct
+    type t = [`Unparsed of string ]
+    let to_string = function `Unparsed s -> s
+end
+
+include Make(ExtraDefault)

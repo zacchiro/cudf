@@ -12,150 +12,159 @@
 
 (** CUDF library *)
 
-open Cudf_types
+module type T = sig
 
-(** {6 CUDF documents} *)
+  type extra
+  open Cudf_types
 
-(** Representation of a parsed package description item.
+  (** {6 CUDF documents} *)
 
-    With this representation, optional properties have already been
-    expanded to their default values (if they have one). It is not
-    possible to know whether they were present or not in the CUDF
-    syntax. *)
-type package = {
-  package : pkgname ;
-  version : version ;
-  depends : vpkgformula ;	(* default : [] *)
-  conflicts : vpkglist ;	(* default : [] *)
-  provides : veqpkglist ;	(* default : [] *)
-  installed : bool ;		(* default : false *)
-  keep :  enum_keep option ;	(* default : None *)
-  extra : (string * string) list ;	(* extra properties, unparsed *)
-}
+  (** Representation of a parsed package description item.
 
-(** package equality up to <name, version>
-    i.e. 2 packages are equal if they have the same name and version *)
-val (=%) : package -> package -> bool
+      With this representation, optional properties have already been
+      expanded to their default values (if they have one). It is not
+      possible to know whether they were present or not in the CUDF
+      syntax. *)
+  type package = {
+    package : pkgname ;
+    version : version ;
+    depends : vpkgformula ;	(* default : [] *)
+    conflicts : vpkglist ;	(* default : [] *)
+    provides : veqpkglist ;	(* default : [] *)
+    installed : bool ;		(* default : false *)
+    keep :  enum_keep option ;	(* default : None *)
+    extra : (string * extra) list ;	(* extra properties, unparsed *)
+  }
 
-type request = {
-  problem_id : string ;
-  install : vpkglist ;	(* default : [] *)
-  remove : vpkglist ;	(* default : [] *)
-  upgrade : vpkglist ;	(* default : [] *)
-}
+  (** package equality up to <name, version>
+      i.e. 2 packages are equal if they have the same name and version *)
+  val (=%) : package -> package -> bool
 
-val default_package : package	(** implement package defaults *)
-val default_request : request	(** implement request defaults *)
+  type request = {
+    problem_id : string ;
+    install : vpkglist ;	(* default : [] *)
+    remove : vpkglist ;	(* default : [] *)
+    upgrade : vpkglist ;	(* default : [] *)
+  }
 
-(** {6 Syntactic CUDF representation} *)
+  val default_package : package	(** implement package defaults *)
+  val default_request : request	(** implement request defaults *)
 
-type cudf_doc = package list * request
-type cudf_item = [ `Package of package | `Request of request ]
+  (** {6 Syntactic CUDF representation} *)
 
-(** {6 Semantic CUDF representation} *)
+  type cudf_doc = package list * request
+  type cudf_item = [ `Package of package | `Request of request ]
 
-(** violation of a constraint imposed by CUDF specification
+  (** {6 Semantic CUDF representation} *)
 
-    @param msg explanation of which constraint has been violated *)
-exception Constraint_violation of string
+  (** violation of a constraint imposed by CUDF specification
 
-(** package universe (including package status, i.e., installed packages) *)
-type universe
-type cudf = universe * request
+      @param msg explanation of which constraint has been violated *)
+  exception Constraint_violation of string
 
-(** XXX temporary encoding for CUDF solutions, as they are not yet
-    defined by the CUDF spec
+  (** package universe (including package status, i.e., installed packages) *)
+  type universe
+  type cudf = universe * request
 
-    A universe encoding a solution matters only for its [installed]
-    packages, which are considered to be the resulting package
-    status *)
-type solution = universe
+  (** XXX temporary encoding for CUDF solutions, as they are not yet
+      defined by the CUDF spec
 
-val load_universe : package list -> universe
+      A universe encoding a solution matters only for its [installed]
+      packages, which are considered to be the resulting package
+      status *)
+  type solution = universe
 
-(** {5 CUDF manipulation} *)
+  val load_universe : package list -> universe
 
-(** lookup a specific package via a <name, version> key
-    @raise Not_found if the requested package cannot be found *)
-val lookup_package : universe -> pkgname * version -> package
+  (** {5 CUDF manipulation} *)
 
-(** check wheather a given package constraint is satisfied in a given
-    package status (i.e., the universe subset of [installed] packages)
+  (** lookup a specific package via a <name, version> key
+      @raise Not_found if the requested package cannot be found *)
+  val lookup_package : universe -> pkgname * version -> package
 
-    @param include_features allow constraint to be satisfied by features
-    (i.e., Provides). Default: true
-    @param ignore make the lookup skip over all packages matching the given
-    package predicate. Default: do not ignore any package *)
-val mem_installed :
-  ?include_features: bool ->
-  ?ignore:(package -> bool) ->
-  universe -> vpkg -> bool
+  (** check wheather a given package constraint is satisfied in a given
+      package status (i.e., the universe subset of [installed] packages)
 
-(** Ask who provides a given feature (predicate).
-    Note: only installed=true packages are considered by this function.
+      @param include_features allow constraint to be satisfied by features
+      (i.e., Provides). Default: true
+      @param ignore make the lookup skip over all packages matching the given
+      package predicate. Default: do not ignore any package *)
+  val mem_installed :
+    ?include_features: bool ->
+    ?ignore:(package -> bool) ->
+    universe -> vpkg -> bool
 
-    @return a list of packages providing the requested feature. Each
-    package is paired with an optional version; if it is None, the
-    given package provides all possible version of the feature; it if
-    is Some v, the given package only provides version [v] of the
-    feature. *)
-val who_provides : universe -> vpkg -> (package * version option) list
+  (** Ask who provides a given feature (predicate).
+      Note: only installed=true packages are considered by this function.
 
-(** lookup all available versions of a given package name
+      @return a list of packages providing the requested feature. Each
+      package is paired with an optional version; if it is None, the
+      given package provides all possible version of the feature; it if
+      is Some v, the given package only provides version [v] of the
+      feature. *)
+  val who_provides : universe -> vpkg -> (package * version option) list
 
-    @param filter filter the found packages according to the given
-    version constraint. Default: None (i.e., no filtering) *)
-val lookup_packages : ?filter:constr -> universe -> pkgname -> package list
+  (** lookup all available versions of a given package name
 
-(** lookup all installed versions of a given package name.
-    Shorthand for [lookup_packages] composed with filtering on installed=true *)
-val get_installed : universe -> pkgname -> package list
+      @param filter filter the found packages according to the given
+      version constraint. Default: None (i.e., no filtering) *)
+  val lookup_packages : ?filter:constr -> universe -> pkgname -> package list
 
-val iter_packages : (package -> unit) -> universe -> unit
-val fold_packages : ('a -> package -> 'a) -> 'a -> universe -> 'a
+  (** lookup all installed versions of a given package name.
+      Shorthand for [lookup_packages] composed with filtering on installed=true *)
+  val get_installed : universe -> pkgname -> package list
 
-(** conversion from universe to plain package list
+  val iter_packages : (package -> unit) -> universe -> unit
+  val fold_packages : ('a -> package -> 'a) -> 'a -> universe -> 'a
 
-    @param filter only return packages matching a given
-    predicate. Default is to return all packages *)
-val get_packages : ?filter:(package -> bool) -> universe -> package list
+  (** conversion from universe to plain package list
 
-(** total numer of available packages (no matter whether they are
-    installed or not) *)
-val universe_size : universe -> int
+      @param filter only return packages matching a given
+      predicate. Default is to return all packages *)
+  val get_packages : ?filter:(package -> bool) -> universe -> package list
 
-(** total number of installed packages occurring in the universe *)
-val installed_size : universe -> int
+  (** total numer of available packages (no matter whether they are
+      installed or not) *)
+  val universe_size : universe -> int
 
-(** project on packages having "installed: true".
-    Inefficient (involves hashtbl cloning), use with care. *)
-val status : universe -> universe
+  (** total number of installed packages occurring in the universe *)
+  val installed_size : universe -> int
 
-(** {5 Low-level stanza manipulation} *)
+  (** project on packages having "installed: true".
+      Inefficient (involves hashtbl cloning), use with care. *)
+  val status : universe -> universe
 
-(** low-level property lookup: given a package, lookup on it a
-    property by name, returning its (pretty-printed, see
-    {!Cudf_types}) value as a string
+  (** {5 Low-level stanza manipulation} *)
 
-    @param pkg package to be inspected
-    @param property property name to be lookup (case-sensitive)
+  (** low-level property lookup: given a package, lookup on it a
+      property by name, returning its (pretty-printed, see
+      {!Cudf_types}) value as a string
 
-    @raise Not_found if the given property name is not associated to
-    the given package (note that "being associated with" does not
-    necessarily mean that the property appears in the stanza, due to
-    default values) *)
-val lookup_package_property : package -> string -> string
+      @param pkg package to be inspected
+      @param property property name to be lookup (case-sensitive)
 
-(** Same as {!Cudf.lookup_package_property}, but acting on request
-    information items.
+      @raise Not_found if the given property name is not associated to
+      the given package (note that "being associated with" does not
+      necessarily mean that the property appears in the stanza, due to
+      default values) *)
+  val lookup_package_property : package -> string -> string
 
-    To lookup the problem identifier as a string (which strictly
-    speaking is not a property) you should lookup "Problem" *)
-val lookup_request_property : request -> string -> string
+  (** Same as {!Cudf.lookup_package_property}, but acting on request
+      information items.
 
-(** Check whether a version matches a version constraint,
-    e.g. [version_matches 1 (Some(`Eq, 2)) = false] *)
-val version_matches : version -> constr -> bool
+      To lookup the problem identifier as a string (which strictly
+      speaking is not a property) you should lookup "Problem" *)
+  val lookup_request_property : request -> string -> string
 
-(** Same as {!Cudf.version_matches} *)
-val ( |= ) : version -> constr -> bool
+  (** Check whether a version matches a version constraint,
+      e.g. [version_matches 1 (Some(`Eq, 2)) = false] *)
+  val version_matches : version -> constr -> bool
+
+  (** Same as {!Cudf.version_matches} *)
+  val ( |= ) : version -> constr -> bool
+
+end
+
+module type Extra = sig type t val to_string : t -> string end
+module Make : functor (Extra : Extra) -> T with type extra = Extra.t
+
