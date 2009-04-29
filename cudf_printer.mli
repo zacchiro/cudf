@@ -18,7 +18,7 @@ open Cudf
 
 (** {6 Pretty print to abstract formatters} *)
 
-val pp_cudf : Format.formatter -> cudf -> unit
+val pp_cudf : Format.formatter -> (universe * request) -> unit
 val pp_doc : Format.formatter -> cudf_doc -> unit
 val pp_item : Format.formatter -> cudf_item -> unit
 val pp_package : Format.formatter -> package -> unit

@@ -165,6 +165,8 @@ module type T = sig
 
 end
 
-module type Extra = sig type t val to_string : t -> string end
+module type Extra = sig type t = private [>  ] val to_string : t -> string end
 module Make : functor (Extra : Extra) -> T with type extra = Extra.t
 
+module ExtraDefault : Extra with type t = [`Unparsed of string ]
+include T with type extra = ExtraDefault.t

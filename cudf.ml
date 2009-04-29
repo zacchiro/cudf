@@ -14,9 +14,65 @@ open ExtLib
 open Printf
 
 module type Extra = sig
-  type t
+  type t = private [>  ]
   val to_string : t -> string
 end
+
+module type T = sig
+
+  type extra
+  open Cudf_types
+
+  type package = {
+    package : pkgname ;
+    version : version ;
+    depends : vpkgformula ;
+    conflicts : vpkglist ;
+    provides : veqpkglist ;
+    installed : bool ;	
+    keep :  enum_keep option ;
+    extra : (string * extra) list ;
+  }
+
+  val ( =% ) : package -> package -> bool
+
+  type request = {
+    problem_id : string ;
+    install : vpkglist ;
+    remove : vpkglist ;
+    upgrade : vpkglist ;
+  }
+  val default_package : package
+  val default_request : request	
+  type cudf_doc = package list * request
+  type cudf_item = [ `Package of package | `Request of request ]
+
+  exception Constraint_violation of string
+  type universe
+  type cudf = universe * request
+  type solution = universe
+
+  val load_universe : package list -> universe
+  val lookup_package : universe -> pkgname * version -> package
+  val mem_installed :
+    ?include_features: bool ->
+    ?ignore:(package -> bool) ->
+    universe -> vpkg -> bool
+  val who_provides : universe -> vpkg -> (package * version option) list
+  val lookup_packages : ?filter:constr -> universe -> pkgname -> package list
+  val get_installed : universe -> pkgname -> package list
+  val iter_packages : (package -> unit) -> universe -> unit
+  val fold_packages : ('a -> package -> 'a) -> 'a -> universe -> 'a
+  val get_packages : ?filter:(package -> bool) -> universe -> package list
+  val universe_size : universe -> int
+  val installed_size : universe -> int
+  val status : universe -> universe
+  val lookup_package_property : package -> string -> string
+  val lookup_request_property : request -> string -> string
+  val version_matches : version -> constr -> bool
+  val ( |= ) : version -> constr -> bool
+end
+
 
 module Make (Extra : Extra with type t = private [>]) = struct
 
@@ -24,6 +80,7 @@ module Make (Extra : Extra with type t = private [>]) = struct
 
   exception Constraint_violation of string
 
+  type extra = Extra.t
   type package = {
     package : pkgname ;
     version : version ;
