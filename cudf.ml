@@ -74,7 +74,7 @@ module type T = sig
 end
 
 
-module Make (Extra : Extra with type t = private [>]) = struct
+module Make (Extra : Extra) = struct
 
   open Cudf_types
 
