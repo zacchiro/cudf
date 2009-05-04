@@ -18,28 +18,28 @@
 (** {6 Pretty print to abstract formatters} *)
 module Make : functor (Extra : Cudf.Extra) ->
   functor (Cudf : Cudf.T with type extra  = Extra.t) ->
-    sig
-        open Cudf
-        val pp_cudf : Format.formatter -> cudf -> unit
-        val pp_doc : Format.formatter -> cudf_doc -> unit
-        val pp_item : Format.formatter -> cudf_item -> unit
-        val pp_package : Format.formatter -> package -> unit
-        val pp_request : Format.formatter -> request -> unit
-        val pp_packages : Format.formatter -> package list -> unit
-        val pp_universe : Format.formatter -> universe -> unit
+  sig
+    open Cudf
+    val pp_cudf : Format.formatter -> cudf -> unit
+    val pp_doc : Format.formatter -> cudf_doc -> unit
+    val pp_item : Format.formatter -> cudf_item -> unit
+    val pp_package : Format.formatter -> package -> unit
+    val pp_request : Format.formatter -> request -> unit
+    val pp_packages : Format.formatter -> package list -> unit
+    val pp_universe : Format.formatter -> universe -> unit
 
-        (** {6 Pretty print to string}
+    (** {6 Pretty print to string}
 
-            Shorthand functions. *)
+        Shorthand functions. *)
 
-        val string_of_cudf : cudf -> string
-        val string_of_doc : cudf_doc -> string
-        val string_of_item : cudf_item -> string
-        val string_of_package : package -> string
-        val string_of_request : request -> string
-        val string_of_packages : package list -> string
-        val string_of_universe : universe -> string
-    end
+    val string_of_cudf : cudf -> string
+    val string_of_doc : cudf_doc -> string
+    val string_of_item : cudf_item -> string
+    val string_of_package : package -> string
+    val string_of_request : request -> string
+    val string_of_packages : package list -> string
+    val string_of_universe : universe -> string
+  end
 
 (* XXX: how to get around this duplication ?? *)
 open Cudf

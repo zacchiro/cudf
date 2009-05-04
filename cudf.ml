@@ -16,6 +16,7 @@ open Printf
 module type Extra = sig
   type t = private [>  ]
   val to_string : t -> string
+  val of_string : (string * string) -> t
 end
 
 module type T = sig
@@ -261,8 +262,9 @@ module Make (Extra : Extra) = struct
 end
 
 module ExtraDefault = struct
-    type t = [`Unparsed of string ]
+    type t = [ `Unparsed of string ]
     let to_string = function `Unparsed s -> s
+    let of_string (k,v) = `Unparsed v
 end
 
 include Make(ExtraDefault)
