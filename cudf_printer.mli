@@ -17,8 +17,8 @@
 
 (** {6 Pretty print to abstract formatters} *)
 module Make : functor (Extra : Cudf.Extra) ->
+  functor (Cudf : Cudf.T with type extra  = Extra.t) ->
     sig
-        module Cudf : sig include Cudf.T with type extra = Extra.t end
         open Cudf
         val pp_cudf : Format.formatter -> cudf -> unit
         val pp_doc : Format.formatter -> cudf_doc -> unit
@@ -41,7 +41,7 @@ module Make : functor (Extra : Cudf.Extra) ->
         val string_of_universe : universe -> string
     end
 
-(* XXX: how to get around this mess ?? *)
+(* XXX: how to get around this duplication ?? *)
 open Cudf
 
 val pp_cudf : Format.formatter -> cudf -> unit
