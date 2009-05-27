@@ -12,7 +12,34 @@
 
 open ExtLib
 
-module Make (Extra : Cudf.Extra) (Cudf : Cudf.T with type extra = Extra.t) = struct
+module TF (Cudf : Cudf.T) =
+  struct
+    module type T =
+      sig
+        open Cudf
+        val pp_cudf : Format.formatter -> cudf -> unit
+        val pp_doc : Format.formatter -> cudf_doc -> unit
+        val pp_item : Format.formatter -> cudf_item -> unit
+        val pp_package : Format.formatter -> package -> unit
+        val pp_request : Format.formatter -> request -> unit
+        val pp_packages : Format.formatter -> package list -> unit
+        val pp_universe : Format.formatter -> universe -> unit
+
+        (** {6 Pretty print to string}
+
+            Shorthand functions. *)
+
+        val string_of_cudf : cudf -> string
+        val string_of_doc : cudf_doc -> string
+        val string_of_item : cudf_item -> string
+        val string_of_package : package -> string
+        val string_of_request : request -> string
+        val string_of_packages : package list -> string
+        val string_of_universe : universe -> string
+      end
+  end
+
+module Make (Cudf : Cudf.T) = struct
 
   open Cudf
   open Cudf_types
@@ -33,7 +60,7 @@ module Make (Extra : Cudf.Extra) (Cudf : Cudf.T with type extra = Extra.t) = str
         pp ("Installed", string_of_bool pkg.installed);
       if pkg.keep <> default_package.keep then
         Option.may (fun k -> pp ("Keep", string_of_keep k)) pkg.keep;
-      List.iter (fun (k,v) -> pp (k, Extra.to_string v)) pkg.extra
+      List.iter (fun (k,v) -> pp (k, Cudf.Extra.to_string v)) pkg.extra
 
   let pp_request fmt req =
     let pp = pp_property fmt in
@@ -84,4 +111,4 @@ module Make (Extra : Cudf.Extra) (Cudf : Cudf.T with type extra = Extra.t) = str
 
 end
 
-include Make(Cudf.ExtraDefault)(Cudf)
+include Make(Cudf)

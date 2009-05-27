@@ -10,11 +10,17 @@
 (*  library, see the COPYING file for more information.                      *)
 (*****************************************************************************)
 
+module type Extra = sig
+  type t = private [>  ]
+  val to_string : t -> string
+  val of_string : (string * string) -> t
+end
+
 (** CUDF library *)
 
 module type T = sig
 
-  type extra
+  module Extra : Extra
   open Cudf_types
 
   (** {6 CUDF documents} *)
@@ -33,7 +39,7 @@ module type T = sig
     provides : veqpkglist ;	(* default : [] *)
     installed : bool ;		(* default : false *)
     keep :  enum_keep option ;	(* default : None *)
-    extra : (string * extra) list ;	(* extra properties, unparsed *)
+    extra : (string * Extra.t) list ;	(* extra properties, unparsed *)
   }
 
   (** package equality up to <name, version>
@@ -165,13 +171,7 @@ module type T = sig
 
 end
 
-module type Extra = sig
-  type t = private [>  ]
-  val to_string : t -> string
-  val of_string : (string * string) -> t
-end
-
-module Make : functor (Extra : Extra) -> T with type extra = Extra.t
+module Make : functor (Extra : Extra) -> T with module Extra = Extra
 
 module ExtraDefault : Extra with type t = [`Unparsed of string ]
-include T with type extra = ExtraDefault.t
+include T with module Extra = ExtraDefault

@@ -13,7 +13,27 @@
 open ExtLib
 open Printf
 
-module Make (Extra : Cudf.Extra) (Cudf : Cudf.T with type extra = Extra.t) = struct
+module TF (Cudf : Cudf.T) =
+  struct
+    module type T = sig
+      open Cudf
+
+      type cudf_parser
+      val from_in_channel : in_channel -> cudf_parser
+      val close : cudf_parser -> unit
+
+      exception Parse_error of int * string
+      val parse : cudf_parser -> package list * request option
+      val load : cudf_parser -> universe * request option
+      val parse_from_file : string -> package list * request option
+      val load_from_file : string -> universe * request option
+      val parse_item :
+      cudf_parser -> [ `Package of package | `Request of request ]
+      val parse_stanza : cudf_parser -> (string * string) list
+    end
+  end
+
+module Make (Cudf : Cudf.T) = struct
   open Cudf
   open Cudf_types
 
@@ -89,7 +109,7 @@ module Make (Extra : Cudf.Extra) (Cudf : Cudf.T with type extra = Extra.t) = str
       | ("Keep" , s) :: tl ->
     aux_package { pkg with keep = Some (parse_keep s) } tl
       | (k,v) :: tl ->
-    aux_package { pkg with extra = (k,Extra.of_string (k,v)) :: pkg.extra } tl
+    aux_package { pkg with extra = (k,Cudf.Extra.of_string (k,v)) :: pkg.extra } tl
       | [] -> pkg
     in
     let rec aux_request req = function
@@ -155,4 +175,4 @@ module Make (Extra : Cudf.Extra) (Cudf : Cudf.T with type extra = Extra.t) = str
   let load_from_file fname = parser_wrapper fname load
 end
 
-include Make(Cudf.ExtraDefault)(Cudf)
+include Make(Cudf)

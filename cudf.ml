@@ -21,7 +21,7 @@ end
 
 module type T = sig
 
-  type extra
+  module Extra : Extra
   open Cudf_types
 
   type package = {
@@ -32,7 +32,7 @@ module type T = sig
     provides : veqpkglist ;
     installed : bool ;	
     keep :  enum_keep option ;
-    extra : (string * extra) list ;
+    extra : (string * Extra.t) list ;
   }
 
   val ( =% ) : package -> package -> bool
@@ -77,11 +77,11 @@ end
 
 module Make (Extra : Extra) = struct
 
+  module Extra = Extra
   open Cudf_types
 
   exception Constraint_violation of string
 
-  type extra = Extra.t
   type package = {
     package : pkgname ;
     version : version ;

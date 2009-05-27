@@ -13,7 +13,36 @@
 open ExtLib
 open Printf
 
-module Make (Extra : Cudf.Extra) (Cudf : Cudf.T with type extra = Extra.t) = struct
+module TF (Cudf : Cudf.T) =
+  struct
+    module type T = sig
+      open Cudf_types
+      open Cudf
+
+      type inconsistency_reason =
+        [ `Unsat_dep of (pkgname * version) * vpkgformula
+        | `Conflict of (pkgname * version) * vpkglist
+        ]
+
+      type bad_solution_reason =
+        [ inconsistency_reason
+        | `Missing_install of vpkglist
+        | `Missing_upgrade of vpkglist
+        | `Unremoved of vpkglist
+        | `Downgrade of vpkglist
+        | `Multi_upgrade of pkgname list
+        | `Not_kept of pkgname * version * enum_keep
+        ]
+      val explain_reason : bad_solution_reason -> string
+      val satisfy_formula : universe -> vpkgformula -> bool * vpkgformula
+      val disjoint :
+        universe -> ?ignore:(package -> bool) -> vpkglist -> bool * vpkglist
+      val is_consistent : universe -> bool * inconsistency_reason option
+      val is_solution : cudf -> solution -> bool * bad_solution_reason list
+      end
+  end
+
+module Make (Cudf : Cudf.T) = struct
 
   open Cudf_types
   open Cudf
@@ -197,4 +226,4 @@ module Make (Extra : Cudf.Extra) (Cudf : Cudf.T with type extra = Extra.t) = str
         [is_succ; is_cons; install_ok; remove_ok; upgrade_ok; keep_ok]
 end
 
-include Make(Cudf.ExtraDefault)(Cudf)
+include Make(Cudf)
