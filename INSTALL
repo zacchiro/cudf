@@ -3,18 +3,14 @@ To build
 ========
 
 Build dependencies:
-- ocaml	>= 3.10.2	(Debian package: "ocaml-nox", Mandriva: "ocaml")
-- findlib		(Debian package: "ocaml-findlib", Mandriva: "ocaml-findlib")
-- pcre-ocaml		(Debian package: "libpcre-ocaml-dev",
-  			 Mandriva: "ocaml-pcre-devel")
+- ocaml	>= 3.10.2	(Debian package: "ocaml-nox")
+- findlib		(Debian package: "ocaml-findlib")
+- pcre-ocaml		(Debian package: "libpcre-ocaml-dev")
 - extlib		(Debian package: "libextlib-ocaml-dev")
-  			 Mandriva: "ocaml-extlib-devel")
 - oUnit			(only needed to run the test suite
-  		 	 Debian package: "libounit-ocaml-dev",
-			 Mandriva: "ocaml-ounit-devel")
+  		 	 Debian package: "libounit-ocaml-dev")
 - glib			(only needed to build the C bindings
-			 Debian package: "libglib2.0-dev",
-			 Mandriva: "libglib2.0-devel")
+			 Debian package: "libglib2.0-dev")
 
 To build run:
 

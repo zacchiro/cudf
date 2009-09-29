@@ -26,7 +26,8 @@ let univ = ref None
 let sol = ref None
 
 let arg_spec = [
-  "-cudf", Arg.Set_string cudf_arg, "parse the given CUDF (universe + request)" ;
+  "-cudf", Arg.Set_string cudf_arg,
+    "parse the given CUDF (universe + request)" ;
   "-univ", Arg.Set_string univ_arg, "parse the given package universe" ;
   "-sol", Arg.Set_string sol_arg, "parse the given problem solution" ;
   "-dump", Arg.Set dump_arg, "dump parse results to standard output" ;
