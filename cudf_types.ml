@@ -174,13 +174,18 @@ let parse_type s =
   |[typeid;default] -> (parse_t typeid, parse_t typeid (parse_default default))
   |_ -> raise (Parse_error ("No default value : ", s))
 
+let starts_with sw s =
+  let sl = String.length s in
+  let swl = String.length sw in
+  sl >= swl && String.sub s 0 swl = sw
+
 let reserved_properties s =
   starts_with "is-installed" s ||
   starts_with "was-installed" s
 
 let parse_type_schema s =
   match Pcre.split ~rex:colon_sep_RE s with
-  |[ident;s_type] when not(reserved_properties indent) -> (ident, parse_type s_type)
+  |[ident;s_type] when not(reserved_properties ident) -> (ident, parse_type s_type)
   |_ -> raise (Parse_error ("Wrong separator : ", s))
 
 let parse_typedecls = list_parser ~sep:and_sep_RE parse_type_schema
