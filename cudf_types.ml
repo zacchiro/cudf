@@ -43,16 +43,17 @@ exception Parse_error of string * string
 
 (** Regexps *)
 
+let pkgname_STR = "[a-z0-9%.+-]+"
 let space_RE = Pcre.regexp " "
-let pkgname_RE = Pcre.regexp "^[a-z0-9%.+-]+$"
+let pkgname_RE = Pcre.regexp (sprintf "^%s$" pkgname_STR)
 let vconstr_REs = "(=|!=|>=|>|<=|<)\\s+(\\d+)"
-let vpkg_RE = Pcre.regexp (sprintf "^([a-z0-9%%.+-]+)(\\s+%s)?$" vconstr_REs)
+let vpkg_RE = Pcre.regexp (sprintf "^(%s)(\\s+%s)?$" pkgname_STR vconstr_REs)
 let and_sep_RE = Pcre.regexp "\\s*,\\s*"
 let or_sep_RE = Pcre.regexp "\\s*\\|\\s*"
 let semicol_sep_RE = Pcre.regexp "\\s*;\\s*"
 let colon_sep_RE = Pcre.regexp "\\s*:\\s*"
 let eq_sep_RE = Pcre.regexp "\\s*=\\s*"
-let enum_RE =  Pcre.regexp "^enum\\s*\\((.*)\\)\\s*=\\s*(.*)$"
+let enum_RE =  Pcre.regexp "enum\\s*\\(\\s*([^)]+)\\s*\\)"
 let quote_RE = Pcre.regexp "\"(.*)\""
 
 (** Higher-order parsers *)
@@ -137,12 +138,17 @@ let parse_vpkgformula s =
       
 let parse_veqpkglist = list_parser ~sep:and_sep_RE parse_veqpkg
 
+let remove_quotes s = let subs = Pcre.extract ~rex:quote_RE s in subs.(1)
+
 let parse_enum l s =
-  if List.mem s l then s else raise (Parse_error ("enum", s))
+  try 
+    if List.mem s (List.map remove_quotes l) then s 
+    else raise (Parse_error ("Unknown Value in enum ", s))
+  with Not_found -> raise (Parse_error ("Quotes needed ", s))
 
 let parse_default s =
-  try let subs = Pcre.extract ~rex:quote_RE s in subs.(1)
-  with Not_found -> raise (Parse_error ("default", s))
+  try remove_quotes s
+  with Not_found -> raise (Parse_error ("Quotes needed ", s))
 
 let parse_type s =
   let parse_t = function
@@ -158,20 +164,18 @@ let parse_type s =
     |"veqpkglist" -> (fun s -> `Veqpkglist (parse_veqpkglist s))
     |s when Pcre.pmatch ~rex:enum_RE s -> (* enum *)
           let subs = Pcre.extract ~rex:enum_RE s in
-          print_endline subs.(1);
-          print_endline subs.(2);
-          let l = Pcre.split ~rex:colon_sep_RE (subs.(1)) in
+          let l = Pcre.split ~rex:semicol_sep_RE (subs.(1)) in
           fun s -> `Enum (parse_enum l s)
-    |_ -> raise (Parse_error ("typedecl 1", s))
+    |s -> raise (Parse_error ("Unknown type : ", s))
   in
   match Pcre.split ~rex:eq_sep_RE s with
   |[typeid;default] -> (parse_t typeid, parse_t typeid (parse_default default))
-  |_ -> raise (Parse_error ("typedecl 2", s))
+  |_ -> raise (Parse_error ("No default value : ", s))
 
 let parse_type_schema s =
   match Pcre.split ~rex:colon_sep_RE s with
   |[ident;s_type] -> (ident, parse_type s_type)
-  |_ -> raise (Parse_error ("typedecl 3", s))
+  |_ -> raise (Parse_error ("Wrong separator : ", s))
 
 let parse_typedecls = list_parser ~sep:and_sep_RE parse_type_schema
 

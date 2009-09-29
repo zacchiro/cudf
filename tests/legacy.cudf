@@ -1,6 +1,6 @@
 
-Property: cc: bool = "true"
-Property: aa: int = "1"
+Property: cc: bool = "true" , aa: int = "1"
+Property: bb: enum ("A";"B") = "A" , dd : string = "aa"
 
 Package: car
 Version: 1
@@ -8,6 +8,8 @@ Depends: engine, wheel, door, battery
 Installed: true
 cc: true
 aa: 1
+bb: A
+dd: aa
 
 Package: bicycle
 Version: 7
