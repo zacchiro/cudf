@@ -49,12 +49,28 @@ let starts_with sw s =
   let swl = String.length sw in
   sl >= swl && String.sub s 0 swl = sw
 
-let is_postmark s = starts_with "package" s || starts_with "problem" s 
+(* XXX problem TO be removed *)
+let is_postmark s = 
+  starts_with "package" s ||
+  starts_with "problem" s ||
+  starts_with "request" s
 
 (* XXX: non tail-recursive *)
 let parse_paragraph ch =
-  let rec aux ?(start = false) p =
+  let rec aux acc ?(start = false) p =
     match Enum.get ch.lines with
+    (* RFC822-style line continuations *)
+    |Some line when Pcre.pmatch ~rex:(Pcre.regexp "^\\s+(.+)$") line ->
+        begin match acc with
+        |(n,_,_)::_ ->
+            begin
+              ch.pos <- ch.pos + 1;
+              let subs = Pcre.extract ~rex:(Pcre.regexp "^\\s+(.+)$") line in
+              let prop = (n, subs.(1), ch.pos) in
+              aux (prop::acc) ch
+            end
+        |_ -> parse_error ch.pos ("invalid property line :" ^ line)
+        end
     |Some line ->
         (try
           let subs = Pcre.extract ~rex:prop_RE line in
@@ -63,21 +79,21 @@ let parse_paragraph ch =
           if (is_postmark name) && not(start) then begin
             (* beginning of next stanza, rollback *)
             Enum.push ch.lines line;
-            []
+            acc
           end
           else begin
             ch.pos <- ch.pos + 1;
-            prop :: aux ch
+            aux (prop::acc) ch
           end
         with Not_found ->  (* not a valid property line *)
           if not (Pcre.pmatch ~rex:blank_RE line) then
             parse_error ch.pos "invalid property line";
-            lstrip ch;
-            []
+          lstrip ch;
+          acc
         )
-    |None -> []
+    |None -> acc
   in
-  match aux ~start:true ch with
+  match aux [] ~start:true ch with
   |[] -> None
   |stanza -> Some stanza
 
@@ -105,9 +121,10 @@ let parse_stanza_package extra_parser par =
   in
   `Package (aux_package default_package par)
 
-let parse_stanza_problem par =
+(* XXX problem TO be removed *)
+let parse_stanza_request par =
   let rec aux_request req = function
-    |("problem", s, _) :: tl ->
+    |(("problem" | "request"), s, _) :: tl ->
         aux_request { req with problem_id = s } tl
     |("install", s, _) :: tl ->
         aux_request { req with install = parse_vpkglist s } tl
@@ -140,14 +157,15 @@ let parse_stanza_preample par =
       (sprintf "unexpected property '%s' in package description item" name)
 
 let has_package = List.exists (fun (p,_,_) -> p = "package")
-let has_problem = List.exists (fun (p,_,_) -> p = "problem")
+(* XXX problem TO be removed *)
+let has_request = List.exists (fun (p,_,_) -> (p = "request") || (p = "problem") )
 let has_property = List.exists (fun (p,_,_) -> p = "property")
 
 let parse_stanza extra_parser par =
   if has_package par then
     parse_stanza_package extra_parser par
-  else if has_problem par then
-    parse_stanza_problem par
+  else if has_request par then
+    parse_stanza_request par
   else
     match par with
     |(name,v,i)::_ -> parse_error i ("invalid stanza line : "^ name)

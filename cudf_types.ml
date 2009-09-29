@@ -41,8 +41,10 @@ type basetype = [
 (* <type, literal> *)
 exception Parse_error of string * string
 
-(** Regexps *)
+(* TODO : uniform lexical naming conventions for identifiers (package names,
+ * property names, enumeration values) *)
 
+(** Regexps *)
 let pkgname_STR = "[a-z0-9%.+-]+"
 let space_RE = Pcre.regexp " "
 let pkgname_RE = Pcre.regexp (sprintf "^%s$" pkgname_STR)
@@ -172,9 +174,13 @@ let parse_type s =
   |[typeid;default] -> (parse_t typeid, parse_t typeid (parse_default default))
   |_ -> raise (Parse_error ("No default value : ", s))
 
+let reserved_properties s =
+  starts_with "is-installed" s ||
+  starts_with "was-installed" s
+
 let parse_type_schema s =
   match Pcre.split ~rex:colon_sep_RE s with
-  |[ident;s_type] -> (ident, parse_type s_type)
+  |[ident;s_type] when not(reserved_properties indent) -> (ident, parse_type s_type)
   |_ -> raise (Parse_error ("Wrong separator : ", s))
 
 let parse_typedecls = list_parser ~sep:and_sep_RE parse_type_schema

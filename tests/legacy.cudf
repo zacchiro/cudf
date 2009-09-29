@@ -1,6 +1,7 @@
 
 Property: cc: bool = "true" , aa: int = "1"
-Property: bb: enum ("A";"B") = "A" , dd : string = "aa"
+Property: bb: enum ("A";"B") = "A" 
+ dd : string = "aa"
 
 Package: car
 Version: 1
