@@ -51,16 +51,18 @@ val load_from_file : string -> universe * request option
 
 (** parse the next information item (either a package description or a
     user request) from the given input channel. *)
+(*
 val parse_item :
   cudf_parser -> [ `Package of package | `Request of request ]
-
+*)
 (** {6 Low-level parsing functions} *)
 
 (** Parse a file stanza (i.e., a RFC822-like stanza, with the notable
     simplification that all field/value pairs are one-liners). Strip
     any heading blanks lines leading to the first available
     field/value pair.
-    
+
+(*    
     @return an associative list mapping field name to field values*)
 val parse_stanza : cudf_parser -> (string * string) list
-
+*)

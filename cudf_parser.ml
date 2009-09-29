@@ -16,139 +16,218 @@ open Printf
 open Cudf
 open Cudf_types
 
+type cudf_parser =
+  { mutable ic : in_channel;
+    mutable cur : string;
+    mutable lineno : int;
+    mutable eof : bool }
+
+let eof i = i.eof
+
+let cur i =
+  assert (not i.eof);
+  i.cur
+
 exception Parse_error of int * string
 
-(* INVARIANT: lines are always kept lstrip-ed (see [lstrip] below) *)
-type cudf_parser = {
-  lines : string Enum.t ;	(* TODO: to be converted to a _real_ parser *)
-  mutable pos: int ;	(** last line read; start with 0, 1st line read is 1 *)
-}
+let parse_error i msg = raise (Parse_error (i, msg))
 
-let parse_error p msg = raise (Parse_error (p.pos, msg))
+let next i =
+  assert (not i.eof);
+  try
+    i.cur <- input_line i.ic ;
+    i.lineno <- i.lineno + 1
+  with End_of_file ->
+    i.eof <- true
 
-let blank_RE = Pcre.regexp "^\\s*$"
-let prop_RE = Pcre.regexp "(^[a-zA-Z][a-zA-Z0-9-]*): (.*)$"
+let reset i =
+  seek_in i.ic 0 ;
+  i.lineno <- 0 ;
+  i.eof <- false
+  
+let expect s v = assert (not (eof s) && cur s = v); next s
 
-(* strip all lines up to the first non-blank line *)
-let rec lstrip p =
-  match Enum.get p.lines with
-    | None -> ()	(* empty enum, nothing to strip *)
-    | Some line when Pcre.pmatch ~rex:blank_RE line ->
-        p.pos <- p.pos + 1;
-        lstrip p
-    | Some line -> Enum.push p.lines line	(* non-blank line, rollback *)
+let is_blank i = not (eof i) && cur i = ""
+
+let skip_blank_lines i =
+  while is_blank i do next i done
+
+let field_re = Str.regexp "^\\([^:]*\\)*:[ \t]*\\(.*\\)$"
+
+let remove_ws s =
+  let l = String.length s in
+  let p = ref (l - 1) in
+  while !p >= 0 && (s.[!p] = ' ' || s.[!p] = '\t') do decr p done;
+  if !p + 1 = l then s else
+  String.sub s 0 (!p + 1)
+
+(* return None with EOF *)
+let parse_paragraph i =
+  skip_blank_lines i;
+  if eof i then None else begin
+    let fields = ref [] in
+    while
+      let l = cur i in
+      if not (Str.string_match field_re l 0) then
+        parse_error i.lineno ("Malformed field :"^l);
+      let name = Str.matched_group 1 l in
+      let data1 = remove_ws (Str.matched_group 2 l) in
+      let data = ref [data1] in
+      next i;
+      while
+        not (eof i || is_blank i) &&
+        let l = cur i in l.[0] = ' ' || l.[0] = '\t'
+      do
+        data := remove_ws (cur i) :: !data;
+        next i
+      done;
+      fields := (String.lowercase name, List.rev !data, i.lineno - 1) :: !fields;
+      not (eof i || is_blank i)
+    do () done;
+    assert (!fields <> []) ;
+    Some (List.rev !fields)
+  end
+
+let single_line = function
+  |[s] -> s
+  | _ as l ->
+      failwith (
+        Printf.sprintf "field '' should be a single line\n%s"
+        (String.concat " " l)
+      )
+
+let token_re =
+  Str.regexp
+    ("[ \t]+\\|\\(" ^
+     String.concat "\\|"
+       [","; "|"; "("; ")"; "<<"; "<="; "="; ">="; ">>"; "<"; ">";
+        "[A-Za-z0-9.:_+~-]+"] ^
+     "\\)")
+
+let rec next_token s p =
+  if !p = String.length s then raise End_of_file else
+  if Str.string_match token_re s !p then begin
+    p := Str.match_end ();
+    try
+      Str.matched_group 1 s
+    with Not_found ->
+      next_token s p
+  end else
+    failwith (Format.sprintf "Bad token in '%s' at %d" s !p)
 
 let from_in_channel ic =
-  let p = { lines = input_lines ic ; pos = 0 } in
-    lstrip p;
-    p
+  let res = { ic = ic; cur = ""; lineno = 0 ; eof = false }
+  in next res ; res
+
 let close p = ()
 
-(* XXX: non tail-recursive *)
-let parse_stanza p =
-  let rec aux ?(start = false) p =
-    match Enum.get p.lines with
-      | Some line ->
-	  (try
-	     let subs = Pcre.extract ~rex:prop_RE line in
-	     let prop = subs.(1), subs.(2) in
-	       (match prop with
-		 | "Package", _
-		 | "Problem", _ when not start ->
-		     (* beginning of next stanza, rollback *)
-		     Enum.push p.lines line;
-		     []
-		 | _ ->
-		     p.pos <- p.pos + 1;
-		     prop :: aux p)
-	   with Not_found ->	(* not a valid property line *)
-	     if not (Pcre.pmatch ~rex:blank_RE line) then
-	       parse_error p "invalid property line";
-	     lstrip p;
-	     [])
-      | None -> []
-  in
-    match aux ~start:true p with
-      | [] -> raise End_of_file
-      | stanza -> stanza
-	
-let parse_item p =
-  let stanza = parse_stanza p in
+exception Eof
+
+let parse_822_iter parse ch =
+  let p = ref [] in
+  let r = ref None in
+  try
+    while true do
+      match parse_paragraph ch with
+      |None -> raise Eof
+      |Some par ->
+          match parse par with
+          |(`Package e) -> p := e :: !p
+          |(`Request e) -> r := Some (e)
+    done ;
+    (!p,!r)
+  with Eof -> (!p,!r)
+
+let parse_stanza_package extra_parser par = 
   let rec aux_package pkg = function
-    | ("Version", s) :: tl ->
-	aux_package { pkg with version = parse_version s } tl
-    | ("Depends", s) :: tl ->
-	aux_package { pkg with depends = parse_vpkgformula s } tl
-    | ("Conflicts", s) :: tl ->
-	aux_package { pkg with conflicts = parse_vpkglist s } tl
-    | ("Provides", s) :: tl ->
-	aux_package { pkg with provides = parse_veqpkglist s } tl
-    | ("Installed" , s) :: tl ->
-	aux_package { pkg with installed = parse_bool s } tl
-    | ("Keep" , s) :: tl ->
-	aux_package { pkg with keep = Some (parse_keep s) } tl
-    | prop :: tl ->
-	aux_package { pkg with extra = prop :: pkg.extra } tl
-    | [] -> pkg
+    |("package", s, _) :: tl ->
+        aux_package { pkg with package = parse_pkgname (single_line s) } tl
+    |("version", s, _) :: tl ->
+        aux_package { pkg with version = parse_version (single_line s) } tl
+    |("depends", s, _) :: tl ->
+        aux_package { pkg with depends = parse_vpkgformula (single_line s) } tl
+    |("conflicts", s, _) :: tl ->
+        aux_package { pkg with conflicts = parse_vpkglist (single_line s) } tl
+    |("provides", s, _) :: tl ->
+        aux_package { pkg with provides = parse_veqpkglist (single_line s) } tl
+    |("installed" , s, _) :: tl ->
+        aux_package { pkg with installed = parse_bool (single_line s) } tl
+    |("keep" , s, _) :: tl ->
+        aux_package { pkg with keep = Some (parse_keep (single_line s)) } tl
+    |((name, s, i) as prop) :: tl ->
+        let (pparser, default) = extra_parser prop in
+        let p = (name, pparser (single_line s)) in
+        aux_package { pkg with extra = p :: pkg.extra } tl
+    |[] -> pkg
   in
+  `Package (aux_package default_package par)
+
+let parse_stanza_problem par =
   let rec aux_request req = function
-    | ("Install", s) :: tl ->
-	aux_request { req with install = parse_vpkglist s } tl
-    | ("Remove", s) :: tl ->
-	aux_request { req with remove = parse_vpkglist s } tl
-    | ("Upgrade", s) :: tl ->
-	aux_request { req with upgrade = parse_vpkglist s } tl
-    | (name, _) :: tl ->
-	parse_error p
-	  (sprintf "unexpected property '%s' in problem description item" name);
-    | [] -> req
-   in
-    try
-      (match stanza with
-	| [] -> parse_error p "empty file stanza"
-	| ("Package", n) :: tl ->
-	    `Package
-	      (aux_package { default_package with package = parse_pkgname n }
-		 tl)
-	| ("Problem", id) :: tl ->
-	    `Request (aux_request { default_request with problem_id = id } tl)
-	| (prop_name, _) :: _ ->
-	    parse_error p
-	      (sprintf "unexpected stanza starting with postmark '%s'"
-		 prop_name))
-    with Cudf_types.Parse_error _ as exn ->
-      parse_error p (sprintf "error while parsing a CUDF type: %s"
-		       (Printexc.to_string exn))
-
-let parse_items p =
-  let items = ref [] in
-    try
-      while true do
-	items := parse_item p :: !items
-      done;
-      assert false	(* unreachable *)
-    with End_of_file -> List.rev !items
-
-let parse p =
-  let pkg_items, req_items =
-    List.partition (function `Package _ -> true | _ -> false) (parse_items p)
+    |("problem", s, _) :: tl ->
+        aux_request { req with problem_id = single_line s } tl
+    |("install", s, _) :: tl ->
+        aux_request { req with install = parse_vpkglist (single_line s) } tl
+    |("remove", s, _) :: tl ->
+        aux_request { req with remove = parse_vpkglist (single_line s) } tl
+    |("upgrade", s, _) :: tl ->
+        aux_request { req with upgrade = parse_vpkglist (single_line s) } tl
+    |(name, _, i) :: tl ->
+        parse_error i
+        (sprintf "unexpected property '%s' in problem description item" name)
+    |[] -> req
   in
-  let pkgs =
-    List.map (function `Package pkg -> pkg | _ -> assert false) pkg_items
-  in
-    match req_items with
-      | [`Request req] -> pkgs, Some req
-      | [] -> pkgs, None
-      | _ -> parse_error p "too many problem description items (1 expected)"
+	`Request (aux_request default_request par)
 
-let load p =
-  let pkgs, req = parse p in
-    Cudf.load_universe pkgs, req
+let parse_stanza_preample par =
+  let rec aux_request acc = function
+    |("property", s, i) :: tl ->
+        (try
+          let l = Cudf_types.parse_typedecls (single_line s) in
+          aux_request (acc @ l) tl
+        with Cudf_types.Parse_error (msg,_) -> parse_error i msg)
+    |[] -> acc
+    | _ :: tl -> aux_request acc tl
+  in
+  let pl = aux_request [] par in
+  function (name, _, i) ->
+    try List.assoc name pl 
+    with Not_found ->
+      parse_error i 
+      (sprintf "unexpected property '%s' in package description item" name)
+
+let parse_stanza extra_parser par =
+  if List.exists (fun (p,_,_) -> p = "package") par then
+    parse_stanza_package extra_parser par
+  else if List.exists (fun (p,_,_) -> p = "problem") par then
+    parse_stanza_problem par
+  else
+    match par with
+    |(name,v,i)::_ -> parse_error i "invalid stanza line"
+    |[] -> parse_error 0 "invalid stanza line"
+
+let parse cudf_parser =
+  let extra_parser, r =
+    let default_parser = 
+      (fun (name, _, i) -> parse_error i ("unexpected property "^name))
+    in
+    match parse_paragraph cudf_parser with
+    |Some par when List.exists (fun (p,_,_) -> p = "property") par -> 
+        (parse_stanza_preample par, false)
+    |_ -> (default_parser, true)
+  in
+  let parse_aux = parse_822_iter (parse_stanza extra_parser) in
+  if r = true then reset cudf_parser ;
+  parse_aux cudf_parser
+
+let load cudf_parser =
+  let pkgs, req = parse cudf_parser in
+  (Cudf.load_universe pkgs, req)
 
 let parser_wrapper fname f =
   let ic = open_in fname in
   let p = from_in_channel ic in
-    finally (fun () -> close_in ic ; close p) f p
+  finally (fun () -> close_in ic ; close p) f p
 
 let parse_from_file fname = parser_wrapper fname parse
 let load_from_file fname = parser_wrapper fname load

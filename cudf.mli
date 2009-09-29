@@ -22,6 +22,7 @@ open Cudf_types
     expanded to their default values (if they have one). It is not
     possible to know whether they were present or not in the CUDF
     syntax. *)
+
 type package = {
   package : pkgname ;
   version : version ;
@@ -30,7 +31,7 @@ type package = {
   provides : veqpkglist ;	(* default : [] *)
   installed : bool ;		(* default : false *)
   keep :  enum_keep option ;	(* default : None *)
-  extra : (string * string) list ;	(* extra properties, unparsed *)
+  extra : (string * basetype) list ;	(* extra properties, unparsed *)
 }
 
 (** package equality up to <name, version>

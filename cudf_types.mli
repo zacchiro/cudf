@@ -37,7 +37,23 @@ type veqpkg = pkgname * ([`Eq] * version) option
 type veqpkglist = veqpkg list
 type enum_keep = [ `Keep_version | `Keep_package | `Keep_feature ]
 
+type basetype = [
+  |`Int of int
+  |`PostInt of int
+  |`Nat of int
+  |`Bool of bool
+  |`String of string
+  |`Enum of string list
+  |`Vpkg of vpkg
+  |`Vpkgformula of vpkgformula
+  |`Vpkglist of vpkglist
+  |`Veqpkg of veqpkg
+  |`Veqpkglist of veqpkglist
+]
+
 (** {5 Parsers} *)
+
+val parse_typedecls : string -> (string * ((string -> basetype) * basetype)) list
 
 (** error while parsing the lexical representation of some type
     arguments:
@@ -67,7 +83,11 @@ val parse_relop : string -> relop
 
 (** {6 Pretty print to abstract formatters} *)
 
+val pp_int : Format.formatter -> int -> unit
+val pp_posint : Format.formatter -> int -> unit
+val pp_nat : Format.formatter -> int -> unit
 val pp_bool : Format.formatter -> bool -> unit
+val pp_string : Format.formatter -> string -> unit
 val pp_keep : Format.formatter -> enum_keep -> unit
 val pp_pkgname : Format.formatter -> pkgname -> unit
 val pp_version : Format.formatter -> version -> unit
@@ -76,11 +96,15 @@ val pp_vpkglist : Format.formatter -> vpkglist -> unit
 val pp_vpkgformula : Format.formatter -> vpkgformula -> unit
 val pp_veqpkg : Format.formatter -> veqpkg -> unit
 val pp_veqpkglist : Format.formatter -> veqpkglist -> unit
+val pp_basetype : Format.formatter -> basetype -> unit
 
 (** {6 Pretty print to string}
 
     Shorthand functions. *)
 
+val string_of_int : int -> string
+val string_of_posint : int -> string
+val string_of_nat : int -> string
 val string_of_bool : bool -> string
 val string_of_keep : enum_keep -> string
 val string_of_pkgname : pkgname -> string
@@ -90,3 +114,4 @@ val string_of_vpkglist : vpkglist -> string
 val string_of_vpkgformula : vpkgformula -> string
 val string_of_veqpkg : veqpkg -> string
 val string_of_veqpkglist : veqpkglist -> string
+val string_of_basetype : basetype -> string

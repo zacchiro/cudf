@@ -19,19 +19,19 @@ let pp_property fmt (n, s) = Format.fprintf fmt "%s: %s@\n" n s
 
 let pp_package fmt pkg =
   let pp = pp_property fmt in
-    pp ("Package", string_of_pkgname pkg.package);
-    pp ("Version", string_of_version pkg.version);
-    if pkg.depends <> default_package.depends then
-      pp ("Depends", string_of_vpkgformula pkg.depends);
-    if pkg.conflicts <> default_package.conflicts then
-      pp ("Conflicts", string_of_vpkglist pkg.conflicts);
-    if pkg.provides <> default_package.provides then
-      pp ("Provides", string_of_vpkglist (pkg.provides :> vpkg list));
-    if pkg.installed <> default_package.installed then
-      pp ("Installed", string_of_bool pkg.installed);
-    if pkg.keep <> default_package.keep then
-      Option.may (fun k -> pp ("Keep", string_of_keep k)) pkg.keep;
-    List.iter pp pkg.extra
+  pp ("Package", string_of_pkgname pkg.package);
+  pp ("Version", string_of_version pkg.version);
+  if pkg.depends <> default_package.depends then
+    pp ("Depends", string_of_vpkgformula pkg.depends);
+  if pkg.conflicts <> default_package.conflicts then
+    pp ("Conflicts", string_of_vpkglist pkg.conflicts);
+  if pkg.provides <> default_package.provides then
+    pp ("Provides", string_of_vpkglist (pkg.provides :> vpkg list));
+  if pkg.installed <> default_package.installed then
+    pp ("Installed", string_of_bool pkg.installed);
+  if pkg.keep <> default_package.keep then
+    Option.may (fun k -> pp ("Keep", string_of_keep k)) pkg.keep;
+  List.iter (fun (name, t) -> pp (name, string_of_basetype t)) pkg.extra
 
 let pp_request fmt req =
   let pp = pp_property fmt in

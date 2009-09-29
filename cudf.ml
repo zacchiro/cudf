@@ -25,8 +25,9 @@ type package = {
   provides : veqpkglist ;
   installed : bool ;
   keep : enum_keep option ;
-  extra : (string * string) list
+  extra : (string * basetype) list
 }
+
 type request = {
   problem_id : string ;
   install : vpkglist ;
@@ -185,7 +186,7 @@ let lookup_package_property pkg = function
   | "Keep" ->
       (try string_of_keep (Option.get pkg.keep)
        with Option.No_value -> raise Not_found)
-  | prop_name -> List.assoc prop_name pkg.extra
+  | prop_name -> string_of_basetype (List.assoc prop_name pkg.extra)
 
 let lookup_request_property req = function
     "Problem" -> req.problem_id

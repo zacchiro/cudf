@@ -1,7 +1,13 @@
+
+Property: cc: bool
+Property: aa: int
+
 Package: car
 Version: 1
 Depends: engine, wheel, door, battery
 Installed: true
+cc: true
+aa: 1
 
 Package: bicycle
 Version: 7

@@ -2,4 +2,4 @@
 <test.byte> or <test.native> : pkg_oUnit
 
 <*.ml> or <*.mli> : pkg_extlib, pkg_pcre
-<*.byte> or <*.native> : pkg_extlib, pkg_pcre
+<*.byte> or <*.native> : pkg_extlib, pkg_pcre, pkg_str

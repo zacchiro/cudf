@@ -65,8 +65,8 @@ let parse_test ~parse_fun name =
   let ic = open_in (cudf_test_path name) in
   let p = Cudf_parser.from_in_channel ic in
   let out = parse_fun p in
-    close_in ic;
-    out
+  close_in ic;
+  out
 
 let parse_cudf_wrapper p =
   match Cudf_parser.parse p with

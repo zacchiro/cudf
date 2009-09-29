@@ -24,18 +24,35 @@ type veqpkg = pkgname * ([`Eq] * version) option
 type veqpkglist = veqpkg list
 type enum_keep = [ `Keep_version | `Keep_package | `Keep_feature ]
 
+type basetype = [
+  |`Int of int
+  |`PostInt of int
+  |`Nat of int
+  |`Bool of bool
+  |`String of string
+  |`Enum of string list
+  |`Vpkg of vpkg
+  |`Vpkgformula of vpkgformula
+  |`Vpkglist of vpkglist
+  |`Veqpkg of veqpkg
+  |`Veqpkglist of veqpkglist
+]
+
 (* <type, literal> *)
 exception Parse_error of string * string
 
 (** Regexps *)
 
 let space_RE = Pcre.regexp " "
-let pkgname_RE = Pcre.regexp "^[a-z][a-z0-9.+-]+$"
+let pkgname_RE = Pcre.regexp "^[a-z0-9%.+-]+$"
 let vconstr_REs = "(=|!=|>=|>|<=|<)\\s+(\\d+)"
 let vpkg_RE =
-  Pcre.regexp (sprintf "^([a-z][a-z0-9.+-]+)(\\s+%s)?$" vconstr_REs)
+  Pcre.regexp (sprintf "^([a-z0-9%%.+-]+)(\\s+%s)?$" vconstr_REs)
 let and_sep_RE = Pcre.regexp "\\s*,\\s*"
 let or_sep_RE = Pcre.regexp "\\s*\\|\\s*"
+let semicol_sep_RE = Pcre.regexp "\\s*;\\s*"
+let colon_sep_RE = Pcre.regexp "\\s*:\\s*"
+let eq_sep_RE = Pcre.regexp "\\s*=\\s*"
 
 (** Higher-order parsers *)
 
@@ -45,6 +62,18 @@ let or_sep_RE = Pcre.regexp "\\s*\\|\\s*"
 let list_parser ?(sep = space_RE) p s = List.map p (Pcre.split ~rex:sep s)
 
 (** Parsers *)
+
+let parse_int s =
+  try int_of_string s
+  with Failure("int_of_string") -> raise (Parse_error ("int", s))
+
+let parse_posint s = match int_of_string s with
+  |i when i > 0 -> i
+  |i -> raise (Parse_error ("posint", s))
+
+let parse_nat s = match int_of_string s with
+  |i when i >= 0 -> i
+  |i -> raise (Parse_error ("nat", s))
 
 let parse_bool = function
   | "true" -> true
@@ -57,9 +86,9 @@ let parse_pkgname s =
   s
 
 let parse_version s =
-  try
-    int_of_string s
-  with Failure _ -> raise (Parse_error ("version", s))
+  try parse_posint s with
+  |Failure _ -> raise (Parse_error ("version", s))
+  |Parse_error ("posint",_) -> raise (Parse_error ("version must be posint", s))
 
 let parse_keep = function
   | "version" -> `Keep_version
@@ -107,11 +136,57 @@ let parse_vpkgformula s =
       
 let parse_veqpkglist = list_parser ~sep:and_sep_RE parse_veqpkg
 
+(* each based type has a system-default value if a user-default is not specified *)
+let parse_default d = function
+  |"int" -> (match d with None -> `Int 0 | Some s -> `Int (parse_int s))
+  |"posint" -> (match d with None -> `PostInt 1 | Some s -> `PostInt (parse_posint s))
+  |"nat" -> (match d with None -> `Nat 0 | Some s -> `Nat (parse_nat s))
+  |"bool" -> (match d with None -> `Bool true | Some s -> `Bool (parse_bool s))
+  |"string" -> (match d with None -> `String "" | Some s -> `String s)
+  |"vpkg" -> (match d with None -> raise (Parse_error ("vpkg default", "")) | Some s -> `Vpkg (parse_vpkg s))
+  |"vpkglist" -> (match d with None -> `Vpkglist [] | Some s -> `Vpkglist (parse_vpkglist s))
+  |"vpkgformula" -> (match d with None -> `Vpkgformula [] | Some s -> `Vpkgformula (parse_vpkgformula s))
+  |"veqpkg" -> (match d with None -> raise (Parse_error ("veqpkg default", "")) | Some s -> `Veqpkg (parse_veqpkg s))
+  |"veqpkglist" -> (match d with None -> `Veqpkglist [] | Some s -> `Veqpkglist (parse_veqpkglist s))
+  |_ -> raise (Parse_error ("parse_default", ""))
+ 
+let parse_type s =
+  let parse_t = function
+    |"int" -> (fun s -> `Int (parse_int s))
+    |"posint" -> (fun s -> `PostInt (parse_posint s))
+    |"nat" -> (fun s -> `Nat (parse_nat s))
+    |"bool" -> (fun s -> `Bool (parse_bool s))
+    |"string" -> (fun s -> `String s)
+    |"vpkg" -> (fun s -> `Vpkg (parse_vpkg s))
+    |"vpkglist" -> (fun s -> `Vpkglist (parse_vpkglist s))
+    |"vpkgformula" -> (fun s -> `Vpkgformula (parse_vpkgformula s))
+    |"veqpkg" -> (fun s -> `Veqpkg (parse_veqpkg s))
+    |"veqpkglist" -> (fun s -> `Veqpkglist (parse_veqpkglist s))
+    |_ -> raise (Parse_error ("typedecl", s))
+  in
+  match Pcre.split ~rex:eq_sep_RE s with
+  |[typeid;default] -> (parse_t typeid, parse_default (Some(default)) typeid)
+  |[typeid] -> (parse_t typeid, parse_default None typeid)
+  |_ -> raise (Parse_error ("typedecl", s))
+
+let parse_type_schema s =
+  match Pcre.split ~rex:colon_sep_RE s with
+  |[ident;s_type] -> (ident, parse_type s_type)
+  |_ -> raise (Parse_error ("typedecl", s))
+
+let parse_typedecls = list_parser ~sep:and_sep_RE parse_type_schema
+
 (** Pretty printers *)
+
+let pp_int fmt i =  Format.fprintf fmt "%d" i
+let pp_posint = pp_int
+let pp_nat = pp_int
 
 let pp_bool fmt = function
     true -> Format.fprintf fmt "true"
   | false -> Format.fprintf fmt "false"
+
+let pp_string fmt = Format.fprintf fmt "%s"
 
 let pp_keep fmt = function
     `Keep_version -> Format.fprintf fmt "version"
@@ -160,6 +235,17 @@ let rec pp_vpkgformula =
 let pp_veqpkglist = pp_vpkglist
 let pp_veqpkg = pp_vpkg
 
+let pp_basetype fmt = function
+  |`Int i |`PostInt i |`Nat i -> pp_int fmt i
+  |`Bool b -> pp_bool fmt b
+  |`String s -> pp_string fmt s
+  |`Enum x -> ()
+  |`Vpkg x -> pp_vpkg fmt x
+  |`Vpkgformula x -> pp_vpkgformula fmt x
+  |`Vpkglist x -> pp_vpkglist fmt x
+  |`Veqpkg x -> pp_veqpkg fmt x
+  |`Veqpkglist x -> pp_veqpkglist fmt x
+
 let buf = Buffer.create 1024
 let buf_formatter =
   let fmt = Format.formatter_of_buffer buf in
@@ -172,6 +258,9 @@ let string_of pp arg =
   Format.pp_print_flush buf_formatter ();
   Buffer.contents buf
 
+let string_of_int = string_of pp_int
+let string_of_posint = string_of pp_int
+let string_of_nat = string_of pp_int
 let string_of_bool = string_of pp_bool
 let string_of_keep = string_of pp_keep
 let string_of_pkgname = string_of pp_pkgname
@@ -181,3 +270,4 @@ let string_of_vpkglist = string_of pp_vpkglist
 let string_of_vpkgformula = string_of pp_vpkgformula
 let string_of_veqpkg = string_of pp_veqpkg
 let string_of_veqpkglist = string_of pp_veqpkglist
+let string_of_basetype = string_of pp_basetype
