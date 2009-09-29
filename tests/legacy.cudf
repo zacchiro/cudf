@@ -1,6 +1,6 @@
 
-Property: cc: bool
-Property: aa: int
+Property: cc: bool = "true"
+Property: aa: int = "1"
 
 Package: car
 Version: 1

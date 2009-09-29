@@ -43,7 +43,7 @@ type basetype = [
   |`Nat of int
   |`Bool of bool
   |`String of string
-  |`Enum of string list
+  |`Enum of string
   |`Vpkg of vpkg
   |`Vpkgformula of vpkgformula
   |`Vpkglist of vpkglist
