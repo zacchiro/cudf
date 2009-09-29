@@ -46,7 +46,7 @@ exception Parse_error of string * string
 
 (** Regexps *)
 let pkgname_STR = "[a-z0-9%.+-]+"
-let space_RE = Pcre.regexp " "
+let space_RE = Pcre.regexp "\\s+"
 let pkgname_RE = Pcre.regexp (sprintf "^%s$" pkgname_STR)
 let vconstr_REs = "(=|!=|>=|>|<=|<)\\s+(\\d+)"
 let vpkg_RE = Pcre.regexp (sprintf "^(%s)(\\s+%s)?$" pkgname_STR vconstr_REs)

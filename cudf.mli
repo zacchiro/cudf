@@ -74,7 +74,7 @@ type cudf = preamble * universe * request
     status *)
 type solution = preamble * universe
 
-val load : package list -> universe
+val load_universe : package list -> universe
 
 (** {5 CUDF manipulation} *)
 

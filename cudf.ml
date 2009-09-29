@@ -93,7 +93,7 @@ let expand_features pkg features =
         | name, Some (_, ver) -> Hashtbl.add features name (pkg, (Some ver)))
       pkg.provides
 
-let load pkgs =
+let load_universe pkgs =
   let univ = empty_universe () in
     List.iter
       (fun pkg ->

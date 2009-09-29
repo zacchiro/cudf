@@ -204,7 +204,7 @@ let parse ch =
 
 let load cudf_parser =
   let pre, pkgs, req = parse cudf_parser in
-  (pre, Cudf.load pkgs, req)
+  (pre, load_universe pkgs, req)
 
 let parser_wrapper fname f =
   let ic = open_in fname in
