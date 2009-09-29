@@ -97,7 +97,7 @@ let parse_paragraph ch =
   |[] -> None
   |stanza -> Some stanza
 
-let parse_stanza_package extra_parser par = 
+let parse_stanza_package preamble par = 
   let rec aux_package pkg = function
     |("package", s, _) :: tl ->
         aux_package { pkg with package = parse_pkgname s } tl
@@ -114,9 +114,14 @@ let parse_stanza_package extra_parser par =
     |("keep" , s, _) :: tl ->
         aux_package { pkg with keep = Some (parse_keep s) } tl
     |((name, s, i) as prop) :: tl ->
-        let (pparser, default) = extra_parser prop in
-        let p = (name, pparser s) in
-        aux_package { pkg with extra = p :: pkg.extra } tl
+        begin try
+          let (typeid, _) = List.assoc name preamble in
+          let p = (name, Cudf_types.parse_basetype typeid s) in
+          aux_package { pkg with extra = p :: pkg.extra } tl
+        with Not_found ->
+          parse_error i 
+          (sprintf "unexpected property '%s' in package description item" name)
+        end
     |[] -> pkg
   in
   `Package (aux_package default_package par)
@@ -149,21 +154,16 @@ let parse_stanza_preample par =
     |[] -> acc
     | _ :: tl -> aux_request acc tl
   in
-  let pl = aux_request [] par in
-  function (name, _, i) ->
-    try List.assoc name pl 
-    with Not_found ->
-      parse_error i 
-      (sprintf "unexpected property '%s' in package description item" name)
+  aux_request [] par
 
 let has_package = List.exists (fun (p,_,_) -> p = "package")
 (* XXX problem TO be removed *)
 let has_request = List.exists (fun (p,_,_) -> (p = "request") || (p = "problem") )
 let has_property = List.exists (fun (p,_,_) -> p = "property")
 
-let parse_stanza extra_parser par =
+let parse_stanza preamble par =
   if has_package par then
-    parse_stanza_package extra_parser par
+    parse_stanza_package preamble par
   else if has_request par then
     parse_stanza_request par
   else
@@ -171,16 +171,14 @@ let parse_stanza extra_parser par =
     |(name,v,i)::_ -> parse_error i ("invalid stanza line : "^ name)
     |[] -> assert false (* unreachable *) 
 
-let default_property_parser (name, _, i) = parse_error i ("unexpected property : "^name)
-
 (* we read the first paragraph. if it has a property declaration, we 
  * give back a parser. If it is not a property stanza, then we give back
  * the first paragraph to be parsed *)
 let parse ch =
-  let extra_parser, firstpar =
+  let preamble, firstpar =
     match parse_paragraph ch with
     |Some par when has_property par -> (parse_stanza_preample par, [])
-    |Some par -> (default_property_parser, par)
+    |Some par -> ([], par)
     |None -> parse_error 0 "empty file"
   in
   let packages = ref [] in
@@ -193,7 +191,7 @@ let parse ch =
     with
     |None -> false
     |Some paragraph -> begin
-        (match parse_stanza extra_parser paragraph with
+        (match parse_stanza preamble paragraph with
         |(`Package e) -> packages := e :: !packages
         |(`Request e) -> request := Some (e));
         true end 

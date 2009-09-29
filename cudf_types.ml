@@ -152,26 +152,26 @@ let parse_default s =
   try remove_quotes s
   with Not_found -> raise (Parse_error ("Quotes needed ", s))
 
+let parse_basetype t s = match t with
+  |"int" -> `Int (parse_int s)
+  |"posint" -> `PostInt (parse_posint s)
+  |"nat" -> `Nat (parse_nat s)
+  |"bool" -> `Bool (parse_bool s)
+  |"string" -> `String s
+  |"vpkg" -> `Vpkg (parse_vpkg s)
+  |"vpkglist" -> `Vpkglist (parse_vpkglist s)
+  |"vpkgformula" -> `Vpkgformula (parse_vpkgformula s)
+  |"veqpkg" -> `Veqpkg (parse_veqpkg s)
+  |"veqpkglist" -> `Veqpkglist (parse_veqpkglist s)
+  |str when Pcre.pmatch ~rex:enum_RE str -> (* enum *)
+        let subs = Pcre.extract ~rex:enum_RE str in
+        let l = Pcre.split ~rex:semicol_sep_RE (subs.(1)) in
+        `Enum (parse_enum l s)
+  |str -> raise (Parse_error ("Unknown type : ", str))
+
 let parse_type s =
-  let parse_t = function
-    |"int" -> (fun s -> `Int (parse_int s))
-    |"posint" -> (fun s -> `PostInt (parse_posint s))
-    |"nat" -> (fun s -> `Nat (parse_nat s))
-    |"bool" -> (fun s -> `Bool (parse_bool s))
-    |"string" -> (fun s -> `String s)
-    |"vpkg" -> (fun s -> `Vpkg (parse_vpkg s))
-    |"vpkglist" -> (fun s -> `Vpkglist (parse_vpkglist s))
-    |"vpkgformula" -> (fun s -> `Vpkgformula (parse_vpkgformula s))
-    |"veqpkg" -> (fun s -> `Veqpkg (parse_veqpkg s))
-    |"veqpkglist" -> (fun s -> `Veqpkglist (parse_veqpkglist s))
-    |s when Pcre.pmatch ~rex:enum_RE s -> (* enum *)
-          let subs = Pcre.extract ~rex:enum_RE s in
-          let l = Pcre.split ~rex:semicol_sep_RE (subs.(1)) in
-          fun s -> `Enum (parse_enum l s)
-    |s -> raise (Parse_error ("Unknown type : ", s))
-  in
   match Pcre.split ~rex:eq_sep_RE s with
-  |[typeid;default] -> (parse_t typeid, parse_t typeid (parse_default default))
+  |[typeid;default] -> (typeid, parse_basetype typeid (parse_default default))
   |_ -> raise (Parse_error ("No default value : ", s))
 
 let starts_with sw s =
@@ -185,7 +185,7 @@ let reserved_properties s =
 
 let parse_type_schema s =
   match Pcre.split ~rex:colon_sep_RE s with
-  |[ident;s_type] when not(reserved_properties ident) -> (ident, parse_type s_type)
+  |[ident;str] when not(reserved_properties ident) -> (ident, parse_type str)
   |_ -> raise (Parse_error ("Wrong separator : ", s))
 
 let parse_typedecls = list_parser ~sep:and_sep_RE parse_type_schema

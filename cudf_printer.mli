@@ -22,6 +22,7 @@ val pp_cudf : Format.formatter -> cudf -> unit
 val pp_doc : Format.formatter -> cudf_doc -> unit
 val pp_item : Format.formatter -> cudf_item -> unit
 val pp_package : Format.formatter -> package -> unit
+val pp_preamble : Format.formatter -> preamble -> unit
 val pp_request : Format.formatter -> request -> unit
 val pp_packages : Format.formatter -> package list -> unit
 val pp_universe : Format.formatter -> universe -> unit

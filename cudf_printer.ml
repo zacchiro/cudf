@@ -43,6 +43,12 @@ let pp_request fmt req =
     if req.upgrade <> default_request.upgrade then
       pp ("Upgrade", string_of_vpkglist req.upgrade)
 
+let pp_preamble fmt preamble =
+  List.iter (fun (name,typeid,default) ->
+    Format.fprintf fmt "%s: %s = \"%s\"@\n" 
+    name typeid (string_of_basetype default) 
+  ) preamble
+
 let pp_universe fmt =
   iter_packages (fun pkg -> Format.fprintf fmt "%a@\n" pp_package pkg)
 

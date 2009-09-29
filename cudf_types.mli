@@ -53,7 +53,8 @@ type basetype = [
 
 (** {5 Parsers} *)
 
-val parse_typedecls : string -> (string * ((string -> basetype) * basetype)) list
+val parse_typedecls : string -> (string * (string * basetype)) list
+val parse_basetype : string -> string -> basetype
 
 (** error while parsing the lexical representation of some type
     arguments:

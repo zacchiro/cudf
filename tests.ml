@@ -28,8 +28,10 @@ let good_pkgs = [	(* universes whose parsing must suceed *)
   "conflict-comma-sep" ;
   "plus-in-pkgname" ;
 ]
+(* XXX: with the quoting mechanism this is not true anymore *)
 let bad_pkgs = [	(* universes whose parsing must fail *)
-  "weird-pkgname" ;
+  (* "weird-pkgname" ; *)
+
 ]
 let good_prob_sol = [	(* pairs cudf/sol, with sol being a good solution *)
   "legacy", "legacy-sol" ;
