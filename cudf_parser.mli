@@ -35,17 +35,17 @@ exception Parse_error of int * string
     a request part) is found, otherwise return a pair [package, None]
     if the request part is missing. Note that a document with no
     request part is not a valid CUDF document. *)
-val parse : cudf_parser -> package list * request option
+val parse : cudf_parser -> preamble * package list * request option
 
 (** same as {!Cudf_parser.parse}, but additionally loads the package
     list as an abstract {!Cudf.universe} *)
-val load : cudf_parser -> universe * request option
+val load : cudf_parser -> preamble * universe * request option
 
 (** shorthand: parse a file given its name *)
-val parse_from_file : string -> package list * request option
+val parse_from_file : string -> preamble * package list * request option
 
 (** shorthand: load from a file given its name *)
-val load_from_file : string -> universe * request option
+val load_from_file : string -> preamble * universe * request option
 
 (** {6 Item-by-item CUDF parsing} *)
 

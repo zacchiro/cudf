@@ -72,20 +72,20 @@ let parse_test ~parse_fun name =
 
 let parse_cudf_wrapper p =
   match Cudf_parser.parse p with
-      pkgs, Some req -> pkgs, req
-    | pkgs, None -> raise (Cudf_parser.Parse_error (-1, ""))
+    | pre, pkgs, Some req -> pre, pkgs, req
+    | pre, pkgs, None -> raise (Cudf_parser.Parse_error (-1, ""))
 let parse_pkgs_wrapper p =
   match Cudf_parser.parse p with
-      pkgs, Some req -> raise (Cudf_parser.Parse_error (-1, ""))
-    | pkgs, None -> pkgs
+    | pre, pkgs, Some req -> raise (Cudf_parser.Parse_error (-1, ""))
+    | pre, pkgs, None -> pkgs
 let load_cudf_wrapper p =
   match Cudf_parser.load p with
-      pkgs, Some req -> pkgs, req
-    | pkgs, None -> raise (Cudf_parser.Parse_error (-1, ""))
+    | pre, pkgs, Some req -> pre, pkgs, req
+    | pre, pkgs, None -> raise (Cudf_parser.Parse_error (-1, ""))
 let load_pkgs_wrapper p =
   match Cudf_parser.load p with
-      pkgs, Some req -> raise (Cudf_parser.Parse_error (-1, ""))
-    | pkgs, None -> pkgs
+    | pre, pkgs, Some req -> raise (Cudf_parser.Parse_error (-1, ""))
+    | pre, pkgs, None -> pkgs
 
 let parse_cudf_test = parse_test ~parse_fun:parse_cudf_wrapper
 let parse_pkgs_test = parse_test ~parse_fun:parse_pkgs_wrapper
@@ -107,14 +107,14 @@ let bad_parse ~parse_fun name = TestCase (fun _ ->
     (fun () -> parse_test ~parse_fun name))
 
 let good_solution prob_name sol_name = TestCase (fun _ ->
-  let cudf, sol = load_cudf_test prob_name, load_univ_test sol_name in
+  let (_,univ,req), sol = load_cudf_test prob_name, load_univ_test sol_name in
     sprintf "problem with correct solution: (%s,%s)" prob_name sol_name @?
-      fst (Cudf_checker.is_solution cudf sol))
+    fst (Cudf_checker.is_solution (univ,req) sol))
 
 let bad_solution prob_name sol_name = TestCase (fun _ ->
-  let cudf, sol = load_cudf_test prob_name, load_univ_test sol_name in
+  let (_,univ,req), sol = load_cudf_test prob_name, load_univ_test sol_name in
     sprintf "problem with correct solution: (%s,%s)" prob_name sol_name @?
-      not (fst (Cudf_checker.is_solution cudf sol)))
+    not (fst (Cudf_checker.is_solution (univ,req) sol)))
 
 (** {5 Test suites} *)
 
@@ -159,9 +159,10 @@ let parse_reg_suite =
 let status_filtering =
   "status projection" >:: (fun () ->
     "status projection returned an \"installed: false\" package" @?
+      let _, univ, _ = load_cudf_test "legacy" in
       List.for_all
         (fun { installed = i } -> i)
-        (get_packages (status (fst (load_cudf_test "legacy")))))
+        (get_packages (status univ)))
 
 let inst_version_lookup =
   "lookup installed versions" >:: (fun () ->
@@ -174,7 +175,7 @@ let inst_version_lookup =
 
 let mem_installed =
   "check whether an installation satisfy a package constraint" >:: (fun () ->
-    let univ, _ = load_cudf_test "legacy" in
+    let _, univ, _ = load_cudf_test "legacy" in
     let mem = mem_installed ~include_features:true univ in
     let mem' = mem_installed ~include_features:false univ in
       "'car' unsatisfied" @? mem ("car", None);
@@ -187,7 +188,7 @@ let mem_installed =
 
 let satisfy_formula =
   "check formula satisfaction" >:: (fun () ->
-    let univ, _ = load_cudf_test "legacy" in
+    let _, univ, _ = load_cudf_test "legacy" in
     let sat f = fst (Cudf_checker.satisfy_formula univ f) in
       "true unsatisfied (WTF?)" @? sat [];
       "conjunction unsatisfied" @? sat [["battery", None]; ["wheel", None]];
@@ -199,7 +200,7 @@ let satisfy_formula =
 
 let disjoint =
   "check package disjunction (i.e., conflicts)" >:: (fun () ->
-    let univ, _ = load_cudf_test "legacy" in
+    let _, univ, _ = load_cudf_test "legacy" in
     let disj ps = fst (Cudf_checker.disjoint univ ps) in
       "missing package reported as existing" @? disj ["fubar", None];
       "undetected conflict" @? not (disj ["door", Some (`Eq, 1)]);
@@ -217,12 +218,12 @@ let self_conflicts =
 let consistency =
   "check universe consistency" >::: [
     "legacy example consistency" >:: (fun () ->
-      let univ, _ = load_cudf_test "legacy" in
+      let _, univ, _ = load_cudf_test "legacy" in
 	"inconsistent legacy example" @? fst (Cudf_checker.is_consistent univ))
   ]
 
 let univ_sizes =
-  let univ, _ = load_cudf_test "legacy" in
+  let _, univ, _ = load_cudf_test "legacy" in
     "check universe size measuring" >::: [
       "total size" >:: (fun () -> assert_equal (universe_size  univ) 20);
       "installed size" >:: (fun () -> assert_equal (installed_size  univ) 6);

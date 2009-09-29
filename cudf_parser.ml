@@ -196,11 +196,11 @@ let parse ch =
         |(`Request e) -> request := Some (e));
         true end 
   do () done ;
-  (!packages,!request)
+  (preamble,!packages,!request)
 
 let load cudf_parser =
-  let pkgs, req = parse cudf_parser in
-  (Cudf.load_universe pkgs, req)
+  let pre, pkgs, req = parse cudf_parser in
+  (pre, Cudf.load_universe pkgs, req)
 
 let parser_wrapper fname f =
   let ic = open_in fname in

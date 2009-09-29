@@ -44,7 +44,7 @@ let pp_request fmt req =
       pp ("Upgrade", string_of_vpkglist req.upgrade)
 
 let pp_preamble fmt preamble =
-  List.iter (fun (name,typeid,default) ->
+  List.iter (fun (name,(typeid,default)) ->
     Format.fprintf fmt "%s: %s = \"%s\"@\n" 
     name typeid (string_of_basetype default) 
   ) preamble
@@ -55,8 +55,8 @@ let pp_universe fmt =
 let pp_packages fmt =
   List.iter (fun pkg -> Format.fprintf fmt "%a@\n" pp_package pkg)
 
-let pp_cudf fmt (univ, req) =
-  Format.fprintf fmt "%a@\n%a" pp_universe univ pp_request req
+let pp_cudf fmt (pre, univ, req) =
+  Format.fprintf fmt "%a@\n%a@\n%a" pp_preamble pre pp_universe univ pp_request req
 
 let pp_doc fmt (pkgs, req) =
   List.iter (fun pkg -> Format.fprintf fmt "%a@\n" pp_package pkg) pkgs;
@@ -83,6 +83,6 @@ let string_of_doc = string_of pp_doc
 let string_of_item = string_of pp_item
 let string_of_package = string_of pp_package
 let string_of_packages = string_of pp_packages
+let string_of_preamble = string_of pp_preamble
 let string_of_request = string_of pp_request
 let string_of_universe = string_of pp_universe
-

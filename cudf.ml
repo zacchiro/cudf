@@ -34,7 +34,7 @@ type request = {
   remove : vpkglist ;
   upgrade : vpkglist ;
 }
-type preamble = (string * string * basetype) list
+type preamble = (string * (string * basetype)) list
 type cudf_doc = package list * request
 type cudf_item = [ `Package of package | `Request of request ]
 type universe = {
@@ -49,8 +49,8 @@ type universe = {
   mutable univ_size : int;
   mutable inst_size : int;
 }
-type cudf = universe * request
-type solution = universe
+type cudf = preamble * universe * request
+type solution = preamble * universe
 
 let universe_size univ = univ.univ_size
 let installed_size univ = univ.inst_size

@@ -60,4 +60,4 @@ val is_consistent : universe -> bool * inconsistency_reason option
 (** check whether a given solution fulfill the request of a given CUDF
     @return [true, []] if this is the case, [false, l]
     otherwise, where r explains why the solution is bad *)
-val is_solution : cudf -> solution -> bool * bad_solution_reason list
+val is_solution : (universe * request) -> universe -> bool * bad_solution_reason list

@@ -45,7 +45,7 @@ type request = {
   upgrade : vpkglist ;	(* default : [] *)
 }
 
-type preamble = (string * string * basetype) list
+type preamble = (string * (string * basetype)) list
 
 val default_package : package	(** implement package defaults *)
 val default_request : request	(** implement request defaults *)
@@ -64,7 +64,7 @@ exception Constraint_violation of string
 
 (** package universe (including package status, i.e., installed packages) *)
 type universe
-type cudf = universe * request
+type cudf = preamble * universe * request
 
 (** XXX temporary encoding for CUDF solutions, as they are not yet
     defined by the CUDF spec
@@ -72,7 +72,7 @@ type cudf = universe * request
     A universe encoding a solution matters only for its [installed]
     packages, which are considered to be the resulting package
     status *)
-type solution = universe
+type solution = preamble * universe
 
 val load_universe : package list -> universe
 

@@ -36,5 +36,6 @@ val string_of_doc : cudf_doc -> string
 val string_of_item : cudf_item -> string
 val string_of_package : package -> string
 val string_of_request : request -> string
+val string_of_preamble : preamble -> string
 val string_of_packages : package list -> string
 val string_of_universe : universe -> string
