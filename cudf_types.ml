@@ -69,7 +69,7 @@ let list_parser ?(sep = space_RE) p s = List.map p (Pcre.split ~rex:sep s)
 
 let parse_int s =
   try int_of_string s
-  with Failure("int_of_string") -> raise (Parse_error ("int", s))
+  with Failure("int_of_string") -> raise (Parse_error ("Error parsing type int", s))
 
 let parse_posint s = match int_of_string s with
   |i when i > 0 -> i
@@ -82,23 +82,23 @@ let parse_nat s = match int_of_string s with
 let parse_bool = function
   | "true" -> true
   | "false" -> false
-  | s -> raise (Parse_error ("bool", s))
+  | s -> raise (Parse_error ("Error parsing type bool", s))
 
 let parse_pkgname s =
   if not (Pcre.pmatch ~rex:pkgname_RE s) then
-    raise (Parse_error ("pkgname", s));
+    raise (Parse_error ("Error parsing type package name", s));
   s
 
 let parse_version s =
   try parse_posint s with
-  |Failure _ -> raise (Parse_error ("version", s))
+  |Failure _ -> raise (Parse_error ("Error parsing version", s))
   |Parse_error ("posint",_) -> raise (Parse_error ("version must be posint", s))
 
 let parse_keep = function
   | "version" -> `Keep_version
   | "package" -> `Keep_package
   | "feature" -> `Keep_feature
-  | s -> raise (Parse_error ("enum('version,'package,'feature)", s))
+  | s -> raise (Parse_error ("Error parsing keep", s))
 
 let parse_relop = function
   | "=" -> `Eq
@@ -107,7 +107,7 @@ let parse_relop = function
   | ">" -> `Gt
   | "<=" -> `Leq
   | "<" -> `Lt
-  | s -> raise (Parse_error ("relop", s))
+  | s -> raise (Parse_error ("Error parsing version operator", s))
 
 let parse_vpkg s =
   try
@@ -120,7 +120,7 @@ let parse_vpkg s =
       (subs.(1), vconstr)
   with
   | Not_found
-  | Parse_error _ -> raise (Parse_error ("vpkg", s))
+  | Parse_error _ -> raise (Parse_error ("Error parsing type vpkg", s))
 
 let parse_vpkglist = list_parser ~sep:and_sep_RE parse_vpkg
   
@@ -128,7 +128,7 @@ let parse_veqpkg s =
   match parse_vpkg s with
     | (_, None) as veqpkg -> veqpkg
     | (_, Some (`Eq, _)) as veqpkg -> veqpkg
-    | _ -> raise (Parse_error ("veqpkg", s))
+    | _ -> raise (Parse_error ("Error parsing type veqpkg", s))
 
 let parse_vpkgformula s =
   let and_args = Pcre.split ~rex:and_sep_RE s in
@@ -145,12 +145,12 @@ let remove_quotes s = let subs = Pcre.extract ~rex:quote_RE s in subs.(1)
 let parse_enum l s =
   try 
     if List.mem s (List.map remove_quotes l) then s 
-    else raise (Parse_error ("Unknown Value in enum ", s))
-  with Not_found -> raise (Parse_error ("Quotes needed ", s))
+    else raise (Parse_error ("Error parsing enum : Unknown Value in enum", s))
+  with Not_found -> raise (Parse_error ("Error parsing enum : Quotes needed", s))
 
 let parse_default s =
   try remove_quotes s
-  with Not_found -> raise (Parse_error ("Quotes needed ", s))
+  with Not_found -> raise (Parse_error ("Error parsing default value : Quotes needed", s))
 
 let parse_basetype t s = match t with
   |"int" -> `Int (parse_int s)
@@ -167,12 +167,12 @@ let parse_basetype t s = match t with
         let subs = Pcre.extract ~rex:enum_RE str in
         let l = Pcre.split ~rex:semicol_sep_RE (subs.(1)) in
         `Enum (parse_enum l s)
-  |str -> raise (Parse_error ("Unknown type : ", str))
+  |str -> raise (Parse_error ("Error parsing base type : Unknown type", str))
 
 let parse_type s =
   match Pcre.split ~rex:eq_sep_RE s with
   |[typeid;default] -> (typeid, parse_basetype typeid (parse_default default))
-  |_ -> raise (Parse_error ("No default value : ", s))
+  |_ -> raise (Parse_error ("Error parsing base type : No default value", s))
 
 let starts_with sw s =
   let sl = String.length s in
@@ -186,7 +186,7 @@ let reserved_properties s =
 let parse_type_schema s =
   match Pcre.split ~rex:colon_sep_RE s with
   |[ident;str] when not(reserved_properties ident) -> (ident, parse_type str)
-  |_ -> raise (Parse_error ("Wrong separator : ", s))
+  |_ -> raise (Parse_error ("Error parsing property : Wrong separator", s))
 
 let parse_typedecls = list_parser ~sep:and_sep_RE parse_type_schema
 

@@ -24,7 +24,9 @@ type cudf_parser = {
 
 exception Parse_error of int * string
 
-let parse_error i msg = raise (Parse_error (i, msg))
+let parse_error i msg = 
+  Printf.eprintf "Parse error at line %d : %s\n" i msg;
+  raise (Parse_error (i, msg))
 
 let blank_RE = Pcre.regexp "^\\s*$"
 let prop_RE = Pcre.regexp "(^[a-zA-Z][a-zA-Z0-9-]*): (.*)$"
@@ -69,7 +71,7 @@ let parse_paragraph ch =
               let prop = (n, subs.(1), ch.pos) in
               aux (prop::acc) ch
             end
-        |_ -> parse_error ch.pos ("invalid property line :" ^ line)
+        |_ -> parse_error ch.pos ("Error parsing paragraph : invalid property line :" ^ line)
         end
     |Some line ->
         (try
@@ -87,7 +89,7 @@ let parse_paragraph ch =
           end
         with Not_found ->  (* not a valid property line *)
           if not (Pcre.pmatch ~rex:blank_RE line) then
-            parse_error ch.pos "invalid property line";
+            parse_error ch.pos "Error parsing paragraph : invalid property line";
           lstrip ch;
           acc
         )
@@ -120,7 +122,7 @@ let parse_stanza_package preamble par =
           aux_package { pkg with extra = p :: pkg.extra } tl
         with Not_found ->
           parse_error i 
-          (sprintf "unexpected property '%s' in package description item" name)
+          (sprintf "Error parsing preamble: unexpected property '%s' in package description item" name)
         end
     |[] -> pkg
   in
@@ -139,7 +141,7 @@ let parse_stanza_request par =
         aux_request { req with upgrade = parse_vpkglist s } tl
     |(name, _, i) :: tl ->
         parse_error i
-        (sprintf "unexpected property '%s' in problem description item" name)
+        (sprintf "Error parsing request : unexpected property '%s' in problem description item" name)
     |[] -> req
   in
 	`Request (aux_request default_request par)
@@ -150,7 +152,9 @@ let parse_stanza_preample par =
         (try
           let l = Cudf_types.parse_typedecls s in
           aux_request (acc @ l) tl
-        with Cudf_types.Parse_error (msg,s) -> parse_error i (msg^s))
+        with Cudf_types.Parse_error (msg,s) ->
+          parse_error i (Printf.sprintf "%s : %s" msg s)
+        )
     |[] -> acc
     | _ :: tl -> aux_request acc tl
   in
@@ -168,7 +172,7 @@ let parse_stanza preamble par =
     parse_stanza_request par
   else
     match par with
-    |(name,v,i)::_ -> parse_error i ("invalid stanza line : "^ name)
+    |(name,v,i)::_ -> parse_error i ("Error parsing paragraph : invalid stanza line : "^ name)
     |[] -> assert false (* unreachable *) 
 
 (* we read the first paragraph. if it has a property declaration, we 
@@ -179,7 +183,7 @@ let parse ch =
     match parse_paragraph ch with
     |Some par when has_property par -> (parse_stanza_preample par, [])
     |Some par -> ([], par)
-    |None -> parse_error 0 "empty file"
+    |None -> parse_error 0 "Error parsing file : empty file"
   in
   let packages = ref [] in
   let request = ref None in
