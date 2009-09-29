@@ -88,13 +88,12 @@ let empty_universe () =
 let expand_features pkg features =
   if pkg.installed then
     List.iter
-      (fun feat ->
-	 match feat with
-	   | name, None -> Hashtbl.add features name (pkg, None)
-	   | name, Some (_, ver) -> Hashtbl.add features name (pkg, (Some ver)))
+      (function
+        | name, None -> Hashtbl.add features name (pkg, None)
+        | name, Some (_, ver) -> Hashtbl.add features name (pkg, (Some ver)))
       pkg.provides
 
-let load_universe pkgs =
+let load pkgs =
   let univ = empty_universe () in
     List.iter
       (fun pkg ->
@@ -139,13 +138,12 @@ let version_matches = (|=)
 let status univ =
   let univ' = empty_universe () in
     Hashtbl.iter
-      (fun id pkg ->
-	 match pkg with
-	   | { installed = true } ->
-	       Hashtbl.add univ'.id2pkg id pkg;
-	       Hashtbl.add univ'.name2pkgs pkg.package pkg;
-	       expand_features pkg univ'.inst_features
-	   | _ -> ())
+      (fun id pkg -> match pkg with
+      | { installed = true } ->
+          Hashtbl.add univ'.id2pkg id pkg;
+	        Hashtbl.add univ'.name2pkgs pkg.package pkg;
+	        expand_features pkg univ'.inst_features
+	    | _ -> ())
       univ.id2pkg;
     univ'
 

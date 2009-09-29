@@ -19,5 +19,5 @@ let () =
   Callback.register "installed_size" Cudf.installed_size;
   Callback.register "is_consistent" Cudf_checker.is_consistent;
   Callback.register "is_solution" Cudf_checker.is_solution;
-  Callback.register "load_universe" Cudf.load_universe;
+  Callback.register "load" Cudf.load;
 

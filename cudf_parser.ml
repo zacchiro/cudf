@@ -115,7 +115,7 @@ let parse_stanza_package preamble par =
         aux_package { pkg with installed = parse_bool s } tl
     |("keep" , s, _) :: tl ->
         aux_package { pkg with keep = Some (parse_keep s) } tl
-    |((name, s, i) as prop) :: tl ->
+    |(name, s, i) :: tl ->
         begin try
           let (typeid, _) = List.assoc name preamble in
           let p = (name, Cudf_types.parse_basetype typeid s) in
@@ -204,7 +204,7 @@ let parse ch =
 
 let load cudf_parser =
   let pre, pkgs, req = parse cudf_parser in
-  (pre, Cudf.load_universe pkgs, req)
+  (pre, Cudf.load pkgs, req)
 
 let parser_wrapper fname f =
   let ic = open_in fname in
