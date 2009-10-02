@@ -10,6 +10,7 @@
 (*  library, see the COPYING file for more information.                      *)
 (*****************************************************************************)
 
+open ExtLib
 open Printf
 
 type version = int
@@ -45,18 +46,50 @@ exception Parse_error of string * string
  * property names, enumeration values) *)
 
 (** Regexps *)
-let pkgname_STR = "[a-z0-9%.+-]+"
+let pkgname_STR = "[a-z0-9%.+-\\@]"
 let space_RE = Pcre.regexp "\\s+"
-let pkgname_RE = Pcre.regexp (sprintf "^%s$" pkgname_STR)
+let pkgname_RE = Pcre.regexp (sprintf "^%s+$" pkgname_STR)
 let vconstr_REs = "(=|!=|>=|>|<=|<)\\s+(\\d+)"
-let vpkg_RE = Pcre.regexp (sprintf "^(%s)(\\s+%s)?$" pkgname_STR vconstr_REs)
+let vpkg_RE = Pcre.regexp (sprintf "^(%s+)(\\s+%s)?$" pkgname_STR vconstr_REs)
 let and_sep_RE = Pcre.regexp "\\s*,\\s*"
 let or_sep_RE = Pcre.regexp "\\s*\\|\\s*"
 let semicol_sep_RE = Pcre.regexp "\\s*;\\s*"
 let colon_sep_RE = Pcre.regexp "\\s*:\\s*"
 let eq_sep_RE = Pcre.regexp "\\s*=\\s*"
-let enum_RE =  Pcre.regexp "enum\\s*\\(\\s*([^)]+)\\s*\\)"
 let quote_RE = Pcre.regexp "\"(.*)\""
+
+let encode s =
+  let escape_string s =
+    let make_hex chr = Printf.sprintf "%%%x" (Char.code chr) in
+    let notallowed_RE = Pcre.regexp pkgname_STR in
+    let n = String.length s in
+    let b = Buffer.create n in
+    for i = 0 to n-1 do
+      let s' = String.of_char s.[i] in
+      if Pcre.pmatch ~rex:notallowed_RE s' then
+        Buffer.add_string b (make_hex s.[i])
+      else
+        Buffer.add_string b s'
+    done;
+    Buffer.contents b
+  in
+  if Pcre.pmatch ~rex:pkgname_RE s then s
+  else
+    let s0 = String.lowercase s in
+    if String.length s0 = 1 then
+      escape_string (Printf.sprintf "//%s" s0)
+    else
+      escape_string s0
+
+let rec decode s =
+  let hex_re = Str.regexp "%[0-9a-f][0-9a-f]" in
+  let un s =
+    let s = Str.matched_string s in
+    let hex = String.sub s 1 2 in
+    let n = int_of_string ("0x" ^ hex) in
+    String.make 1 (Char.chr n)
+  in
+  Str.global_substitute hex_re un s
 
 (** Higher-order parsers *)
 
@@ -142,7 +175,10 @@ let parse_veqpkglist = list_parser ~sep:and_sep_RE parse_veqpkg
 
 let remove_quotes s = let subs = Pcre.extract ~rex:quote_RE s in subs.(1)
 
-let parse_enum l s =
+let parse_enum str s =
+  let enum_RE =  Pcre.regexp "enum\\s*\\(\\s*([^)]+)\\s*\\)" in
+  let subs = Pcre.extract ~rex:enum_RE str in
+  let l = Pcre.split ~rex:semicol_sep_RE (subs.(1)) in
   try 
     if List.mem s (List.map remove_quotes l) then s 
     else raise (Parse_error ("Error parsing enum : Unknown Value in enum", s))
@@ -163,10 +199,7 @@ let parse_basetype t s = match t with
   |"vpkgformula" -> `Vpkgformula (parse_vpkgformula s)
   |"veqpkg" -> `Veqpkg (parse_veqpkg s)
   |"veqpkglist" -> `Veqpkglist (parse_veqpkglist s)
-  |str when Pcre.pmatch ~rex:enum_RE str -> (* enum *)
-        let subs = Pcre.extract ~rex:enum_RE str in
-        let l = Pcre.split ~rex:semicol_sep_RE (subs.(1)) in
-        `Enum (parse_enum l s)
+  |str when String.starts_with str "enum" -> `Enum (parse_enum str s)
   |str -> raise (Parse_error ("Error parsing base type : Unknown type", str))
 
 let parse_type s =
@@ -174,14 +207,9 @@ let parse_type s =
   |[typeid;default] -> (typeid, parse_basetype typeid (parse_default default))
   |_ -> raise (Parse_error ("Error parsing base type : No default value", s))
 
-let starts_with sw s =
-  let sl = String.length s in
-  let swl = String.length sw in
-  sl >= swl && String.sub s 0 swl = sw
-
 let reserved_properties s =
-  starts_with "is-installed" s ||
-  starts_with "was-installed" s
+  String.starts_with s "is-installed" ||
+  String.starts_with s "was-installed"
 
 let parse_type_schema s =
   match Pcre.split ~rex:colon_sep_RE s with

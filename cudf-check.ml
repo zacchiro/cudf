@@ -45,9 +45,9 @@ let die_usage () = Arg.usage arg_spec usage_msg ; exit 2
 
 let print_inst_info inst =
   match is_consistent inst with
-    | true, _ -> printf "installation: consistent\n%!"
+    | true, _ -> printf "installation status consistent\n%!"
     | false, Some r ->
-	printf "installation: broken (reason: %s)\n%!"
+	printf "installation status inconsistent (reason: %s)\n%!"
 	  (explain_reason (r :> bad_solution_reason))
     | _ -> assert false
 
@@ -63,7 +63,7 @@ let print_sol_info inst sol =
   match is_solution inst sol with
     | true, _ -> printf "is_solution: true\n%!"
     | false, rs ->
-	printf "is: solution: false (reason: %s)\n%!"
+	printf "is_solution: false (reason: %s)\n%!"
 	  (String.concat "; " (List.map explain_reason rs))
 
 let main () =
