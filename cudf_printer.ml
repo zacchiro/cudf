@@ -44,9 +44,10 @@ let pp_request fmt req =
       pp ("Upgrade", string_of_vpkglist req.upgrade)
 
 let pp_preamble fmt preamble =
-  List.iter (fun (name,(typeid,default)) ->
+  List.iter (fun (name, t) ->
+    let (typeid,default) = string_of_typedecl t in
     Format.fprintf fmt "%s: %s = \"%s\"@\n" 
-    name typeid (string_of_basetype default) 
+    name typeid default
   ) preamble
 
 let pp_universe fmt =

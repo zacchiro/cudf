@@ -31,7 +31,7 @@ type basetype = [
   |`Nat of int
   |`Bool of bool
   |`String of string
-  |`Enum of string
+  |`Enum of (string list * string)
   |`Vpkg of vpkg
   |`Vpkgformula of vpkgformula
   |`Vpkglist of vpkglist
@@ -173,50 +173,98 @@ let parse_vpkgformula s =
       
 let parse_veqpkglist = list_parser ~sep:and_sep_RE parse_veqpkg
 
-let remove_quotes s = let subs = Pcre.extract ~rex:quote_RE s in subs.(1)
-
-let parse_enum str s =
-  let enum_RE =  Pcre.regexp "enum\\s*\\(\\s*([^)]+)\\s*\\)" in
-  let subs = Pcre.extract ~rex:enum_RE str in
-  let l = Pcre.split ~rex:semicol_sep_RE (subs.(1)) in
-  try 
-    if List.mem s (List.map remove_quotes l) then s 
+let parse_enum l s =
+  try
+    if List.mem s l then s
     else raise (Parse_error ("Error parsing enum : Unknown Value in enum", s))
   with Not_found -> raise (Parse_error ("Error parsing enum : Quotes needed", s))
 
-let parse_default s =
-  try remove_quotes s
-  with Not_found -> raise (Parse_error ("Error parsing default value : Quotes needed", s))
-
-let parse_basetype t s = match t with
-  |"int" -> `Int (parse_int s)
-  |"posint" -> `PostInt (parse_posint s)
-  |"nat" -> `Nat (parse_nat s)
-  |"bool" -> `Bool (parse_bool s)
-  |"string" -> `String s
-  |"vpkg" -> `Vpkg (parse_vpkg s)
-  |"vpkglist" -> `Vpkglist (parse_vpkglist s)
-  |"vpkgformula" -> `Vpkgformula (parse_vpkgformula s)
-  |"veqpkg" -> `Veqpkg (parse_veqpkg s)
-  |"veqpkglist" -> `Veqpkglist (parse_veqpkglist s)
-  |str when String.starts_with str "enum" -> `Enum (parse_enum str s)
-  |str -> raise (Parse_error ("Error parsing base type : Unknown type", str))
-
-let parse_type s =
-  match Pcre.split ~rex:eq_sep_RE s with
-  |[typeid;default] -> (typeid, parse_basetype typeid (parse_default default))
-  |_ -> raise (Parse_error ("Error parsing base type : No default value", s))
+let parse_basetype (t : basetype) s = match t with
+  |`Int _ -> `Int (parse_int s)
+  |`PostInt _ -> `PostInt (parse_posint s)
+  |`Nat _ -> `Nat (parse_nat s)
+  |`Bool _ -> `Bool (parse_bool s)
+  |`String _ -> `String s
+  |`Vpkg _ -> `Vpkg (parse_vpkg s)
+  |`Vpkglist _ -> `Vpkglist (parse_vpkglist s)
+  |`Vpkgformula _ -> `Vpkgformula (parse_vpkgformula s)
+  |`Veqpkg _ -> `Veqpkg (parse_veqpkg s)
+  |`Veqpkglist _ -> `Veqpkglist (parse_veqpkglist s)
+  |`Enum (l,_) -> `Enum (l, parse_enum l s)
 
 let reserved_properties s =
   String.starts_with s "is-installed" ||
   String.starts_with s "was-installed"
 
-let parse_type_schema s =
-  match Pcre.split ~rex:colon_sep_RE s with
-  |[ident;str] when not(reserved_properties ident) -> (ident, parse_type str)
-  |_ -> raise (Parse_error ("Error parsing property : Wrong separator", s))
+open Genlex
 
-let parse_typedecls = list_parser ~sep:and_sep_RE parse_type_schema
+let rec parse_list ?(q=[]) p = 
+  try parser
+    | [< e = p ; nxt >] -> parse_list ~q:(e::q) p nxt
+    | [<>] -> List.rev q
+  with Stream.Error s ->
+    raise (Parse_error ("Error parsing base type : Unknown type", s))
+let rec parse_list_sep sep ?(q=[]) p = 
+  try parser
+    | [< e = p ; nxt >] -> opt_sep sep (e::q) p nxt
+    | [<>] -> List.rev q
+  with Stream.Error s ->
+    raise (Parse_error ("Error parsing base type : Unknown type", s))
+and opt_sep sep q p =
+  try parser
+    | [< 'Kwd s when s = sep ; nxt >] -> parse_list_sep sep ~q p nxt
+    | [<>] -> List.rev q
+  with Stream.Error s ->
+    raise (Parse_error ("Error parsing base type : Unknown type", s))
+
+let parse_typedecls s =
+  let lex = Genlex.make_lexer [ 
+    "(" ; ")"; "="; ","; ":"; 
+    "enum"; "int"; "posint"; "nat"; "bool"; "string"; 
+    "vpkg"; "vpkglist"; "vpkgformula"; "veqpkg"; "veqpkglist"
+    ] 
+  in
+  let parse_string = 
+    try parser [< 'String s >] -> s 
+    with Stream.Error s ->
+      raise (Parse_error ("Error parsing base type : Value problem", s))
+  in
+  let parse_default =
+    try parser [< 'Kwd "="; s = parse_string >] -> s
+    with Stream.Error s ->
+      raise (Parse_error ("Error parsing base type : Default type problem", s))
+  in
+  let parse_type = 
+    try parser
+    | [< 'Kwd "int" ; s = parse_default >] -> `Int (parse_int s)
+    | [< 'Kwd "posint" ; s = parse_default >] -> `PostInt (parse_posint s)
+    | [< 'Kwd "nat" ; s = parse_default >] -> `Nat (parse_nat s)
+    | [< 'Kwd "bool" ; s = parse_default >] -> `Bool (parse_bool s)
+    | [< 'Kwd "string" ; s = parse_default >] -> `String (s)
+    | [< 'Kwd "vpkg" ; s = parse_default >] -> `Vpkg (parse_vpkg s)
+    | [< 'Kwd "vpkglist" ; s = parse_default >] -> `Vpkglist (parse_vpkglist s)
+    | [< 'Kwd "vpkgformula" ; s = parse_default >] -> `Vpkgformula (parse_vpkgformula s)
+    | [< 'Kwd "veqpkg" ; s = parse_default >] -> `Veqpkg (parse_veqpkg s)
+    | [< 'Kwd "veqpkglist" ; s = parse_default >] -> `Veqpkglist (parse_veqpkglist s)
+    | [< 'Kwd "enum" ; 'Kwd "(" ; l = parse_list_sep "," parse_string ; 'Kwd ")" ; 
+          s = parse_default >] -> `Enum (l, parse_enum l s)
+    | [< 'Kwd str >] -> raise (Stream.Error str)
+    with Stream.Error s ->
+      raise (Parse_error ("Error parsing base type : Type problem", s))
+  in
+  let parse_stm = 
+    try parser [< 'Ident id ; 'Kwd ":"; stm = parse_type >] -> (id,stm) 
+    with Stream.Error s ->
+      raise (Parse_error ("Error parsing base type : Statement problem", s))
+  in
+  let top = 
+    try parse_list_sep "," parse_stm
+    with Stream.Error s ->
+      raise (Parse_error ("Error parsing base type : List problem", s))
+  in 
+  try top (lex(Stream.of_string s))
+  with Stream.Error s ->
+    raise (Parse_error ("Error parsing base type : Lexing problem", s))
 
 (** Pretty printers *)
 
@@ -277,16 +325,20 @@ let rec pp_vpkgformula =
 let pp_veqpkglist = pp_vpkglist
 let pp_veqpkg = pp_vpkg
 
-let pp_basetype fmt = function
-  |`Int i |`PostInt i |`Nat i -> pp_int fmt i
-  |`Bool b -> pp_bool fmt b
-  |`String s -> pp_string fmt s
-  |`Enum s -> pp_string fmt s
-  |`Vpkg x -> pp_vpkg fmt x
-  |`Vpkgformula x -> pp_vpkgformula fmt x
-  |`Vpkglist x -> pp_vpkglist fmt x
-  |`Veqpkg x -> pp_veqpkg fmt x
-  |`Veqpkglist x -> pp_veqpkglist fmt x
+let dump_typedecl fmt = function
+  |`Int i -> pp_int fmt i; "int"
+  |`PostInt i -> pp_int fmt i; "posint"
+  |`Nat i -> pp_int fmt i; "nat"
+  |`Bool b -> pp_bool fmt b; "bool"
+  |`String s -> pp_string fmt s; "string"
+  |`Enum (_,s) -> pp_string fmt s; "enum"
+  |`Vpkg x -> pp_vpkg fmt x; "vpkg"
+  |`Vpkgformula x -> pp_vpkgformula fmt x; "vpkgformula"
+  |`Vpkglist x -> pp_vpkglist fmt x ; "vpkglist"
+  |`Veqpkg x -> pp_veqpkg fmt x ; "veqpkg"
+  |`Veqpkglist x -> pp_veqpkglist fmt x ; "veqpkglist"
+
+let pp_basetype fmt t = ignore(dump_typedecl fmt t)
 
 let buf = Buffer.create 1024
 let buf_formatter =
@@ -296,7 +348,7 @@ let buf_formatter =
 
 let string_of pp arg =
   Buffer.clear buf;
-  pp buf_formatter arg;
+  ignore(pp buf_formatter arg);
   Format.pp_print_flush buf_formatter ();
   Buffer.contents buf
 
@@ -313,3 +365,9 @@ let string_of_vpkgformula = string_of pp_vpkgformula
 let string_of_veqpkg = string_of pp_veqpkg
 let string_of_veqpkglist = string_of pp_veqpkglist
 let string_of_basetype = string_of pp_basetype
+(* XXX not really nice ... *)
+let string_of_typedecl b =
+  Buffer.clear buf;
+  let t = dump_typedecl buf_formatter b in
+  Format.pp_print_flush buf_formatter ();
+  (t,Buffer.contents buf)

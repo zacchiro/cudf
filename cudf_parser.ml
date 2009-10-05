@@ -117,7 +117,7 @@ let parse_stanza_package preamble par =
         aux_package { pkg with keep = Some (parse_keep s) } tl
     |(name, s, i) :: tl ->
         begin try
-          let (typeid, _) = List.assoc name preamble in
+          let typeid = List.assoc name preamble in
           let p = (name, Cudf_types.parse_basetype typeid s) in
           aux_package { pkg with extra = p :: pkg.extra } tl
         with Not_found ->

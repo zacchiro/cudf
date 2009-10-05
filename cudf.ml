@@ -34,7 +34,7 @@ type request = {
   remove : vpkglist ;
   upgrade : vpkglist ;
 }
-type preamble = (string * (string * basetype)) list
+type preamble = (string * basetype) list
 type cudf_doc = package list * request
 type cudf_item = [ `Package of package | `Request of request ]
 type universe = {

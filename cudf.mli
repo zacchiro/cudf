@@ -45,7 +45,7 @@ type request = {
   upgrade : vpkglist ;	(* default : [] *)
 }
 
-type preamble = (string * (string * basetype)) list
+type preamble = (string * basetype) list
 
 val default_package : package	(** implement package defaults *)
 val default_request : request	(** implement request defaults *)

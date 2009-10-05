@@ -43,7 +43,7 @@ type basetype = [
   |`Nat of int
   |`Bool of bool
   |`String of string
-  |`Enum of string
+  |`Enum of ( string list * string )
   |`Vpkg of vpkg
   |`Vpkgformula of vpkgformula
   |`Vpkglist of vpkglist
@@ -53,8 +53,8 @@ type basetype = [
 
 (** {5 Parsers} *)
 
-val parse_typedecls : string -> (string * (string * basetype)) list
-val parse_basetype : string -> string -> basetype
+val parse_typedecls : string -> (string * basetype) list
+val parse_basetype : basetype -> string -> basetype
 
 (** error while parsing the lexical representation of some type
     arguments:
@@ -116,3 +116,4 @@ val string_of_vpkgformula : vpkgformula -> string
 val string_of_veqpkg : veqpkg -> string
 val string_of_veqpkglist : veqpkglist -> string
 val string_of_basetype : basetype -> string
+val string_of_typedecl : basetype -> (string * string)
