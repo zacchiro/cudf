@@ -247,6 +247,26 @@ let feature_suite =
     univ_sizes ;
   ]
 
+let test_encode =
+  "encode" >:: (fun () ->
+    let s = "@/bin/*-+" in
+    assert_equal (Cudf_types.encode s) "@/bin/%2a-+"
+  )
+;;
+
+let test_decode =
+  "encode" >:: (fun () ->
+    let s = "@/bin/%2a-+" in
+    assert_equal (Cudf_types.decode s) "@/bin/*-+"
+  )
+;;
+
+let encoding_suite =
+  "encoding / decoding tests" >::: [
+    test_encode;
+    test_decode
+  ]
+
 (** {5 Assemble and run tests} *)
 
 let all =
@@ -259,5 +279,6 @@ let all =
     bad_solution_suite ;
     parse_reg_suite ;
     feature_suite ;
+    encoding_suite ;
   ]
 

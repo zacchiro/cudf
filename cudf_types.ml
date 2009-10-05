@@ -46,7 +46,7 @@ exception Parse_error of string * string
  * property names, enumeration values) *)
 
 (** Regexps *)
-let pkgname_STR = "[a-z0-9%.+-\\@]"
+let pkgname_STR = "[A-Za-z0-9%.+-\\@]"
 let space_RE = Pcre.regexp "\\s+"
 let pkgname_RE = Pcre.regexp (sprintf "^%s+$" pkgname_STR)
 let vconstr_REs = "(=|!=|>=|>|<=|<)\\s+(\\d+)"
@@ -61,12 +61,12 @@ let quote_RE = Pcre.regexp "\"(.*)\""
 let encode s =
   let escape_string s =
     let make_hex chr = Printf.sprintf "%%%x" (Char.code chr) in
-    let notallowed_RE = Pcre.regexp pkgname_STR in
+    let allowed_RE = Pcre.regexp pkgname_STR in
     let n = String.length s in
     let b = Buffer.create n in
     for i = 0 to n-1 do
       let s' = String.of_char s.[i] in
-      if Pcre.pmatch ~rex:notallowed_RE s' then
+      if not(Pcre.pmatch ~rex:allowed_RE s') then
         Buffer.add_string b (make_hex s.[i])
       else
         Buffer.add_string b s'
@@ -74,22 +74,16 @@ let encode s =
     Buffer.contents b
   in
   if Pcre.pmatch ~rex:pkgname_RE s then s
-  else
-    let s0 = String.lowercase s in
-    if String.length s0 = 1 then
-      escape_string (Printf.sprintf "//%s" s0)
-    else
-      escape_string s0
+  else escape_string s
 
 let rec decode s =
-  let hex_re = Str.regexp "%[0-9a-f][0-9a-f]" in
+  let hex_re = Pcre.regexp "%[0-9a-f][0-9a-f]" in
   let un s =
-    let s = Str.matched_string s in
     let hex = String.sub s 1 2 in
     let n = int_of_string ("0x" ^ hex) in
     String.make 1 (Char.chr n)
   in
-  Str.global_substitute hex_re un s
+  Pcre.substitute ~rex:hex_re ~subst:un s
 
 (** Higher-order parsers *)
 

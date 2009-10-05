@@ -82,6 +82,9 @@ val parse_relop : string -> relop
 
 (** {5 Pretty printers} *)
 
+val encode : string -> string
+val decode : string -> string
+
 (** {6 Pretty print to abstract formatters} *)
 
 val pp_int : Format.formatter -> int -> unit
