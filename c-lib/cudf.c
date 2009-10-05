@@ -35,6 +35,9 @@
 #define	MLPVAR_leq	(7604081)	/* caml hash for "Leq" */
 #define	MLPVAR_lt	(34129)		/* caml hash for "Lt" */
 
+#define CUDF_preamble 0
+#define CUDF_universe 1
+#define CUDF_request 2
 
 /** generic OCaml binding helpers */
 
@@ -111,16 +114,25 @@ cudf_doc cudf_parse_from_file(char *fname) {
     closure_f = caml_named_value("parse_from_file");
   ml_doc = caml_callback(*closure_f, caml_copy_string(fname));
   
+  caml_register_global_root(&doc.preamble);	/* preamble */
+  if (Field(ml_doc, CUDF_preamble) != Val_emptylist) {
+    doc.has_preamble = 1;
+    doc.preamble = Val_emptylist;
+  } else {
+    doc.has_preamble = 0;
+    doc.preamble = Val_emptylist;
+  }
+
   caml_register_global_root(&doc.request);	/* request */
-  if (Field(ml_doc, 1) != Val_none) {
+  if (Field(ml_doc, CUDF_request) != Val_none) {
     doc.has_request = 1;
-    doc.request = Some_val(Field(ml_doc, 1));
+    doc.request = Some_val(Field(ml_doc, CUDF_request));
   } else {
     doc.has_request = 0;
     doc.request = Val_none;
   }
 
-  ml_pkgs = Field(ml_doc, 0);			/* packages */
+  ml_pkgs = Field(ml_doc, CUDF_universe);			/* packages */
   while (ml_pkgs != Val_emptylist) {
     pkg = malloc(sizeof(value));
     caml_register_global_root(pkg);
@@ -142,17 +154,26 @@ cudf cudf_load_from_file(char *fname) {
     closure_f = caml_named_value("load_from_file");
   ml_cudf = caml_callback(*closure_f, caml_copy_string(fname));
 
+  caml_register_global_root(&cudf.preamble);	/* preamble */
+  if (Field(ml_cudf, CUDF_preamble) != Val_emptylist) {
+    cudf.has_preamble = 1;
+    cudf.preamble = Val_emptylist;
+  } else {
+    cudf.has_preamble = 0;
+    cudf.preamble = Val_emptylist;
+  }
+
   caml_register_global_root(&cudf.request);	/* request */
-  if (Field(ml_cudf, 1) != Val_none) {
+  if (Field(ml_cudf, 2) != Val_none) {
     cudf.has_request = 1;
-    cudf.request = Some_val(Field(ml_cudf, 1));
+    cudf.request = Some_val(Field(ml_cudf, CUDF_request));
   } else {
     cudf.has_request = 0;
     cudf.request = Val_none;
   }
 
   caml_register_global_root(&cudf.universe);	/* universe */
-  cudf.universe = Field(ml_cudf, 0);
+  cudf.universe = Field(ml_cudf, CUDF_universe);
 
   return cudf;
 }
@@ -175,9 +196,9 @@ int cudf_pkg_keep(cudf_package p) {
 
 cudf_vpkgformula cudf_pkg_depends(cudf_package pkg) {
   GList *and_l = NULL;	/* top-level formula (CNF) */
-  GList *or_l;		/* OR-ed deps */
-  value ml_and;	/* iterates over OR-ed deps (which are AND-ed together) */
-  value ml_or;	/* iterates over vpkg-s (which are OR-ed together) */
+  GList *or_l;		      /* OR-ed deps */
+  value ml_and;	        /* iterates over OR-ed deps (which are AND-ed together) */
+  value ml_or;	        /* iterates over vpkg-s (which are OR-ed together) */
   cudf_vpkg *vpkg;
 
   ml_and = Field(pkg, 2);	/* 3rd field of "package": "depends" */
@@ -279,9 +300,10 @@ int cudf_is_solution(cudf cudf, cudf_universe solution) {
     closure_f = caml_named_value("is_solution");
   if (! cudf.has_request)
     g_error("Given CUDF has no request: cannot compare it with a solution.");
-  ml_cudf = caml_alloc(2, 0);
-  Store_field(ml_cudf, 0, cudf.universe);
-  Store_field(ml_cudf, 1, cudf.request);
+  ml_cudf = caml_alloc(3, 0);
+  Store_field(ml_cudf, CUDF_preamble, cudf.preamble);
+  Store_field(ml_cudf, CUDF_universe, cudf.universe);
+  Store_field(ml_cudf, CUDF_request, cudf.request);
 
   return Bool_val(Field(caml_callback2(*closure_f, ml_cudf, solution), 0));
 }

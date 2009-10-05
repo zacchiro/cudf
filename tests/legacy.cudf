@@ -11,6 +11,7 @@ cc: true
 aa: 1
 bb: A
 dd: aa
+ee: E
 
 Package: bicycle
 Version: 7

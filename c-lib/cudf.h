@@ -19,17 +19,22 @@
 typedef value cudf_package;
 typedef value cudf_universe;
 typedef value cudf_request;
+typedef value cudf_preamble;
 
 typedef struct cudf_doc {
-  GList *packages;	/* List of packages */
-  int has_request;	/* Whether user request was provided or not */
-  cudf_request request;	/* User request (meaningful iff has_request != 0) */
+  cudf_preamble preamble;
+  GList *packages;	      /* List of packages */
+  int has_request;	      /* Whether user request was provided or not */
+  int has_preamble;	    
+  cudf_request request;	  /* User request (meaningful iff has_request != 0) */
 } cudf_doc;
 
 typedef struct cudf {
+  cudf_preamble preamble;
   cudf_universe universe;	/* Abstract package universe */
-  int has_request;	/* Whether user request was provided or not */
-  cudf_request request;	/* User request (meaningful iff has_request != 0) */
+  int has_request;	      /* Whether user request was provided or not */
+  int has_preamble;	     
+  cudf_request request;	  /* User request (meaningful iff has_request != 0) */
 } cudf;
 
 cudf_doc cudf_parse_from_file(char *fname);
