@@ -27,7 +27,7 @@ type enum_keep = [ `Keep_version | `Keep_package | `Keep_feature ]
 
 type basetype = [
   |`Int of int
-  |`PostInt of int
+  |`PosInt of int
   |`Nat of int
   |`Bool of bool
   |`String of string
@@ -175,7 +175,7 @@ let parse_enum l s =
 
 let parse_basetype (t : basetype) s = match t with
   |`Int _ -> `Int (parse_int s)
-  |`PostInt _ -> `PostInt (parse_posint s)
+  |`PosInt _ -> `PosInt (parse_posint s)
   |`Nat _ -> `Nat (parse_nat s)
   |`Bool _ -> `Bool (parse_bool s)
   |`String _ -> `String s
@@ -231,7 +231,7 @@ let parse_typedecls s =
   let parse_type = 
     try parser
     | [< 'Kwd "int" ; s = parse_default >] -> `Int (parse_int s)
-    | [< 'Kwd "posint" ; s = parse_default >] -> `PostInt (parse_posint s)
+    | [< 'Kwd "posint" ; s = parse_default >] -> `PosInt (parse_posint s)
     | [< 'Kwd "nat" ; s = parse_default >] -> `Nat (parse_nat s)
     | [< 'Kwd "bool" ; s = parse_default >] -> `Bool (parse_bool s)
     | [< 'Kwd "string" ; s = parse_default >] -> `String (s)
@@ -321,7 +321,7 @@ let pp_veqpkg = pp_vpkg
 
 let dump_typedecl fmt = function
   |`Int i -> pp_int fmt i; "int"
-  |`PostInt i -> pp_int fmt i; "posint"
+  |`PosInt i -> pp_int fmt i; "posint"
   |`Nat i -> pp_int fmt i; "nat"
   |`Bool b -> pp_bool fmt b; "bool"
   |`String s -> pp_string fmt s; "string"

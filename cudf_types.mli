@@ -39,7 +39,7 @@ type enum_keep = [ `Keep_version | `Keep_package | `Keep_feature ]
 
 type basetype = [
   |`Int of int
-  |`PostInt of int
+  |`PosInt of int
   |`Nat of int
   |`Bool of bool
   |`String of string

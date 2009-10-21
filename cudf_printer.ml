@@ -46,7 +46,7 @@ let pp_request fmt req =
 let pp_preamble fmt preamble =
   List.iter (fun (name, t) ->
     let (typeid,default) = string_of_typedecl t in
-    Format.fprintf fmt "%s: %s = \"%s\"@\n" 
+    Format.fprintf fmt "Property: %s: %s = \"%s\"@\n" 
     name typeid default
   ) preamble
 
