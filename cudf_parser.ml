@@ -29,7 +29,7 @@ let parse_error i msg =
   raise (Parse_error (i, msg))
 
 let blank_RE = Pcre.regexp "^\\s*$"
-let prop_RE = Pcre.regexp "(^[a-zA-Z][a-zA-Z0-9-]*): (.*)$"
+let prop_RE = Pcre.regexp "(^[a-zA-Z][a-zA-Z0-9-]*)\\s*:\\s*(.*)\\s*$"
 
 (* strip all lines up to the first non-blank line *)
 let rec lstrip p =
@@ -62,12 +62,12 @@ let parse_paragraph ch =
   let rec aux acc ?(start = false) p =
     match Enum.get ch.lines with
     (* RFC822-style line continuations *)
-    |Some line when Pcre.pmatch ~rex:(Pcre.regexp "^\\s+(.+)$") line ->
+    |Some line when Pcre.pmatch ~rex:(Pcre.regexp "^\\s+(.+)\\s*$") line ->
         begin match acc with
         |(n,_,_)::_ ->
             begin
               ch.pos <- ch.pos + 1;
-              let subs = Pcre.extract ~rex:(Pcre.regexp "^\\s+(.+)$") line in
+              let subs = Pcre.extract ~rex:(Pcre.regexp "^\\s+(.+)\\s*$") line in
               let prop = (n, subs.(1), ch.pos) in
               aux (prop::acc) ch
             end

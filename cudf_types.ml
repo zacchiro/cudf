@@ -49,7 +49,7 @@ exception Parse_error of string * string
 let pkgname_STR = "[A-Za-z0-9%.+-\\@]"
 let space_RE = Pcre.regexp "\\s+"
 let pkgname_RE = Pcre.regexp (sprintf "^%s+$" pkgname_STR)
-let vconstr_REs = "(=|!=|>=|>|<=|<)\\s+(\\d+)"
+let vconstr_REs = "(=|!=|>=|>|<=|<)\\s*(\\d+)"
 let vpkg_RE = Pcre.regexp (sprintf "^(%s+)(\\s+%s)?$" pkgname_STR vconstr_REs)
 let and_sep_RE = Pcre.regexp "\\s*,\\s*"
 let or_sep_RE = Pcre.regexp "\\s*\\|\\s*"
