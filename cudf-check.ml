@@ -41,7 +41,7 @@ In particular:
   cudf-check -univ FILE               validate package universe (no request)
 Options:"
 
-let die_usage () = Arg.usage arg_spec usage_msg ; exit 2
+let die_usage () = Arg.usage arg_spec usage_msg ; exit (-2)
 
 let print_inst_info inst =
   match is_consistent inst with
@@ -77,14 +77,14 @@ let main () =
       eprintf "loading CUDF ...\n%!";
       (match Cudf_parser.load p with
       |pre, univ, None ->
-          eprintf "Error: problem description item.\n%!"; exit 1
+          eprintf "Error: problem description item.\n%!"; exit (-1)
       |pre, univ, Some req -> cudf := Some (pre, univ, req))
     with
     |Cudf_parser.Parse_error _
     |Cudf.Constraint_violation _ as exn ->
         eprintf "Error while loading CUDF from %s: %s\n%!"
         !cudf_arg (Printexc.to_string exn);
-        exit 1
+        exit (-1)
   end;
   if !univ_arg <> "" then begin
     try
@@ -96,7 +96,7 @@ let main () =
     |Cudf.Constraint_violation _ as exn ->
         eprintf "Error while loading universe from %s: %s\n%!" 
         !univ_arg (Printexc.to_string exn);
-        exit 1
+        exit (-1)
   end;
   if !sol_arg <> "" then begin
     try
@@ -108,7 +108,7 @@ let main () =
     |Cudf.Constraint_violation _ as exn ->
         eprintf "Error while loading solution from %s: %s\n%!"
         !sol_arg (Printexc.to_string exn);
-        exit 1
+        exit (-1)
   end;
   match !cudf, !univ, !sol with
   | Some (pre,univ,req), None, None ->
