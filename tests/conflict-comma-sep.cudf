@@ -1,6 +1,6 @@
-Package: gasoline-engine
-Version: 1
-Depends: turbo
-Provides: engine
-Conflicts: engine, gasoline-engine
-Installed: true
+package: gasoline-engine
+version: 1
+depends: turbo
+provides: engine
+conflicts: engine, gasoline-engine
+installed: true

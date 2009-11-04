@@ -1,4 +1,4 @@
-Package: foo
-Version: 1
-Conflicts: foo
-Installed: true
+package: foo
+version: 1
+conflicts: foo
+installed: true

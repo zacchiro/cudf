@@ -51,10 +51,9 @@ let starts_with sw s =
   let swl = String.length sw in
   sl >= swl && String.sub s 0 swl = sw
 
-(* XXX problem TO be removed *)
 let is_postmark s = 
+  starts_with "preamble" s ||
   starts_with "package" s ||
-  starts_with "problem" s ||
   starts_with "request" s
 
 (* XXX: non tail-recursive *)
@@ -128,10 +127,9 @@ let parse_stanza_package preamble par =
   in
   `Package (aux_package default_package par)
 
-(* XXX problem TO be removed *)
 let parse_stanza_request par =
   let rec aux_request req = function
-    |(("problem" | "request"), s, _) :: tl ->
+    |("request", s, _) :: tl ->
         aux_request { req with problem_id = s } tl
     |("install", s, _) :: tl ->
         aux_request { req with install = parse_vpkglist s } tl
@@ -141,7 +139,7 @@ let parse_stanza_request par =
         aux_request { req with upgrade = parse_vpkglist s } tl
     |(name, _, i) :: tl ->
         parse_error i
-        (sprintf "Error parsing request : unexpected property '%s' in problem description item" name)
+        (sprintf "Error parsing request : unexpected property '%s' in request description item" name)
     |[] -> req
   in
 	`Request (aux_request default_request par)
@@ -155,15 +153,15 @@ let parse_stanza_preample par =
         with Cudf_types.Parse_error (msg,s) ->
           parse_error i (Printf.sprintf "%s : %s" msg s)
         )
+    |("preamble", _, _) :: tl -> aux_request acc tl
     |[] -> acc
-    | _ :: tl -> aux_request acc tl
+    |(name, _, i) :: _ -> parse_error i (sprintf "Error parsing preamble : unexpected property '%s'" name)
   in
   aux_request [] par
 
 let has_package = List.exists (fun (p,_,_) -> p = "package")
-(* XXX problem TO be removed *)
-let has_request = List.exists (fun (p,_,_) -> (p = "request") || (p = "problem") )
-let has_property = List.exists (fun (p,_,_) -> p = "property")
+let has_request = List.exists (fun (p,_,_) -> p = "request")
+let has_preamble = List.exists (fun (p,_,_) -> p = "preamble")
 
 let parse_stanza preamble par =
   if has_package par then
@@ -181,7 +179,7 @@ let parse_stanza preamble par =
 let parse ch =
   let preamble, firstpar =
     match parse_paragraph ch with
-    |Some par when has_property par -> (parse_stanza_preample par, [])
+    |Some par when has_preamble par -> (parse_stanza_preample par, [])
     |Some par -> ([], par)
     |None -> parse_error 0 "Error parsing file : empty file"
   in

@@ -19,34 +19,39 @@ let pp_property fmt (n, s) = Format.fprintf fmt "%s: %s@\n" n s
 
 let pp_package fmt pkg =
   let pp = pp_property fmt in
-  pp ("Package", string_of_pkgname pkg.package);
-  pp ("Version", string_of_version pkg.version);
+  pp ("package", string_of_pkgname pkg.package);
+  pp ("version", string_of_version pkg.version);
   if pkg.depends <> default_package.depends then
-    pp ("Depends", string_of_vpkgformula pkg.depends);
+    pp ("depends", string_of_vpkgformula pkg.depends);
   if pkg.conflicts <> default_package.conflicts then
-    pp ("Conflicts", string_of_vpkglist pkg.conflicts);
+    pp ("conflicts", string_of_vpkglist pkg.conflicts);
   if pkg.provides <> default_package.provides then
-    pp ("Provides", string_of_vpkglist (pkg.provides :> vpkg list));
+    pp ("provides", string_of_vpkglist (pkg.provides :> vpkg list));
   if pkg.installed <> default_package.installed then
-    pp ("Installed", string_of_bool pkg.installed);
+    pp ("installed", string_of_bool pkg.installed);
   if pkg.keep <> default_package.keep then
-    Option.may (fun k -> pp ("Keep", string_of_keep k)) pkg.keep;
+    Option.may (fun k -> pp ("keep", string_of_keep k)) pkg.keep;
   List.iter (fun (name, t) -> pp (name, string_of_basetype t)) pkg.extra
 
 let pp_request fmt req =
   let pp = pp_property fmt in
-    pp ("Problem", req.problem_id);
+    pp ("request", req.problem_id);
     if req.install <> default_request.install then
-      pp ("Install", string_of_vpkglist req.install);
+      pp ("install", string_of_vpkglist req.install);
     if req.remove <> default_request.remove then
-      pp ("Remove", string_of_vpkglist req.remove);
+      pp ("remove", string_of_vpkglist req.remove);
     if req.upgrade <> default_request.upgrade then
-      pp ("Upgrade", string_of_vpkglist req.upgrade)
+      pp ("upgrade", string_of_vpkglist req.upgrade)
 
 let pp_preamble fmt preamble =
+  Format.fprintf fmt "preamble:@\n";
   List.iter (fun (name, t) ->
     let (typeid,default) = string_of_typedecl t in
-    Format.fprintf fmt "Property: %s: %s = \"%s\"@\n" 
+    let default = match typeid with
+      |"string" -> Printf.sprintf "\"%s\"" default
+      |_ -> default
+    in
+    Format.fprintf fmt "property: %s: %s = [ %s ]@\n" 
     name typeid default
   ) preamble
 

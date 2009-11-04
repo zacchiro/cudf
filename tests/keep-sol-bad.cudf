@@ -1,17 +1,17 @@
-Package: keep-version
-Version: 2
-Installed: true
+package: keep-version
+version: 2
+installed: true
 
-Package: keep-package
-Version: 1
-Installed: true
+package: keep-package
+version: 1
+installed: true
 
-Package: provide-foo
-Provides: foo
-Version: 1
-Installed: true
+package: provide-foo
+provides: foo
+version: 1
+installed: true
 
-Package: provide-bar
-Provides: bar
-Version: 1
-Installed: true
+package: provide-bar
+provides: bar
+version: 1
+installed: true

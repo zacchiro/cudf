@@ -46,11 +46,13 @@ exception Parse_error of string * string
  * property names, enumeration values) *)
 
 (** Regexps *)
-let pkgname_STR = "[A-Za-z0-9%.+-\\@]"
+let pkgname_STR = "[A-Za-z0-9%.+-\\@)(]"
+let property_STR = "[a-z][a-z0-9-]"
+let vconstr_STR = "(=|!=|>=|>|<=|<)\\s*(\\d+)"
 let space_RE = Pcre.regexp "\\s+"
 let pkgname_RE = Pcre.regexp (sprintf "^%s+$" pkgname_STR)
-let vconstr_REs = "(=|!=|>=|>|<=|<)\\s*(\\d+)"
-let vpkg_RE = Pcre.regexp (sprintf "^(%s+)(\\s+%s)?$" pkgname_STR vconstr_REs)
+let property_RE = Pcre.regexp (sprintf "^%s+$" property_STR)
+let vpkg_RE = Pcre.regexp (sprintf "^(%s+)(\\s+%s)?$" pkgname_STR vconstr_STR)
 let and_sep_RE = Pcre.regexp "\\s*,\\s*"
 let or_sep_RE = Pcre.regexp "\\s*\\|\\s*"
 let semicol_sep_RE = Pcre.regexp "\\s*;\\s*"
@@ -188,6 +190,7 @@ let parse_basetype (t : basetype) s = match t with
 
 let reserved_properties s =
   String.starts_with s "is-installed" ||
+  String.starts_with s "uchecksum" ||
   String.starts_with s "was-installed"
 
 open Genlex
@@ -213,35 +216,46 @@ and opt_sep sep q p =
 
 let parse_typedecls s =
   let lex = Genlex.make_lexer [ 
-    "(" ; ")"; "="; ","; ":"; 
+    "["; "]"; "(" ; ")"; "="; ","; ":"; 
     "enum"; "int"; "posint"; "nat"; "bool"; "string"; 
     "vpkg"; "vpkglist"; "vpkgformula"; "veqpkg"; "veqpkglist"
     ] 
   in
-  let parse_string = 
-    try parser [< 'String s >] -> s 
-    with Stream.Error s ->
-      raise (Parse_error ("Error parsing base type : Value problem", s))
-  in
-  let parse_default =
-    try parser [< 'Kwd "="; s = parse_string >] -> s
-    with Stream.Error s ->
+  let parse_indetifier =
+    try parser [< 'Ident s >] -> s
+    with Stream.Error s -> 
       raise (Parse_error ("Error parsing base type : Default type problem", s))
+  in
+  let wrap f s = 
+    let rec aux acc f s =
+      match Stream.peek s with
+      |Some (Kwd "]") -> f acc
+      |Some (Ident str) -> Stream.junk s ; aux (acc ^ str) f s
+      |Some (Float i) -> Stream.junk s ; aux (acc ^ (string_of_float i)) f s
+      |Some (Int i) -> Stream.junk s ; aux (acc ^ (string_of_int i)) f s
+      (*
+      |Some (Kwd s) -> failwith ("uhmmm k "^s)
+      |Some (Char c) -> failwith ("uhmmm char")
+      |Some (String s) -> failwith ("uhmmm "^s)
+      *)
+      |None -> raise (Stream.Error "default value empty stream")
+      |_ -> raise (Stream.Error "default value lexing problem")
+    in aux "" f s
   in
   let parse_type = 
     try parser
-    | [< 'Kwd "int" ; s = parse_default >] -> `Int (parse_int s)
-    | [< 'Kwd "posint" ; s = parse_default >] -> `PosInt (parse_posint s)
-    | [< 'Kwd "nat" ; s = parse_default >] -> `Nat (parse_nat s)
-    | [< 'Kwd "bool" ; s = parse_default >] -> `Bool (parse_bool s)
-    | [< 'Kwd "string" ; s = parse_default >] -> `String (s)
-    | [< 'Kwd "vpkg" ; s = parse_default >] -> `Vpkg (parse_vpkg s)
-    | [< 'Kwd "vpkglist" ; s = parse_default >] -> `Vpkglist (parse_vpkglist s)
-    | [< 'Kwd "vpkgformula" ; s = parse_default >] -> `Vpkgformula (parse_vpkgformula s)
-    | [< 'Kwd "veqpkg" ; s = parse_default >] -> `Veqpkg (parse_veqpkg s)
-    | [< 'Kwd "veqpkglist" ; s = parse_default >] -> `Veqpkglist (parse_veqpkglist s)
-    | [< 'Kwd "enum" ; 'Kwd "(" ; l = parse_list_sep "," parse_string ; 'Kwd ")" ; 
-          s = parse_default >] -> `Enum (l, parse_enum l s)
+    | [< 'Kwd "int" ; 'Kwd "="; 'Kwd "["; s = wrap parse_int; 'Kwd "]" >] -> `Int (s)
+    | [< 'Kwd "posint" ; 'Kwd "="; 'Kwd "["; s = wrap parse_posint; 'Kwd "]" >] -> `PosInt (s)
+    | [< 'Kwd "nat" ; 'Kwd "="; 'Kwd "["; s = wrap parse_nat; 'Kwd "]" >] -> `Nat (s)
+    | [< 'Kwd "bool" ; 'Kwd "="; 'Kwd "["; s = wrap parse_bool; 'Kwd "]" >] -> `Bool (s)
+    | [< 'Kwd "string" ; 'Kwd "="; 'Kwd "["; 'String s; 'Kwd "]" >] -> `String (s)
+    | [< 'Kwd "vpkg" ; 'Kwd "="; 'Kwd "["; s = wrap parse_vpkg; 'Kwd "]" >] -> `Vpkg (s)
+    | [< 'Kwd "vpkglist" ; 'Kwd "="; 'Kwd "["; s = wrap parse_vpkglist; 'Kwd "]" >] -> `Vpkglist (s)
+    | [< 'Kwd "vpkgformula" ; 'Kwd "="; 'Kwd "["; s = wrap parse_vpkgformula; 'Kwd "]" >] -> `Vpkgformula (s)
+    | [< 'Kwd "veqpkg" ; 'Kwd "="; 'Kwd "["; s = wrap parse_veqpkg; 'Kwd "]" >] -> `Veqpkg (s)
+    | [< 'Kwd "veqpkglist" ; 'Kwd "="; 'Kwd "["; s = wrap parse_veqpkglist; 'Kwd "]" >] -> `Veqpkglist (s)
+    | [< 'Kwd "enum" ; 'Kwd "(" ; l = parse_list_sep "," parse_indetifier ; 'Kwd ")" ; 
+          'Kwd "="; 'Kwd "["; 'Ident s; 'Kwd "]" >] -> `Enum (l, parse_enum l s)
     | [< 'Kwd str >] -> raise (Stream.Error str)
     with Stream.Error s ->
       raise (Parse_error ("Error parsing base type : Type problem", s))
@@ -257,8 +271,8 @@ let parse_typedecls s =
       raise (Parse_error ("Error parsing base type : List problem", s))
   in 
   try top (lex(Stream.of_string s))
-  with Stream.Error s ->
-    raise (Parse_error ("Error parsing base type : Lexing problem", s))
+  with Stream.Error ss ->
+    raise (Parse_error ("Error parsing base type : Lexing problem "^s, ss))
 
 (** Pretty printers *)
 

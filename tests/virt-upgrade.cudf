@@ -1,17 +1,17 @@
-Package: foo
-Version: 1
-Provides: virtual = 1
-Installed: true
+package: foo
+version: 1
+provides: virtual = 1
+installed: true
 
-Package: bar
-Version: 1
-Provides: virtual = 2
+package: bar
+version: 1
+provides: virtual = 2
 
-Package: baz
-Version: 1
-Provides: virtual
+package: baz
+version: 1
+provides: virtual
 
 
-Problem: source test 12545215421521452145
-Upgrade: virtual >= 2
+request: source test 12545215421521452145
+upgrade: virtual >= 2
 
