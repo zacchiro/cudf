@@ -60,17 +60,18 @@ let is_postmark s =
 let parse_paragraph ch =
   let rec aux acc ?(start = false) p =
     match Enum.get ch.lines with
-    (* RFC822-style line continuations *)
+    (* RFC822-style line continuations. instead of adding a new (prop,s,i) and
+     * do the concatenation later, we do the concatenation here *)
     |Some line when Pcre.pmatch ~rex:(Pcre.regexp "^\\s+(.+)\\s*$") line ->
         begin match acc with
-        |(n,_,_)::_ ->
+        |(n,s,p)::tl ->
             begin
               ch.pos <- ch.pos + 1;
               let subs = Pcre.extract ~rex:(Pcre.regexp "^\\s+(.+)\\s*$") line in
-              let prop = (n, subs.(1), ch.pos) in
-              aux (prop::acc) ch
+              let prop = (n, s^subs.(1), p) in
+              aux (prop::tl) ch
             end
-        |_ -> parse_error ch.pos ("Error parsing paragraph : invalid property line :" ^ line)
+        |_ -> parse_error ch.pos ("Error parsing paragraph : invalid line continuation :" ^ line)
         end
     |Some line ->
         (try
@@ -116,7 +117,8 @@ let parse_stanza_package preamble par =
         aux_package { pkg with keep = Some (parse_keep s) } tl
     |(name, s, i) :: tl ->
         begin try
-          let typeid = List.assoc name preamble in
+          let pl = List.assoc "property" preamble in
+          let typeid = List.assoc name pl in
           let p = (name, Cudf_types.parse_basetype typeid s) in
           aux_package { pkg with extra = p :: pkg.extra } tl
         with Not_found ->
@@ -146,15 +148,17 @@ let parse_stanza_request par =
 
 let parse_stanza_preample par =
   let rec aux_request acc = function
-    |("property", s, i) :: tl ->
+    |("property" as n, s, i) :: tl ->
         (try
-          let l = Cudf_types.parse_typedecls s in
-          aux_request (acc @ l) tl
+          let l = (n, Cudf_types.parse_typedecls s) in
+          aux_request (l :: acc) tl
         with Cudf_types.Parse_error (msg,s) ->
           parse_error i (Printf.sprintf "%s : %s" msg s)
         )
     |("preamble", _, _) :: tl -> aux_request acc tl
     |[] -> acc
+    (* XXX if we want to add something else to the preamble this is 
+     * where you should add the parser for it *)
     |(name, _, i) :: _ -> parse_error i (sprintf "Error parsing preamble : unexpected property '%s'" name)
   in
   aux_request [] par

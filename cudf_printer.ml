@@ -43,17 +43,31 @@ let pp_request fmt req =
     if req.upgrade <> default_request.upgrade then
       pp ("upgrade", string_of_vpkglist req.upgrade)
 
-let pp_preamble fmt preamble =
-  Format.fprintf fmt "preamble:@\n";
-  List.iter (fun (name, t) ->
-    let (typeid,default) = string_of_typedecl t in
-    let default = match typeid with
-      |"string" -> Printf.sprintf "\"%s\"" default
-      |_ -> default
-    in
-    Format.fprintf fmt "property: %s: %s = [ %s ]@\n" 
-    name typeid default
-  ) preamble
+let pp_basetype fmt pl = 
+  let l = 
+    List.map (fun (name, t) ->
+      let (typeid,default) = string_of_typedecl t in
+      let default = match typeid with
+      (* XXX string must be escaped before printing ! *)
+        |"string" -> Printf.sprintf "\"%s\"" default
+        |_ -> default
+      in
+      Printf.sprintf " %s: %s = [ %s ]" name typeid default
+    ) pl
+  in
+  Format.fprintf fmt "%s" (String.concat ",\n" l)
+
+let pp_preamble_elements fmt =
+  List.iter (function
+    |("property",[]) -> ()
+    |("property",pl) -> Format.fprintf fmt "property:%a@\n" pp_basetype pl
+    (* if something else other then property, add printer here *)
+    |(_,_) -> ()
+  )
+
+let pp_preamble fmt = function
+  |[] -> ()
+  |l -> Format.fprintf fmt "preamble:%a@\n" pp_preamble_elements l
 
 let pp_universe fmt =
   iter_packages (fun pkg -> Format.fprintf fmt "%a@\n" pp_package pkg)
@@ -69,8 +83,8 @@ let pp_doc fmt (pkgs, req) =
   pp_request fmt req
 
 let pp_item fmt = function
-    `Package pkg -> pp_package fmt pkg
-  | `Request req -> pp_request fmt req
+  |`Package pkg -> pp_package fmt pkg
+  |`Request req -> pp_request fmt req
 
 let buf = Buffer.create 1024
 let buf_formatter =

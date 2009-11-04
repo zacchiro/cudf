@@ -1,8 +1,9 @@
 preamble:
-property: cc: bool = [ true ] 
- aa: int = [ 1 ] , ff : vpkg = [ gasoline-engine > 1 ]
-property: bb: enum (a,b) = [ a ] , aa: int = [ 1 ]
- dd : string = [ "string" ] , ee: enum (e,b) = [ e ]
+property: cc: bool = [ true ], 
+ aa: int = [ 1 ] , ff : vpkg = [ gasoline-engine > 1 ] ,
+ bb: enum (a,b) = [ a ] ,     
+ aa: int = [ 1 ] ,
+ dd : string = [ "string\"]\\" ] , ee: enum (e,b) = [ e ]
 
 package: car
 version: 1
