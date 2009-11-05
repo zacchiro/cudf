@@ -46,7 +46,7 @@ version: 1
 
 package: battery
 version: 3
-Provides: huge-battery
+provides: huge-battery
 installed: true
 
 package: wheel
@@ -67,7 +67,7 @@ installed: true
 
 package: door
 version: 2
-Depends: window
+depends: window
 conflicts: door
 suite: unstable
 
