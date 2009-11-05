@@ -1,4 +1,6 @@
 Cudf_types
+Cudf_822_parser
+Cudf_822_lexer
 Cudf
 Cudf_parser
 Cudf_checker
