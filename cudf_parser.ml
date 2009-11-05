@@ -123,7 +123,7 @@ let parse_stanza_package preamble par =
           aux_package { pkg with extra = p :: pkg.extra } tl
         with Not_found ->
           parse_error i 
-          (sprintf "Error parsing preamble: unexpected property '%s' in package description item" name)
+          (sprintf "Unexpected property '%s' in package description item" name)
         end
     |[] -> pkg
   in
@@ -159,7 +159,8 @@ let parse_stanza_preample par =
     |[] -> acc
     (* XXX if we want to add something else to the preamble this is 
      * where you should add the parser for it *)
-    |(name, _, i) :: _ -> parse_error i (sprintf "Error parsing preamble : unexpected property '%s'" name)
+    |(name, _, i) :: _ ->
+        parse_error i (sprintf "Error parsing preamble : unexpected identifier '%s'" name)
   in
   aux_request [] par
 
