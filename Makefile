@@ -4,9 +4,10 @@ NAME = cudf
 
 LIBS = _build/cudf.cma
 LIBS_OPT = _build/cudf.cmxa
-PROGS = _build/cudf-check.byte
-PROGS_OPT = _build/cudf-check.native
-RESULTS = $(LIBS) $(PROGS) _build/cudf_c.cmo
+PROGS = _build/cudf-check _build/cudf-parse-822
+PROGS_BYTE = $(addsuffix .byte,$(PROGS))
+PROGS_OPT = $(addsuffix .native,$(PROGS))
+RESULTS = $(LIBS) $(PROGS_BYTE) _build/cudf_c.cmo
 RESULTS_OPT = $(LIBS_OPT) $(PROGS_OPT) _build/cudf_c.cmx
 SOURCES = $(wildcard *.ml *.mli *.mll *.mly)
 C_LIB_SOURCES = $(wildcard c-lib/*.c c-lib/*.h)
@@ -64,7 +65,7 @@ TAGS: $(SOURCES)
 
 INSTALL_STUFF = META
 INSTALL_STUFF += $(wildcard _build/*.cma _build/*.cmxa _build/cudf.a)
-INSTALL_STUFF += $(wildcard _build/cudf_*.cmi) $(wildcard *.mli)
+INSTALL_STUFF += $(wildcard _build/cudf_*.cmi) $(wildcard _build/*.mli)
 INSTALL_STUFF += $(wildcard _build/cudf_*.cmx _build/cudf_*.o _build/cudf_*.a)
 INSTALL_STUFF += $(wildcard _build/cudf.o _build/cudf.cmx _build/cudf.cmi)
 
@@ -72,11 +73,13 @@ install:
 	test -d $(LIBDIR) || mkdir -p $(LIBDIR)
 	$(INSTALL) -patch-version $(VERSION) $(NAME) $(INSTALL_STUFF)
 	test -d $(BINDIR) || mkdir -p $(BINDIR)
-	if [ -f _build/cudf-check.native ] ; then \
-		cp _build/cudf-check.native $(BINDIR)/cudf-check ; \
-	else \
-		cp _build/cudf-check.byte $(BINDIR)/cudf-check ; \
-	fi
+	for p in $(notdir $(PROGS)) ; do \
+		if [ -f _build/$$p.native ] ; then \
+			cp _build/$$p.native $(BINDIR)/$$p ; \
+		else \
+			cp _build/$$p.byte $(BINDIR)/$$p ; \
+		fi ; \
+	done
 	@echo "Installed $(BINDIR)/cudf-check"
 
 uninstall:
