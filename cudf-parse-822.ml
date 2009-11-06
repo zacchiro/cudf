@@ -41,7 +41,7 @@ let main () =
   let ic = open_in !file_arg in
   let lexbuf = Lexing.from_channel ic in
   try
-    let stanzas = Cudf_822_parser.main Cudf_822_lexer.token lexbuf in
+    let stanzas = Cudf_822_parser.main Cudf_lexer.token_822 lexbuf in
     pp_822 stanzas
   with
     | Parse_error_822 (startpos, endpos) ->
