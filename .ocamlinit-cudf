@@ -3,13 +3,17 @@
 #require "extlib";;
 #require "oUnit";;
 #load "_build/cudf.cma";;
-#load "_build/tests.cmo";;
+(* #load "_build/tests.cmo";; *)
 open ExtLib;;
 
 open Cudf_parser;;
 open Cudf_checker;;
+let p = Cudf_parser.from_in_channel (open_in "tests/or-dep.cudf")
+
+(*
 let (pkgs, req) as cudf_doc =
   match Cudf_parser.parse_from_file "examples/legacy.cudf" with
     | pkgs, Some req -> pkgs, req
     | _ -> assert false ;;
 let (univ, _) as cudf = Cudf.load_universe pkgs, req
+*)

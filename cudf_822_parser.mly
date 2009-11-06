@@ -20,14 +20,22 @@
 %token <string> CONT
 %token <string * string> FIELD
 %token EOL EOF
-%type <(string * string) list list> main
-%start main
+%type <(string * string) list list> doc_822
+%type <(string * string) list option> stanza_822
+%start doc_822 stanza_822
 
 %%
 
-main:
+doc_822:
   | stanzas 		{ $1 }
   | eols stanzas	{ $2 }
+;
+
+stanza_822:
+  | stanza	{ Some $1 }
+  | eols stanza	{ Some $2 }
+  | eols EOF	{ None }
+  | EOF		{ None }
 ;
 
 eols:
@@ -63,9 +71,13 @@ linecont:
 
 %%
 
-let main lexer lexbuf =
-  try
-    main lexer lexbuf
-  with Parsing.Parse_error ->
-    raise (Cudf_types.Parse_error_822 (lexbuf.Lexing.lex_start_p,
-				       lexbuf.Lexing.lex_curr_p))
+let lexer_error_wrapper f =
+  fun lexer lexbuf ->
+    try
+      f lexer lexbuf
+    with Parsing.Parse_error ->
+      raise (Cudf_types.Parse_error_822 (lexbuf.Lexing.lex_start_p,
+					 lexbuf.Lexing.lex_curr_p))
+
+let doc_822 = lexer_error_wrapper doc_822
+let stanza_822 = lexer_error_wrapper stanza_822

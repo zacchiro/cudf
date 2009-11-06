@@ -41,11 +41,10 @@ let main () =
   let ic = open_in !file_arg in
   let lexbuf = Lexing.from_channel ic in
   try
-    let stanzas = Cudf_822_parser.main Cudf_lexer.token_822 lexbuf in
+    let stanzas = Cudf_822_parser.doc_822 Cudf_lexer.token_822 lexbuf in
     pp_822 stanzas
-  with
-    | Parse_error_822 (startpos, endpos) ->
-	failwith (sprintf "Parse error on file %s:%s--%s" !file_arg
-		    (pp_lpos startpos) (pp_lpos endpos))
+  with Parse_error_822 (startpos, endpos) ->
+    failwith (sprintf "Parse error on file %s:%s--%s" !file_arg
+		(pp_lpos startpos) (pp_lpos endpos))
 
 let _ = main ()

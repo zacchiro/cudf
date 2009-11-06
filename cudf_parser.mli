@@ -14,11 +14,18 @@
 
 open Cudf
 
+(** a CUDF parser opened on some input source *)
 type cudf_parser
+
+(** create a CUDF parser reading data from an input channel *)
 val from_in_channel : in_channel -> cudf_parser
+
+(** Dispose a CUDF parser.
+
+    Afterwards, the parser should not be used any longer *)
 val close : cudf_parser -> unit
 
-(** Parse error. Arguments: line numnber and error message *)
+(** Parse error. Arguments: line number and error message *)
 exception Parse_error of int * string
 
 (** {6 Full CUDF document parsing}
@@ -35,17 +42,17 @@ exception Parse_error of int * string
     a request part) is found, otherwise return a pair [package, None]
     if the request part is missing. Note that a document with no
     request part is not a valid CUDF document. *)
-val parse : cudf_parser -> preamble * package list * request option
+(* val parse : cudf_parser -> preamble * package list * request option *)
 
 (** same as {!Cudf_parser.parse}, but additionally loads the package
     list as an abstract {!Cudf.universe} *)
-val load : cudf_parser -> preamble * universe * request option
+(* val load : cudf_parser -> preamble * universe * request option *)
 
 (** shorthand: parse a file given its name *)
-val parse_from_file : string -> preamble * package list * request option
+(* val parse_from_file : string -> preamble * package list * request option *)
 
 (** shorthand: load from a file given its name *)
-val load_from_file : string -> preamble * universe * request option
+(* val load_from_file : string -> preamble * universe * request option *)
 
 (** {6 Item-by-item CUDF parsing} *)
 
@@ -55,6 +62,7 @@ val load_from_file : string -> preamble * universe * request option
 val parse_item :
   cudf_parser -> [ `Package of package | `Request of request ]
 *)
+
 (** {6 Low-level parsing functions} *)
 
 (** Parse a file stanza (i.e., a RFC822-like stanza, with the notable
@@ -62,7 +70,7 @@ val parse_item :
     any heading blanks lines leading to the first available
     field/value pair.
 
-(*    
-    @return an associative list mapping field name to field values*)
-val parse_stanza : cudf_parser -> (string * string) list
+    @return an associative list mapping field name to field values
+    @raise End_of_file if no other stanza is available due to reached EOF
 *)
+val parse_stanza : cudf_parser -> (string * string) list
