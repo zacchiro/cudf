@@ -43,11 +43,8 @@ type request = {
   install : vpkglist ;	(* default : [] *)
   remove : vpkglist ;	(* default : [] *)
   upgrade : vpkglist ;	(* default : [] *)
-  (* additional prop univ-checksum ... *)
-  (* xxxx : (string * string) list ; *)
 }
 
-(* maybe with a variant instead *)
 type preamble = (string * (string * basetype) list) list
 
 val default_package : package	(** implement package defaults *)
