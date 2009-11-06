@@ -1,0 +1,10 @@
+#    -*- mode: org -*-
+
+* TODO rewrite parser engine using a real parser [30%]
+** ongoing (based on ocamllex/ocamlyacc)
+* TODO add suport for computing checksums
+** univ-checksum
+** status-checksum
+** req-checksum
+* TODO update/verify C bindings
+* TODO update/verify test suite
