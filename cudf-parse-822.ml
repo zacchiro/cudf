@@ -12,6 +12,8 @@
 
 open Printf
 
+open Cudf_types
+
 let file_arg = ref ""
 
 let arg_spec = [
@@ -42,13 +44,8 @@ let main () =
     let stanzas = Cudf_822_parser.main Cudf_822_lexer.token lexbuf in
     pp_822 stanzas
   with
-    | Parsing.Parse_error ->
+    | Parse_error_822 (startpos, endpos) ->
 	failwith (sprintf "Parse error on file %s:%s--%s" !file_arg
-		    (pp_lpos lexbuf.Lexing.lex_start_p)
-		    (pp_lpos lexbuf.Lexing.lex_curr_p))
-    | Cudf_822_lexer.Lexer_error (p1, p2) ->
-	failwith (sprintf "Lexer error on file %s:%s--%s" !file_arg
-		    (pp_lpos p1) (pp_lpos p2))
-    
+		    (pp_lpos startpos) (pp_lpos endpos))
 
 let _ = main ()

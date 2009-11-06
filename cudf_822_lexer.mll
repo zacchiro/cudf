@@ -1,6 +1,6 @@
 {
+  open Cudf_types
   open Cudf_822_parser
-  exception Lexer_error of Lexing.position * Lexing.position
 }
 
 let lower_letter = [ 'a' - 'z' ]
@@ -16,5 +16,6 @@ rule token = parse
   | blank* '\n'			{ Lexing.new_line lexbuf;
 				  EOL }
   | eof				{ EOF }
-  | _				{ raise (Lexer_error (lexbuf.Lexing.lex_start_p,
-						      lexbuf.Lexing.lex_curr_p)) }
+  | _				{ raise (Parse_error_822
+					   (lexbuf.Lexing.lex_start_p,
+					    lexbuf.Lexing.lex_curr_p)) }

@@ -62,6 +62,10 @@ val parse_basetype : basetype -> string -> basetype
     - literal read *)
 exception Parse_error of string * string
 
+(** Error while parsing RFC822-like syntax of CUDF documents.
+    Arguments: start and end position of the error, respectively. *)
+exception Parse_error_822 of Lexing.position * Lexing.position
+
 (** {6 Public types} *)
 
 val parse_bool : string -> bool

@@ -42,6 +42,8 @@ type basetype = [
 (* <type, literal> *)
 exception Parse_error of string * string
 
+exception Parse_error_822 of Lexing.position * Lexing.position
+
 (* TODO : uniform lexical naming conventions for identifiers (package names,
  * property names, enumeration values) *)
 

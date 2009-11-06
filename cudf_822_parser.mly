@@ -48,3 +48,12 @@ linecont:
   | CONT EOL		{ $1 }
   | CONT EOL linecont	{ $1 ^ $3 }
 ;
+
+%%
+
+let main lexer lexbuf =
+  try
+    main lexer lexbuf
+  with Parsing.Parse_error ->
+    raise (Cudf_types.Parse_error_822 (lexbuf.Lexing.lex_start_p,
+				       lexbuf.Lexing.lex_curr_p))
