@@ -71,7 +71,7 @@ linecont:
 
 %%
 
-let lexer_error_wrapper f =
+let error_wrapper f =
   fun lexer lexbuf ->
     try
       f lexer lexbuf
@@ -79,5 +79,5 @@ let lexer_error_wrapper f =
       raise (Cudf_types.Parse_error_822 (lexbuf.Lexing.lex_start_p,
 					 lexbuf.Lexing.lex_curr_p))
 
-let doc_822 = lexer_error_wrapper doc_822
-let stanza_822 = lexer_error_wrapper stanza_822
+let doc_822 = error_wrapper doc_822
+let stanza_822 = error_wrapper stanza_822

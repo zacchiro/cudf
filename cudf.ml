@@ -25,7 +25,7 @@ type package = {
   provides : veqpkglist ;
   installed : bool ;
   keep : enum_keep option ;
-  extra : (string * basetype) list
+  extra : (string * typedecl1) list
 }
 
 type request = {
@@ -34,7 +34,10 @@ type request = {
   remove : vpkglist ;
   upgrade : vpkglist ;
 }
-type preamble = (string * (string * basetype) list) list
+type preamble = {
+  preamble_id : string ;
+  typedecl : typedecl ;
+}
 type cudf_doc = package list * request
 type cudf_item = [ `Package of package | `Request of request ]
 type universe = {
@@ -57,6 +60,11 @@ let installed_size univ = univ.inst_size
 
 let (=%) pkg1 pkg2 =
   pkg1.package = pkg2.package && pkg1.version = pkg2.version
+
+let default_preamble = {
+  preamble_id = "" ;
+  typedecl = [] ;
+}
 
 let default_package = {
   package = "" ;

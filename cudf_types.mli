@@ -12,8 +12,10 @@
 
 (** CUDF type library
 
-    Implement core CUDF types (see CUDF spec. §3.2.2), together with
-    parsing and pretty printing for them *)
+    Implement core CUDF types (see CUDF spec. §2.2.2).
+
+    For parsing and pretty printing of CUDF types see {!Cudf_types_pp}
+*)
 
 (** {5 CUDF types} *)
 
@@ -26,6 +28,7 @@ type constr = (relop * version) option
 type pkgname = string
 type vpkg = pkgname * constr
 type vpkglist = vpkg list
+type enum_keep = [`Keep_version | `Keep_package | `Keep_feature ]
 
 (** CNF formula. Inner lists are OR-ed, outer AND-ed.
     E.g.:
@@ -35,92 +38,46 @@ type vpkgformula = vpkg list list
 
 type veqpkg = pkgname * ([`Eq] * version) option
 type veqpkglist = veqpkg list
-type enum_keep = [ `Keep_version | `Keep_package | `Keep_feature ]
 
-type basetype = [
-  |`Int of int
-  |`PosInt of int
-  |`Nat of int
-  |`Bool of bool
-  |`String of string
-  |`Enum of ( string list * string )
-  |`Vpkg of vpkg
-  |`Vpkgformula of vpkgformula
-  |`Vpkglist of vpkglist
-  |`Veqpkg of veqpkg
-  |`Veqpkglist of veqpkglist
-]
+(** CUDF types *)
+type typ =
+    [ `Int | `Posint | `Nat | `Bool | `String | `Enum of string list
+    | `Pkgname | `Ident
+    | `Vpkg | `Vpkgformula | `Vpkglist | `Veqpkg | `Veqpkglist ]
 
-(** {5 Parsers} *)
+(** (Single) type declaration: each variant denotes a type, its argument the
+    default value, None if missing *)
+type typedecl1 =
+    [ `Int of int option
+    | `Posint of int option
+    | `Nat of int option
+    | `Bool of bool option
+    | `String of string option
+    | `Pkgname of string option
+    | `Ident of string option
+    | `Enum of (string list * string option)	(** enums, default enum *)
+    | `Vpkg of vpkg option
+    | `Vpkgformula of vpkgformula option
+    | `Vpkglist of vpkglist option
+    | `Veqpkg of veqpkg option
+    | `Veqpkglist of veqpkglist option
+    ]
+type typed_value = typedecl1
+type typedecl = (string * typedecl1) list
 
-val parse_typedecls : string -> (string * basetype) list
-val parse_basetype : basetype -> string -> basetype
+val type_of_typedecl : typedecl1 -> typ
+
+(** {5 Various errors} *)
 
 (** error while parsing the lexical representation of some type
     arguments:
     - type name
     - literal read *)
-exception Parse_error of string * string
+exception Parse_error_literal of string * string
 
 (** Error while parsing RFC822-like syntax of CUDF documents.
     Arguments: start and end position of the error, respectively. *)
 exception Parse_error_822 of Lexing.position * Lexing.position
 
-(** {6 Public types} *)
+exception Parse_error_typelib of string * Lexing.position * Lexing.position
 
-val parse_bool : string -> bool
-
-val parse_pkgname : string -> pkgname
-val parse_version : string -> version
-val parse_vpkg : string -> vpkg
-val parse_vpkglist : string -> vpkglist
-val parse_vpkgformula : string -> vpkgformula
-val parse_veqpkg : string -> veqpkg
-val parse_veqpkglist : string -> veqpkglist
-
-val parse_keep : string -> enum_keep
-
-(** {6 Private (i.e., low-level) types} *)
-
-val parse_relop : string -> relop
-
-(** {5 Pretty printers} *)
-
-val encode : string -> string
-val decode : string -> string
-
-(** {6 Pretty print to abstract formatters} *)
-
-val pp_int : Format.formatter -> int -> unit
-val pp_posint : Format.formatter -> int -> unit
-val pp_nat : Format.formatter -> int -> unit
-val pp_bool : Format.formatter -> bool -> unit
-val pp_string : Format.formatter -> string -> unit
-val pp_keep : Format.formatter -> enum_keep -> unit
-val pp_pkgname : Format.formatter -> pkgname -> unit
-val pp_version : Format.formatter -> version -> unit
-val pp_vpkg : Format.formatter -> vpkg -> unit
-val pp_vpkglist : Format.formatter -> vpkglist -> unit
-val pp_vpkgformula : Format.formatter -> vpkgformula -> unit
-val pp_veqpkg : Format.formatter -> veqpkg -> unit
-val pp_veqpkglist : Format.formatter -> veqpkglist -> unit
-val pp_basetype : Format.formatter -> basetype -> unit
-
-(** {6 Pretty print to string}
-
-    Shorthand functions. *)
-
-val string_of_int : int -> string
-val string_of_posint : int -> string
-val string_of_nat : int -> string
-val string_of_bool : bool -> string
-val string_of_keep : enum_keep -> string
-val string_of_pkgname : pkgname -> string
-val string_of_version : version -> string
-val string_of_vpkg : vpkg -> string
-val string_of_vpkglist : vpkglist -> string
-val string_of_vpkgformula : vpkgformula -> string
-val string_of_veqpkg : veqpkg -> string
-val string_of_veqpkglist : veqpkglist -> string
-val string_of_basetype : basetype -> string
-val string_of_typedecl : basetype -> (string * string)

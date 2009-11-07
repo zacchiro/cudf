@@ -26,12 +26,12 @@ open Cudf_types
 type package = {
   package : pkgname ;
   version : version ;
-  depends : vpkgformula ;	(* default : [] *)
-  conflicts : vpkglist ;	(* default : [] *)
-  provides : veqpkglist ;	(* default : [] *)
-  installed : bool ;		(* default : false *)
-  keep :  enum_keep option ;	(* default : None *)
-  extra : (string * basetype) list ;	(* extra properties, unparsed *)
+  depends : vpkgformula ;		(* default : [] *)
+  conflicts : vpkglist ;		(* default : [] *)
+  provides : veqpkglist ;		(* default : [] *)
+  installed : bool ;			(* default : false *)
+  keep :  enum_keep option ;		(* default : None *)
+  extra : (string * typedecl1) list ;	(* extra properties *)
 }
 
 (** package equality up to <name, version>
@@ -45,8 +45,12 @@ type request = {
   upgrade : vpkglist ;	(* default : [] *)
 }
 
-type preamble = (string * (string * basetype) list) list
+type preamble = {
+  preamble_id : string ;	(** text following the "preamble: " postmark *)
+  typedecl : typedecl ;		(** extra property declarations *)
+}
 
+val default_preamble : preamble	(** implement preamble defaults *)
 val default_package : package	(** implement package defaults *)
 val default_request : request	(** implement request defaults *)
 

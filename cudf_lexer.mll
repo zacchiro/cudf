@@ -12,7 +12,7 @@
 
 {
   open Cudf_types
-  open Cudf_822_parser
+  open Cudf_type_parser
 }
 
 let lower_letter = [ 'a' - 'z' ]
@@ -22,7 +22,6 @@ let digit = [ '0' - '9' ]
 let blank = [ ' ' '\t' ]
 let blanks = blank+
 let ident = lower_letter (lower_letter | digit | '-')*
-let int = '-' digit+
 let pkgname = (letter | digit | ['-' '+' '.' '/' '@' '(' ')' '%'])+
 
 rule token_822 = parse
@@ -36,3 +35,34 @@ rule token_822 = parse
   | _				{ raise (Parse_error_822
 					   (lexbuf.Lexing.lex_start_p,
 					    lexbuf.Lexing.lex_curr_p)) }
+
+and token_cudf = parse
+  | ident as s		{ IDENT s }
+  | pkgname as s	{ PKGNAME s }
+  | digit+ as s		{ POSINT (int_of_string s) }
+  | '-' digit+ as s	{ NEGINT (- (int_of_string s)) }
+  | (">=" | "<=") as op	{ RELOP op }
+  | "!=" as op		{ RELOP op }
+  | ('>' | '<') as op	{ RELOP op }
+  | '['			{ LBRACKET }
+  | ']'			{ RBRACKET }
+  | '('			{ LPAREN }
+  | ')'			{ RPAREN }
+  | ','			{ COMMA }
+  | '|'			{ PIPE }
+  | ':'			{ COLON }
+  | '='			{ EQ }
+  | '"'			{ let buf = Buffer.create 11 in
+			  qstring buf lexbuf;
+			  QSTRING (Buffer.contents buf) }
+  | blank+		{ token_cudf lexbuf }
+  | eof			{ EOL } (* single-line parsing: EOF means in fact EOL *)
+
+and qstring buf = parse
+  | "\\\""				{ Buffer.add_string buf "\""; qstring buf }
+  | "\\\\"				{ Buffer.add_string buf "\\"; qstring buf }
+  | '"'					{ () }
+  | [^ '\n' '\r' '\\' '"']+ as s	{ Buffer.add_string buf s; qstring buf }
+  | _					{ raise (Parse_error_822
+						   (lexbuf.Lexing.lex_start_p,
+						    lexbuf.Lexing.lex_curr_p)) }
