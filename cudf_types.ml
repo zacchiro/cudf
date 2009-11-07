@@ -54,7 +54,7 @@ let type_of_typedecl = function
   | `Veqpkg _ -> `Veqpkg
   | `Veqpkglist _ -> `Veqpkglist
 
-exception Parse_error_literal of string * string	(* <type, literal> *)
+exception Type_error of typ * typed_value	(* <type, literal> *)
 exception Parse_error_822 of Lexing.position * Lexing.position
 exception Parse_error_typelib of string * Lexing.position * Lexing.position
 

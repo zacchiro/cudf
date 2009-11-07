@@ -37,7 +37,7 @@ let close p = ()
 
 let parse_stanza p =
   try
-    (match Cudf_822_parser.stanza_822 Cudf_lexer.token_822 p.lexbuf with
+    (match Cudf_822_parser.stanza_822 Cudf_822_lexer.token_822 p.lexbuf with
       | Some stanza -> stanza
       | None -> raise End_of_file)
   with Parse_error_822 _ as exn -> parse_error_e "" exn

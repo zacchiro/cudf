@@ -69,11 +69,10 @@ val type_of_typedecl : typedecl1 -> typ
 
 (** {5 Various errors} *)
 
-(** error while parsing the lexical representation of some type
-    arguments:
-    - type name
-    - literal read *)
-exception Parse_error_literal of string * string
+(** type error: mismatch between typed value and expected type
+
+    arguments: expected type, found value *)
+exception Type_error of typ * typed_value
 
 (** Error while parsing RFC822-like syntax of CUDF documents.
     Arguments: start and end position of the error, respectively. *)

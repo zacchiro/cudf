@@ -24,26 +24,14 @@ let blanks = blank+
 let ident = lower_letter (lower_letter | digit | '-')*
 let pkgname = (letter | digit | ['-' '+' '.' '/' '@' '(' ')' '%'])+
 
-rule token_822 = parse
-  | (ident as field) ':' ' '
-    ([^'\n']* as rest)		{ FIELD(field, rest) }
-  | ' ' ([^'\n']* as rest)	{ CONT(rest) }
-  | '#' [^'\n']*		{ token_822 lexbuf }
-  | blank* '\n'			{ Lexing.new_line lexbuf;
-				  EOL }
-  | eof				{ EOF }
-  | _				{ raise (Parse_error_822
-					   (lexbuf.Lexing.lex_start_p,
-					    lexbuf.Lexing.lex_curr_p)) }
-
-and token_cudf = parse
+rule token_cudf = parse
   | ident as s		{ IDENT s }
   | pkgname as s	{ PKGNAME s }
   | digit+ as s		{ POSINT (int_of_string s) }
   | '-' digit+ as s	{ NEGINT (- (int_of_string s)) }
   | (">=" | "<=") as op	{ RELOP op }
   | "!=" as op		{ RELOP op }
-  | ('>' | '<') as op	{ RELOP op }
+  | ('>' | '<') as op	{ RELOP (String.make 1 op) }
   | '['			{ LBRACKET }
   | ']'			{ RBRACKET }
   | '('			{ LPAREN }
@@ -59,10 +47,13 @@ and token_cudf = parse
   | eof			{ EOL } (* single-line parsing: EOF means in fact EOL *)
 
 and qstring buf = parse
-  | "\\\""				{ Buffer.add_string buf "\""; qstring buf }
-  | "\\\\"				{ Buffer.add_string buf "\\"; qstring buf }
+  | "\\\""				{ Buffer.add_string buf "\"";
+					  qstring buf }
+  | "\\\\"				{ Buffer.add_string buf "\\";
+					  qstring buf }
   | '"'					{ () }
-  | [^ '\n' '\r' '\\' '"']+ as s	{ Buffer.add_string buf s; qstring buf }
+  | [^ '\n' '\r' '\\' '"']+ as s	{ Buffer.add_string buf s;
+					  qstring buf }
   | _					{ raise (Parse_error_822
 						   (lexbuf.Lexing.lex_start_p,
 						    lexbuf.Lexing.lex_curr_p)) }

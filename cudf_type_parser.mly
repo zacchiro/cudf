@@ -50,15 +50,37 @@ let parse_ty_nodefault = function
 
 (** Set a default value in a type declaration that have no default value, take
     care of CUDF sub-typing. *)
-let set_default v ty =
-  let type_error
-  match (ty, v) with
+let rec set_default v ty =
+  let type_error () = raise Type_error (type_of_typedecl ty, v) in
+  match ty, v with
     | `Int _, `Int n -> `Int (Some n)
     | `Posint _, `Int n when n > 0 -> `Posint (Some n)
     | `Nat _, `Int n when n >= 0 -> `Nat (Some n)
     | `Bool _, `Ident "true" -> `Bool (Some true)
     | `Bool _, `Ident "false" -> `Bool (Some false)
-    | `Bool _, `Ident _ -> `Bool (Some false)
+    | `String _, `String s -> `String (Some s)
+    | `Pkgname _, `Vpkgformula [[(pkg, None)]] -> `Pkgname (Some pkg)
+    | `Ident _, `Ident i -> `Ident (Some i)
+    | `Vpkg _, `Vpkgformula [[vpkg]] -> `Vpkg (Some vpkg)
+    | `Vpkglist _, `Vpkgformula f ->
+	if List.exists (function _ :: _ :: _ -> true | _ -> false) f then
+	  type_error ()	(* there are OR-ed deps *)
+	else
+	  `Vpkglist (Some (List.map (function [vpkg] -> vpkg
+				       | _ -> assert false) f))
+    | `Veqpkg old_default, `Vpkgformula f ->
+	if is_eq_formula f
+	then set_default v (`Vpkg (old_default :> vpkg))
+	else type_error ()
+    | `Veqpkglist old_default, `Vpkgformula f ->
+	if is_eq_formula f
+	then set_default v (`Vpkglist (old_default :> vpkglist))
+	else type_error ()
+    | `Enum (enums, _), `Ident i ->
+	if List.mem i enums
+	then `Enum (enums, Some i)
+	else type_error ()
+    | _ -> type_error ()
 
 %}
 
@@ -78,6 +100,7 @@ let set_default v ty =
 %%
 
 pkgname: PKGNAME { $1 } ;
+
 version: POSINT { $1 } ;
 
 relop:
@@ -92,19 +115,20 @@ int:
 
 vpkg:
   | PKGNAME			{ ($1, None) }
-  | PKGNAME relop version	{ ($1, Some ($2, $3) }
+  | PKGNAME relop version	{ ($1, Some ($1, $2)) }
 ;
-
 vpkglist:
   |			{ [] }
   | vpkg vpkglist	{ $1 :: $2 }
 ;
 
 vpkgformula: and_formula { $1 } ;
+
 and_formula:
   | or_formula				{ [ $1 ] }
   | or_formula COMMA and_formula	{ $1 :: $3 }
 ;
+
 or_formula:
   | vpkg			{ [ $1 ] }
   | vpkg PIPE or_formula	{ $1 :: $3 }
@@ -114,15 +138,18 @@ typedecl:
   |				{ [] }
   | typedecl_ COMMA typedecl	{ $1 :: $3 }
 ;
+
 typedecl_:
-  | IDENT COLON typename		{ $1, $3 }
-  | IDENT COLON typename default	{ $1, set_default $4 $3 }
+  | IDENT COLON typename		{ ($1, $3) }
+  | IDENT COLON typename
+      EQ LBRACKET default RBRACKET	{ ($1, set_default $6 $3) }
 ;
 
 typename:
   | IDENT			{ parse_ty_nodefault $1 }
   | IDENT LPAREN enums RPAREN	{ `Enum ($3, None) }
 ;
+
 enums:
   | IDENT		{ [ $1 ] }
   | IDENT COMMA enums	{ $1 :: $3 }
@@ -130,7 +157,6 @@ enums:
 
 default:
   | IDENT		{ `Ident $1 }
-  | PKGNAME		{ `Pkgname $1 }
   | POSINT		{ `Int $1 }
   | NEGINT		{ `Int $1 }
   | QSTRING		{ `String $1 }

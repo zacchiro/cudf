@@ -11,7 +11,6 @@
 (*****************************************************************************)
 
 open Ocamlbuild_plugin
-(* open Command -- no longer needed for OCaml >= 3.10.2 *)
 
 (* these functions are not really officially exported *)
 let run_and_read = Ocamlbuild_pack.My_unix.run_and_read
