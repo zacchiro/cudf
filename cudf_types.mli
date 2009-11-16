@@ -17,18 +17,20 @@
     For parsing and pretty printing of CUDF types see {!Cudf_types_pp}
 *)
 
+
 (** {5 CUDF types} *)
 
 type version = int	(* required to be non 0 *)
 type relop = [`Eq|`Neq|`Geq|`Gt|`Leq|`Lt]
 type constr = (relop * version) option
 
+
 (** {6 CUDF spec. types} *)
 
 type pkgname = string
 type vpkg = pkgname * constr
 type vpkglist = vpkg list
-type enum_keep = [`Keep_version | `Keep_package | `Keep_feature ]
+type enum_keep = [`Keep_version | `Keep_package | `Keep_feature | `Keep_none ]
 
 (** CNF formula. Inner lists are OR-ed, outer AND-ed.
     E.g.:
@@ -55,7 +57,7 @@ type typedecl1 =
     | `String of string option
     | `Pkgname of string option
     | `Ident of string option
-    | `Enum of (string list * string option)	(** enums, default enum *)
+    | `Enum of string list * string option	(** enums, default enum *)
     | `Vpkg of vpkg option
     | `Vpkgformula of vpkgformula option
     | `Vpkglist of vpkglist option
@@ -82,16 +84,32 @@ type typed_value =
 
 type typedecl = (string * typedecl1) list
 
+
+(** {5 Manipulation of typed values} *)
+
 (** extract the type of a (single) type declaration *)
 val type_of_typedecl : typedecl1 -> typ
 
 (** Create a (single) type declaration having as default value the given typed
     value (i.e. apply the "Some" monad to typed values) *)
-val typedecl1_of_val : typed_value -> typedecl1
+val typedecl_of_val : typed_value -> typedecl1
+
+(** Create a (single) type declaration with no default value *)
+val typedecl_of_type : typ -> typedecl1
+
+(** @return the type of a given value *)
+val type_of_val : typed_value -> typ
+
+(** [cast ty v] attempt a runtime cast of a given (typed) value to a different
+    type.
+
+    @raise Type_error if casting is not possible *)
+val cast: typ -> typed_value -> typed_value
+
 
 (** {5 Various errors} *)
 
-(** type error: mismatch between typed value and expected type
+(** Type error: mismatch between typed value and expected type
 
     arguments: expected type, found value *)
 exception Type_error of typ * typed_value
@@ -100,5 +118,14 @@ exception Type_error of typ * typed_value
     Arguments: start and end position of the error, respectively. *)
 exception Parse_error_822 of Lexing.position * Lexing.position
 
-exception Parse_error_typelib of string * Lexing.position * Lexing.position
+(** Syntax error while parsing some literal value
+
+    arguments: message, stand and end error location (wrt some lexbuf) *)
+exception Syntax_error of string * Lexing.position * Lexing.position
+
+
+(** {5 Accessors, predicates, etc.} *)
+
+(** Check whether a formula uses only equality tests over package versions. *)
+val is_eq_formula : vpkgformula ->  bool
 

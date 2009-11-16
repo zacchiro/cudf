@@ -24,8 +24,8 @@ type package = {
   conflicts : vpkglist ;
   provides : veqpkglist ;
   installed : bool ;
-  keep : enum_keep option ;
-  extra : (string * typedecl1) list
+  keep : enum_keep ;
+  extra : (string * typed_value) list
 }
 
 type request = {
@@ -37,9 +37,12 @@ type request = {
 type preamble = {
   preamble_id : string ;
   typedecl : typedecl ;
+  univ_checksum: string ;
+  status_checksum: string ;
+  req_checksum: string ;
 }
-type cudf_doc = package list * request
-type cudf_item = [ `Package of package | `Request of request ]
+type cudf_doc = preamble * package list * request
+type cudf_item = [ `Preamble of preamble | `Package of package | `Request of request ]
 type universe = {
   id2pkg: ((string * int), package) Hashtbl.t;	(** <name, ver> -> pkg *)
   name2pkgs: (string, package) Hashtbl.t; (** name -> pkg (multi-bindings) *)
@@ -64,6 +67,9 @@ let (=%) pkg1 pkg2 =
 let default_preamble = {
   preamble_id = "" ;
   typedecl = [] ;
+  univ_checksum = "" ;
+  status_checksum = "" ;
+  req_checksum = "" ;
 }
 
 let default_package = {
@@ -73,7 +79,7 @@ let default_package = {
   conflicts = [] ;
   provides = [] ;
   installed = false ;
-  keep = None ;
+  keep = `Keep_none ;
   extra = [] ;
 }
 
@@ -184,21 +190,18 @@ let who_provides univ (pkg, constr) =
     (Hashtbl.find_all univ.inst_features pkg)
 
 let lookup_package_property pkg = function
-    "Package" -> string_of_pkgname pkg.package
-  | "Version" -> string_of_version pkg.version
-  | "Depends" -> string_of_vpkgformula pkg.depends
-  | "Conflicts" -> string_of_vpkglist pkg.conflicts
-  | "Provides" -> string_of_veqpkglist pkg.provides
-  | "Installed" -> string_of_bool pkg.installed
-  | "Keep" ->
-      (try string_of_keep (Option.get pkg.keep)
-       with Option.No_value -> raise Not_found)
+  | "package" -> string_of_pkgname pkg.package
+  | "version" -> string_of_version pkg.version
+  | "depends" -> string_of_vpkgformula pkg.depends
+  | "conflicts" -> string_of_vpkglist pkg.conflicts
+  | "provides" -> string_of_veqpkglist pkg.provides
+  | "installed" -> string_of_bool pkg.installed
+  | "keep" -> string_of_keep pkg.keep
   | prop_name -> string_of_basetype (List.assoc prop_name pkg.extra)
 
 let lookup_request_property req = function
-    "Problem" -> req.problem_id
-  | "Install" -> string_of_vpkglist req.install
-  | "Remove" -> string_of_vpkglist req.remove
-  | "Upgrade" -> string_of_vpkglist req.upgrade
+  | "install" -> string_of_vpkglist req.install
+  | "remove" -> string_of_vpkglist req.remove
+  | "upgrade" -> string_of_vpkglist req.upgrade
   | _ -> raise Not_found
 

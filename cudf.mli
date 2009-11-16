@@ -30,12 +30,12 @@ type package = {
   conflicts : vpkglist ;		(* default : [] *)
   provides : veqpkglist ;		(* default : [] *)
   installed : bool ;			(* default : false *)
-  keep :  enum_keep option ;		(* default : None *)
-  extra : (string * typedecl1) list ;	(* extra properties *)
+  keep :  enum_keep ;			(* default : Keep_none *)
+  extra : (string * typed_value) list ;	(* extra properties *)
 }
 
 (** package equality up to <name, version>
-    i.e. 2 packages are equal if they have the same name and version *)
+    i.e. 2 packages are equal iff they have the same name and version *)
 val (=%) : package -> package -> bool
 
 type request = {
@@ -48,6 +48,9 @@ type request = {
 type preamble = {
   preamble_id : string ;	(** text following the "preamble: " postmark *)
   typedecl : typedecl ;		(** extra property declarations *)
+  univ_checksum: string ;	(** universe checksum *)
+  status_checksum: string ;	(** status checksum *)
+  req_checksum: string ;	(** request checksum *)
 }
 
 val default_preamble : preamble	(** implement preamble defaults *)
@@ -56,8 +59,15 @@ val default_request : request	(** implement request defaults *)
 
 (** {6 Syntactic CUDF representation} *)
 
-type cudf_doc = package list * request
-type cudf_item = [ `Package of package | `Request of request ]
+(** a CUDF document with its information items *)
+type cudf_doc = preamble * package list * request
+
+(** a single information item *)
+type cudf_item =
+  [ `Preamble of preamble
+  | `Package of package
+  | `Request of request
+  ]
 
 (** {6 Semantic CUDF representation} *)
 
@@ -68,10 +78,10 @@ exception Constraint_violation of string
 
 (** package universe (including package status, i.e., installed packages) *)
 type universe
+
 type cudf = preamble * universe * request
 
-(** XXX temporary encoding for CUDF solutions, as they are not yet
-    defined by the CUDF spec
+(** CUDF-based encoding of solutions, see CUDF 2.0, appendix B
 
     A universe encoding a solution matters only for its [installed]
     packages, which are considered to be the resulting package
@@ -134,8 +144,9 @@ val universe_size : universe -> int
 (** total number of installed packages occurring in the universe *)
 val installed_size : universe -> int
 
-(** project on packages having "installed: true".
-    Inefficient (involves hashtbl cloning), use with care. *)
+(** Projection on packages having "installed: true".
+
+    Inefficient (involves Hashtbl.t cloning), use with care. *)
 val status : universe -> universe
 
 (** {5 Low-level stanza manipulation} *)

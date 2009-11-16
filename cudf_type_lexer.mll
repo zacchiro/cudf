@@ -43,19 +43,18 @@ rule token_cudf = parse
   | ':'			{ COLON }
   | '='			{ EQ }
   | '"'			{ let buf = Buffer.create 11 in
-			  qstring buf lexbuf;
-			  QSTRING (Buffer.contents buf) }
+			  qstring buf lexbuf }
   | blank+		{ token_cudf lexbuf }
   | eof			{ EOL } (* single-line parsing: EOF means in fact EOL *)
 
 and qstring buf = parse
   | "\\\""				{ Buffer.add_string buf "\"";
-					  qstring buf }
+					  qstring buf lexbuf }
   | "\\\\"				{ Buffer.add_string buf "\\";
-					  qstring buf }
-  | '"'					{ () }
+					  qstring buf lexbuf }
+  | '"'					{ QSTRING (Buffer.contents buf) }
   | [^ '\n' '\r' '\\' '"']+ as s	{ Buffer.add_string buf s;
-					  qstring buf }
+					  qstring buf lexbuf }
   | _					{ raise (Parse_error_822
 						   (lexbuf.Lexing.lex_start_p,
 						    lexbuf.Lexing.lex_curr_p)) }

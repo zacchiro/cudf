@@ -38,30 +38,27 @@ exception Parse_error of int * string
 
 (** parse a CUDF document (or a universe) as a whole
 
-    @return a pair [packages, Some req] if a complete CUDF (i.e., with
-    a request part) is found, otherwise return a pair [package, None]
-    if the request part is missing. Note that a document with no
-    request part is not a valid CUDF document. *)
-(* val parse : cudf_parser -> preamble * package list * request option *)
+    @return a triple [preamble, packages, request] where preamble and request
+    are returned only if actually met in the parsed document. Note that a
+    document with no request part is not a valid CUDF document (but might still
+    be used to represent solver solutions, for instance). *)
+val parse : cudf_parser -> preamble option * package list * request option
 
 (** same as {!Cudf_parser.parse}, but additionally loads the package
     list as an abstract {!Cudf.universe} *)
-(* val load : cudf_parser -> preamble * universe * request option *)
+val load : cudf_parser -> preamble option * universe * request option
 
 (** shorthand: parse a file given its name *)
-(* val parse_from_file : string -> preamble * package list * request option *)
+val parse_from_file : string -> preamble option * package list * request option
 
 (** shorthand: load from a file given its name *)
-(* val load_from_file : string -> preamble * universe * request option *)
+val load_from_file : string -> preamble option * universe * request option
 
 (** {6 Item-by-item CUDF parsing} *)
 
-(** parse the next information item (either a package description or a
-    user request) from the given input channel. *)
-(*
-val parse_item :
-  cudf_parser -> [ `Package of package | `Request of request ]
-*)
+(** parse the next information item (either a package description, a user
+    request, or a preamble) from the given input channel. *)
+val parse_item : cudf_parser -> cudf_item
 
 (** {6 Low-level parsing functions} *)
 

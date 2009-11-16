@@ -23,23 +23,25 @@ open Cudf_types
 
 (** {6 Public types} *)
 
+val parse_int : string -> int
+val parse_posint : string -> int
+val parse_nat : string -> int
 val parse_bool : string -> bool
+val parse_string : string -> string
 val parse_pkgname : string -> pkgname
-val parse_version : string -> version
+val parse_ident : string -> string
+val parse_enum : enums:string list -> string -> string
 val parse_vpkg : string -> vpkg
 val parse_vpkglist : string -> vpkglist
 val parse_vpkgformula : string -> vpkgformula
 val parse_veqpkg : string -> veqpkg
 val parse_veqpkglist : string -> veqpkglist
 val parse_typedecl : string -> typedecl
+
 val parse_keep : string -> enum_keep
 
-(* (\** generic, type-based parsing *\) *)
-(* val parse_value : typ -> string -> typed_value *)
-
-(** {6 Private (i.e., low-level) types} *)
-
-val parse_relop : string -> relop
+(** generic, type-based parsing *)
+val parse_value : typ -> string -> typed_value
 
 
 (** {5 Pretty printers} *)
@@ -60,7 +62,7 @@ val pp_vpkgformula : Format.formatter -> vpkgformula -> unit
 val pp_veqpkg : Format.formatter -> veqpkg -> unit
 val pp_veqpkglist : Format.formatter -> veqpkglist -> unit
 
-val pp_typ : Format.formatter -> typ -> unit
+val pp_type : Format.formatter -> typ -> unit
 
 
 (** {6 Pretty print to string}
@@ -80,10 +82,12 @@ val string_of_vpkgformula : vpkgformula -> string
 val string_of_veqpkg : veqpkg -> string
 val string_of_veqpkglist : veqpkglist -> string
 
-val string_of_typ : typ -> string
+val string_of_type : typ -> string
 
 
 (**/**)
 
-(* val encode : string -> string *)
-(* val decode : string -> string *)
+(*
+val encode : string -> string
+val decode : string -> string
+*)

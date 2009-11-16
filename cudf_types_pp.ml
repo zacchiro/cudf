@@ -12,21 +12,65 @@
 
 open Cudf_types
 
-(* let parse_value ty s = *)
-(*   match ty with *)
-(*     | `Int -> `Int (parse_int s) *)
-(*     | `Posint -> `Posint (parse_posint s) *)
-(*     | `Nat -> `Nat (parse_nat s) *)
-(*     | `Bool -> `Bool (parse_bool s) *)
-(*     | `String -> `String s *)
-(*     | `Enum l -> `Enum (l, parse_enum l s) *)
-(*     | `Pkgname -> `Pkgname (parse_pkgname s) *)
-(*     | `Ident -> `Ident (parse_ident s) *)
-(*     | `Vpkg -> `Vpkg (parse_vpkg s) *)
-(*     | `Vpkglist -> `Vpkglist (parse_vpkglist s) *)
-(*     | `Vpkgformula -> `Vpkgformula (parse_vpkgformula s) *)
-(*     | `Veqpkg -> `Veqpkg (parse_veqpkg s) *)
-(*     | `Veqpkglist -> `Veqpkglist (parse_veqpkglist s) *)
+let lexbuf_wrapper type_parser =
+  fun s ->
+    type_parser Cudf_type_lexer.token_cudf (Lexing.from_string s)
+
+let parse_int = lexbuf_wrapper Cudf_type_parser.int
+let parse_ident = lexbuf_wrapper Cudf_type_parser.ident
+let parse_string = lexbuf_wrapper Cudf_type_parser.qstring
+let parse_pkgname = lexbuf_wrapper Cudf_type_parser.pkgname
+let parse_vpkg = lexbuf_wrapper Cudf_type_parser.vpkg
+let parse_vpkglist = lexbuf_wrapper Cudf_type_parser.vpkglist
+let parse_vpkgformula = lexbuf_wrapper Cudf_type_parser.vpkgformula
+let parse_typedecl = lexbuf_wrapper Cudf_type_parser.typedecl
+
+(** DEFCON 4, use with care!
+
+    Rationale: to avoid duplicating code we have the cast checks enclosed only
+    in the [cast] function. After having used it however, we will have to
+    extract the contained typed value. To avoid writing several functions
+    extracting the appropriate value and [assert false] everywhere else we
+    cheat with [Obj.magic].
+*)
+let unbox v = snd (Obj.magic v: 'a * 'b)
+
+let parse_posint s: int = unbox (cast `Posint (`Int (parse_int s)))
+let parse_nat s: int = unbox (cast `Nat (`Int (parse_int s)))
+let parse_bool s: bool = unbox (cast `Bool (`Ident (parse_ident s)))
+let parse_veqpkg s: veqpkg = unbox (cast `Veqpkg (`Vpkg (parse_vpkg s)))
+let parse_veqpkglist s: veqpkglist =
+  unbox (cast `Veqpkglist (`Vpkglist (parse_vpkglist s)))
+
+let parse_enum ~enums s =
+  match cast (`Enum enums) (`Ident (parse_ident s)) with
+    | `Enum (_, i) -> i
+    | _ -> assert false
+
+let parse_keep s =
+  let keep_type = `Enum ["version"; "feature"; "package"; "none" ] in
+  match parse_ident s with
+    | "version" -> `Keep_version
+    | "feature" -> `Keep_feature
+    | "package" -> `Keep_package
+    | "none" -> `Keep_none
+    | i -> raise (Type_error (keep_type, `Ident i))
+
+let parse_value ty s =
+  match ty with
+    | `Int -> `Int (parse_int s)
+    | `Posint -> `Posint (parse_posint s)
+    | `Nat -> `Nat (parse_nat s)
+    | `Bool -> `Bool (parse_bool s)
+    | `String -> `String s
+    | `Enum l -> `Enum (l, parse_enum l s)
+    | `Pkgname -> `Pkgname (parse_pkgname s)
+    | `Ident -> `Ident (parse_ident s)
+    | `Vpkg -> `Vpkg (parse_vpkg s)
+    | `Vpkglist -> `Vpkglist (parse_vpkglist s)
+    | `Vpkgformula -> `Vpkgformula (parse_vpkgformula s)
+    | `Veqpkg -> `Veqpkg (parse_veqpkg s)
+    | `Veqpkglist -> `Veqpkglist (parse_veqpkglist s)
 
 (** Pretty printers *)
 
@@ -44,6 +88,7 @@ let pp_keep fmt = function
     `Keep_version -> Format.fprintf fmt "version"
   | `Keep_package -> Format.fprintf fmt "package"
   | `Keep_feature -> Format.fprintf fmt "feature"
+  | `Keep_none -> Format.fprintf fmt "none"
 
 let pp_pkgname fmt name = Format.fprintf fmt "%s" name
 let pp_version fmt ver = Format.fprintf fmt "%d" ver
@@ -87,9 +132,9 @@ let rec pp_vpkgformula =
 let pp_veqpkglist = pp_vpkglist
 let pp_veqpkg = pp_vpkg
 
-let pp_typ fmt = function
+let pp_type fmt = function
   | `Int -> Format.fprintf fmt "int"
-  | `PosInt -> Format.fprintf fmt "posint"
+  | `Posint -> Format.fprintf fmt "posint"
   | `Nat -> Format.fprintf fmt "nat"
   | `Bool -> Format.fprintf fmt "bool"
   | `String -> Format.fprintf fmt "string"
@@ -142,7 +187,7 @@ let string_of_vpkgformula = string_of pp_vpkgformula
 let string_of_veqpkg = string_of pp_veqpkg
 let string_of_veqpkglist = string_of pp_veqpkglist
 let string_of_basetype = string_of pp_basetype
-let string_of_typ = string_of pp_typ
+let string_of_type = string_of pp_type
 
 (* TODO XXX not really nice ... *)
 let string_of_typedecl b =
@@ -151,31 +196,31 @@ let string_of_typedecl b =
   Format.pp_print_flush buf_formatter ();
   (t,Buffer.contents buf)
 
-(** Misc stuff *)
+(*
+let encode s =
+  let escape_string s =
+    let make_hex chr = Printf.sprintf "%%%x" (Char.code chr) in
+    let allowed_RE = Pcre.regexp pkgname_STR in
+    let n = String.length s in
+    let b = Buffer.create n in
+    for i = 0 to n-1 do
+      let s' = String.of_char s.[i] in
+      if not(Pcre.pmatch ~rex:allowed_RE s') then
+        Buffer.add_string b (make_hex s.[i])
+      else
+        Buffer.add_string b s'
+    done;
+    Buffer.contents b
+  in
+  if Pcre.pmatch ~rex:pkgname_RE s then s
+  else escape_string s
 
-(* let encode s = *)
-(*   let escape_string s = *)
-(*     let make_hex chr = Printf.sprintf "%%%x" (Char.code chr) in *)
-(*     let allowed_RE = Pcre.regexp pkgname_STR in *)
-(*     let n = String.length s in *)
-(*     let b = Buffer.create n in *)
-(*     for i = 0 to n-1 do *)
-(*       let s' = String.of_char s.[i] in *)
-(*       if not(Pcre.pmatch ~rex:allowed_RE s') then *)
-(*         Buffer.add_string b (make_hex s.[i]) *)
-(*       else *)
-(*         Buffer.add_string b s' *)
-(*     done; *)
-(*     Buffer.contents b *)
-(*   in *)
-(*   if Pcre.pmatch ~rex:pkgname_RE s then s *)
-(*   else escape_string s *)
-
-(* let rec decode s = *)
-(*   let hex_re = Pcre.regexp "%[0-9a-f][0-9a-f]" in *)
-(*   let un s = *)
-(*     let hex = String.sub s 1 2 in *)
-(*     let n = int_of_string ("0x" ^ hex) in *)
-(*     String.make 1 (Char.chr n) *)
-(*   in *)
-(*   Pcre.substitute ~rex:hex_re ~subst:un s *)
+let rec decode s =
+  let hex_re = Pcre.regexp "%[0-9a-f][0-9a-f]" in
+  let un s =
+    let hex = String.sub s 1 2 in
+    let n = int_of_string ("0x" ^ hex) in
+    String.make 1 (Char.chr n)
+  in
+  Pcre.substitute ~rex:hex_re ~subst:un s
+*)
