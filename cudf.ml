@@ -14,6 +14,7 @@ open ExtLib
 open Printf
 
 open Cudf_types
+open Cudf_types_pp
 
 exception Constraint_violation of string
 
@@ -197,7 +198,7 @@ let lookup_package_property pkg = function
   | "provides" -> string_of_veqpkglist pkg.provides
   | "installed" -> string_of_bool pkg.installed
   | "keep" -> string_of_keep pkg.keep
-  | prop_name -> string_of_basetype (List.assoc prop_name pkg.extra)
+  | prop_name -> string_of_value (List.assoc prop_name pkg.extra)
 
 let lookup_request_property req = function
   | "install" -> string_of_vpkglist req.install

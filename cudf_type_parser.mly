@@ -113,7 +113,7 @@ typedecl_:
   | ident COLON typename
       EQ LBRACKET typed_value RBRACKET	{ let name, typ, v = $1, $3, $6 in
 					  (name,
-					   Cudf_types.typedecl_of_val
+					   Cudf_types.typedecl_of_value
 					     (Cudf_types.cast typ v)) }
 ;
 

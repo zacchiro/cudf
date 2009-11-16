@@ -78,7 +78,7 @@ let typedecl_of_type = function
   | `Veqpkg -> `Veqpkg None
   | `Veqpkglist -> `Veqpkglist None
 
-let typedecl_of_val = function
+let typedecl_of_value = function
   | `Int n -> `Int (Some n)
   | `Posint n -> `Posint (Some n)
   | `Nat n -> `Nat (Some n)
@@ -93,7 +93,7 @@ let typedecl_of_val = function
   | `Veqpkg p -> `Veqpkg (Some p)
   | `Veqpkglist l -> `Veqpkglist (Some l)
 
-let type_of_val = function
+let type_of_value = function
   | `Int n -> `Int
   | `Posint n -> `Posint
   | `Nat n -> `Nat
@@ -142,7 +142,7 @@ let cast typ v =
 		  | _ -> type_error ())
 	     l [])
     | `Enum enums, `Ident i when List.mem i enums -> `Enum (enums, i)
-    | typ, v when type_of_val v = typ -> v	(* identity cast *)
+    | typ, v when type_of_value v = typ -> v	(* identity cast *)
     | _ -> type_error ()
 
 let rec is_eq_formula f =

@@ -92,13 +92,13 @@ val type_of_typedecl : typedecl1 -> typ
 
 (** Create a (single) type declaration having as default value the given typed
     value (i.e. apply the "Some" monad to typed values) *)
-val typedecl_of_val : typed_value -> typedecl1
+val typedecl_of_value : typed_value -> typedecl1
 
 (** Create a (single) type declaration with no default value *)
 val typedecl_of_type : typ -> typedecl1
 
 (** @return the type of a given value *)
-val type_of_val : typed_value -> typ
+val type_of_value : typed_value -> typ
 
 (** [cast ty v] attempt a runtime cast of a given (typed) value to a different
     type.

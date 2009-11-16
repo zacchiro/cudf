@@ -63,6 +63,7 @@ val pp_veqpkg : Format.formatter -> veqpkg -> unit
 val pp_veqpkglist : Format.formatter -> veqpkglist -> unit
 
 val pp_type : Format.formatter -> typ -> unit
+val pp_value : Format.formatter -> typed_value -> unit
 
 
 (** {6 Pretty print to string}
@@ -83,6 +84,7 @@ val string_of_veqpkg : veqpkg -> string
 val string_of_veqpkglist : veqpkglist -> string
 
 val string_of_type : typ -> string
+val string_of_value : typed_value -> string
 
 
 (**/**)

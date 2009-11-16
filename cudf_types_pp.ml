@@ -147,6 +147,17 @@ let pp_type fmt = function
   | `Veqpkg -> Format.fprintf fmt "veqpkg"
   | `Veqpkglist -> Format.fprintf fmt "veqpkglist"
 
+let pp_value fmt (v: typed_value) = match v with
+  | (`Int i | `Posint i | `Nat i) -> pp_int fmt i
+  | `Bool b -> pp_bool fmt b
+  | (`String s | `Pkgname s | `Ident s | `Enum (_, s)) -> pp_string fmt s
+  | `Vpkg p -> pp_vpkg fmt p
+  | `Veqpkg p -> pp_vpkg fmt p
+  | `Vpkglist l -> pp_vpkglist fmt l
+  | `Veqpkglist l -> pp_vpkglist fmt l
+  | `Vpkgformula f -> pp_vpkgformula fmt f
+
+(* TODO XXX rewrite using the Formatter module *)
 let dump_typedecl fmt = function
   |`Int i -> pp_int fmt i; "int"
   |`Posint i -> pp_int fmt i; "posint"
@@ -188,6 +199,7 @@ let string_of_veqpkg = string_of pp_veqpkg
 let string_of_veqpkglist = string_of pp_veqpkglist
 let string_of_basetype = string_of pp_basetype
 let string_of_type = string_of pp_type
+let string_of_value = string_of pp_value
 
 (* TODO XXX not really nice ... *)
 let string_of_typedecl b =
