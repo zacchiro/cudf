@@ -62,10 +62,32 @@ type typedecl1 =
     | `Veqpkg of veqpkg option
     | `Veqpkglist of veqpkglist option
     ]
-type typed_value = typedecl1
+
+(** Typed value in the value space of all CUDF types *)
+type typed_value =
+    [ `Int of int
+    | `Posint of int
+    | `Nat of int
+    | `Bool of bool
+    | `String of string
+    | `Pkgname of string
+    | `Ident of string
+    | `Enum of string list * string
+    | `Vpkg of vpkg
+    | `Vpkgformula of vpkgformula
+    | `Vpkglist of vpkglist
+    | `Veqpkg of veqpkg
+    | `Veqpkglist of veqpkglist
+    ]
+
 type typedecl = (string * typedecl1) list
 
+(** extract the type of a (single) type declaration *)
 val type_of_typedecl : typedecl1 -> typ
+
+(** Create a (single) type declaration having as default value the given typed
+    value (i.e. apply the "Some" monad to typed values) *)
+val typedecl1_of_val : typed_value -> typedecl1
 
 (** {5 Various errors} *)
 

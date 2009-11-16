@@ -10,6 +10,8 @@
 (*  library, see the COPYING file for more information.                      *)
 (*****************************************************************************)
 
+(** Lexer for CUDF values *)
+
 {
   open Cudf_types
   open Cudf_type_parser

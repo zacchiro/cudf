@@ -48,39 +48,54 @@ let parse_ty_nodefault = function
   | "veqpkglist" -> `Veqpkglist None
   | s            -> raise (Parse_error_msg ("unknown type: " ^ s))
 
+(** check whether a formula uses only equality tests over package versions *)
+let rec is_eq_formula f =
+  not (List.exists
+	 (fun vpkgs ->
+	    List.exists
+	      (function
+		 | (_, Some ((`Neq | `Geq | `Gt | `Leq | `Lt), _)) -> true
+		 | _ -> false)
+	      vpkgs)
+	 f)
+
 (** Set a default value in a type declaration that have no default value, take
     care of CUDF sub-typing. *)
 let rec set_default v ty =
-  let type_error () = raise Type_error (type_of_typedecl ty, v) in
-  match ty, v with
-    | `Int _, `Int n -> `Int (Some n)
-    | `Posint _, `Int n when n > 0 -> `Posint (Some n)
-    | `Nat _, `Int n when n >= 0 -> `Nat (Some n)
-    | `Bool _, `Ident "true" -> `Bool (Some true)
-    | `Bool _, `Ident "false" -> `Bool (Some false)
-    | `String _, `String s -> `String (Some s)
-    | `Pkgname _, `Vpkgformula [[(pkg, None)]] -> `Pkgname (Some pkg)
-    | `Ident _, `Ident i -> `Ident (Some i)
-    | `Vpkg _, `Vpkgformula [[vpkg]] -> `Vpkg (Some vpkg)
-    | `Vpkglist _, `Vpkgformula f ->
-	if List.exists (function _ :: _ :: _ -> true | _ -> false) f then
-	  type_error ()	(* there are OR-ed deps *)
-	else
-	  `Vpkglist (Some (List.map (function [vpkg] -> vpkg
-				       | _ -> assert false) f))
-    | `Veqpkg old_default, `Vpkgformula f ->
-	if is_eq_formula f
-	then set_default v (`Vpkg (old_default :> vpkg))
-	else type_error ()
-    | `Veqpkglist old_default, `Vpkgformula f ->
-	if is_eq_formula f
-	then set_default v (`Vpkglist (old_default :> vpkglist))
-	else type_error ()
-    | `Enum (enums, _), `Ident i ->
-	if List.mem i enums
-	then `Enum (enums, Some i)
-	else type_error ()
-    | _ -> type_error ()
+  let type_error () =
+    raise (Cudf_types.Type_error (Cudf_types.type_of_typedecl ty, v)) in
+  let tyval =
+    match ty, v with
+      | `Int _, `Int n -> `Int (Some n)
+      | `Posint _, `Int n when n > 0 -> `Posint (Some n)
+      | `Nat _, `Int n when n >= 0 -> `Nat (Some n)
+      | `Bool _, `Ident "true" -> `Bool (Some true)
+      | `Bool _, `Ident "false" -> `Bool (Some false)
+      | `String _, `String s -> `String (Some s)
+      | `Pkgname _, `Vpkgformula [[(pkg, None)]] -> `Pkgname (Some pkg)
+      | `Ident _, `Ident i -> `Ident (Some i)
+      | `Vpkg _, `Vpkgformula [[vpkg]] -> `Vpkg (Some vpkg)
+      | `Vpkglist _, `Vpkgformula f ->
+	  if List.exists (function _ :: _ :: _ -> true | _ -> false) f then
+	    type_error ()	(* there are OR-ed deps *)
+	  else
+	    `Vpkglist (Some (List.map (function [vpkg] -> vpkg
+					 | _ -> assert false) f))
+      | `Veqpkg old_default, `Vpkgformula f ->
+	  if is_eq_formula f
+	  then set_default v (`Vpkg None)
+	  else type_error ()
+      | `Veqpkglist old_default, `Vpkgformula f ->
+	  if is_eq_formula f
+	  then set_default v (`Vpkglist None)
+	  else type_error ()
+      | `Enum (enums, _), `Ident i ->
+	  if List.mem i enums
+	  then `Enum (enums, Some i)
+	  else type_error ()
+      | _ -> type_error ()
+  in
+  (tyval :> Cudf_types.typedecl1)
 
 %}
 
@@ -115,7 +130,7 @@ int:
 
 vpkg:
   | PKGNAME			{ ($1, None) }
-  | PKGNAME relop version	{ ($1, Some ($1, $2)) }
+  | PKGNAME relop version	{ ($1, Some ($2, $3)) }
 ;
 vpkglist:
   |			{ [] }

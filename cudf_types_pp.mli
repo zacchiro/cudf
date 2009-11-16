@@ -34,8 +34,8 @@ val parse_veqpkglist : string -> veqpkglist
 val parse_typedecl : string -> typedecl
 val parse_keep : string -> enum_keep
 
-val parse_value : typ -> string -> typed_value
-  (** generic, type-based parsing *)
+(* (\** generic, type-based parsing *\) *)
+(* val parse_value : typ -> string -> typed_value *)
 
 (** {6 Private (i.e., low-level) types} *)
 
@@ -85,5 +85,5 @@ val string_of_typ : typ -> string
 
 (**/**)
 
-val encode : string -> string
-val decode : string -> string
+(* val encode : string -> string *)
+(* val decode : string -> string *)

@@ -36,7 +36,12 @@ type typedecl1 =
     | `Enum of (string list * string option) | `Vpkg of vpkg option
     | `Vpkgformula of vpkgformula option | `Vpkglist of vpkglist option
     | `Veqpkg of veqpkg option | `Veqpkglist of veqpkglist option ]
-type typed_value = typedecl1
+type typed_value =
+    [ `Int of int | `Posint of int | `Nat of int | `Bool of bool
+    | `String of string | `Pkgname of string | `Ident of string
+    | `Enum of string list * string | `Vpkg of vpkg
+    | `Vpkgformula of vpkgformula | `Vpkglist of vpkglist
+    | `Veqpkg of veqpkg | `Veqpkglist of veqpkglist ]
 type typedecl = (string * typedecl1) list
 
 let type_of_typedecl = function
@@ -53,6 +58,21 @@ let type_of_typedecl = function
   | `Vpkglist _ -> `Vpkglist
   | `Veqpkg _ -> `Veqpkg
   | `Veqpkglist _ -> `Veqpkglist
+
+let typedecl1_of_val = function
+  | `Int n -> `Int (Some n)
+  | `Posint n -> `Posint (Some n)
+  | `Nat n -> `Nat (Some n)
+  | `Bool b -> `Bool (Some b)
+  | `String s -> `String (Some s)
+  | `Pkgname s -> `Pkgname (Some s)
+  | `Ident s -> `Ident (Some s)
+  | `Enum (enums, s) -> `Enum (enums, Some s)
+  | `Vpkg p -> `Vpkg (Some p)
+  | `Vpkgformula f -> `Vpkgformula (Some f)
+  | `Vpkglist l -> `Vpkglist (Some l)
+  | `Veqpkg p -> `Veqpkg (Some p)
+  | `Veqpkglist l -> `Veqpkglist (Some l)
 
 exception Type_error of typ * typed_value	(* <type, literal> *)
 exception Parse_error_822 of Lexing.position * Lexing.position

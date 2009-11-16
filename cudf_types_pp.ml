@@ -12,21 +12,21 @@
 
 open Cudf_types
 
-let parse_value ty s =
-  match ty with
-    | `Int -> `Int (parse_int s)
-    | `Posint -> `Posint (parse_posint s)
-    | `Nat -> `Nat (parse_nat s)
-    | `Bool -> `Bool (parse_bool s)
-    | `String -> `String s
-    | `Enum l -> `Enum (l, parse_enum l s)
-    | `Pkgname -> `Pkgname (parse_pkgname s)
-    | `Ident -> `Ident (parse_ident s)
-    | `Vpkg -> `Vpkg (parse_vpkg s)
-    | `Vpkglist -> `Vpkglist (parse_vpkglist s)
-    | `Vpkgformula -> `Vpkgformula (parse_vpkgformula s)
-    | `Veqpkg -> `Veqpkg (parse_veqpkg s)
-    | `Veqpkglist -> `Veqpkglist (parse_veqpkglist s)
+(* let parse_value ty s = *)
+(*   match ty with *)
+(*     | `Int -> `Int (parse_int s) *)
+(*     | `Posint -> `Posint (parse_posint s) *)
+(*     | `Nat -> `Nat (parse_nat s) *)
+(*     | `Bool -> `Bool (parse_bool s) *)
+(*     | `String -> `String s *)
+(*     | `Enum l -> `Enum (l, parse_enum l s) *)
+(*     | `Pkgname -> `Pkgname (parse_pkgname s) *)
+(*     | `Ident -> `Ident (parse_ident s) *)
+(*     | `Vpkg -> `Vpkg (parse_vpkg s) *)
+(*     | `Vpkglist -> `Vpkglist (parse_vpkglist s) *)
+(*     | `Vpkgformula -> `Vpkgformula (parse_vpkgformula s) *)
+(*     | `Veqpkg -> `Veqpkg (parse_veqpkg s) *)
+(*     | `Veqpkglist -> `Veqpkglist (parse_veqpkglist s) *)
 
 (** Pretty printers *)
 
@@ -93,7 +93,7 @@ let pp_typ fmt = function
   | `Nat -> Format.fprintf fmt "nat"
   | `Bool -> Format.fprintf fmt "bool"
   | `String -> Format.fprintf fmt "string"
-  | `Enum enums -> Format.fprintf fmt "enum(%s)" (String.join "," enums)
+  | `Enum enums -> Format.fprintf fmt "enum(%s)" (String.concat "," enums)
   | `Pkgname -> Format.fprintf fmt "pkgname"
   | `Ident -> Format.fprintf fmt "ident"
   | `Vpkg -> Format.fprintf fmt "vpkg"
@@ -153,29 +153,29 @@ let string_of_typedecl b =
 
 (** Misc stuff *)
 
-let encode s =
-  let escape_string s =
-    let make_hex chr = Printf.sprintf "%%%x" (Char.code chr) in
-    let allowed_RE = Pcre.regexp pkgname_STR in
-    let n = String.length s in
-    let b = Buffer.create n in
-    for i = 0 to n-1 do
-      let s' = String.of_char s.[i] in
-      if not(Pcre.pmatch ~rex:allowed_RE s') then
-        Buffer.add_string b (make_hex s.[i])
-      else
-        Buffer.add_string b s'
-    done;
-    Buffer.contents b
-  in
-  if Pcre.pmatch ~rex:pkgname_RE s then s
-  else escape_string s
+(* let encode s = *)
+(*   let escape_string s = *)
+(*     let make_hex chr = Printf.sprintf "%%%x" (Char.code chr) in *)
+(*     let allowed_RE = Pcre.regexp pkgname_STR in *)
+(*     let n = String.length s in *)
+(*     let b = Buffer.create n in *)
+(*     for i = 0 to n-1 do *)
+(*       let s' = String.of_char s.[i] in *)
+(*       if not(Pcre.pmatch ~rex:allowed_RE s') then *)
+(*         Buffer.add_string b (make_hex s.[i]) *)
+(*       else *)
+(*         Buffer.add_string b s' *)
+(*     done; *)
+(*     Buffer.contents b *)
+(*   in *)
+(*   if Pcre.pmatch ~rex:pkgname_RE s then s *)
+(*   else escape_string s *)
 
-let rec decode s =
-  let hex_re = Pcre.regexp "%[0-9a-f][0-9a-f]" in
-  let un s =
-    let hex = String.sub s 1 2 in
-    let n = int_of_string ("0x" ^ hex) in
-    String.make 1 (Char.chr n)
-  in
-  Pcre.substitute ~rex:hex_re ~subst:un s
+(* let rec decode s = *)
+(*   let hex_re = Pcre.regexp "%[0-9a-f][0-9a-f]" in *)
+(*   let un s = *)
+(*     let hex = String.sub s 1 2 in *)
+(*     let n = int_of_string ("0x" ^ hex) in *)
+(*     String.make 1 (Char.chr n) *)
+(*   in *)
+(*   Pcre.substitute ~rex:hex_re ~subst:un s *)

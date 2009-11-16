@@ -10,6 +10,8 @@
 (*  library, see the COPYING file for more information.                      *)
 (*****************************************************************************)
 
+(** Lexer for CUDF 822 surface syntax *)
+
 {
   open Cudf_types
   open Cudf_822_parser
