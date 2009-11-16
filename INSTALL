@@ -5,8 +5,6 @@ To build
 Build dependencies:
 - ocaml	>= 3.10.2	(Debian package: "ocaml-nox", Mandriva: "ocaml")
 - findlib		(Debian package: "ocaml-findlib", Mandriva: "ocaml-findlib")
-- pcre-ocaml		(Debian package: "libpcre-ocaml-dev",
-  			 Mandriva: "ocaml-pcre-devel")
 - extlib		(Debian package: "libextlib-ocaml-dev")
   			 Mandriva: "ocaml-extlib-devel")
 - oUnit			(only needed to run the test suite
