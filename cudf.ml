@@ -44,7 +44,7 @@ type preamble = {
   status_checksum: string ;
   req_checksum: string ;
 }
-type cudf_doc = preamble * package list * request
+type cudf_doc = preamble option * package list * request
 type cudf_item = [ `Preamble of preamble | `Package of package | `Request of request ]
 type universe = {
   id2pkg: ((string * int), package) Hashtbl.t;	(** <name, ver> -> pkg *)

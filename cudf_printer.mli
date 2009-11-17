@@ -12,7 +12,7 @@
 
 (** Pretty printing of CUDF macro-components (documents, stanzas, ...)
 
-    For pretty printing of micro-components see {!Cudf_types}. *)
+    For pretty printing of micro-components see {!Cudf_types_pp}. *)
 
 open Cudf
 

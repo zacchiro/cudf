@@ -15,7 +15,7 @@ open Cudf_types
 type stanza_typedecl = (string * typedecl) list
 
 let preamble_typedecl = [
-  "preamble",		`String (Some "") ;
+  "preamble",		`String None ;
   "property",		`Typedecl (Some []) ;
   "univ-checksum",	`String (Some "") ;
   "status-checksum",	`String (Some "") ;
@@ -35,7 +35,7 @@ let package_typedecl = [
 ]
 
 let request_typedecl = [
-  "request",		`String (Some "") ;
+  "request",		`String None ;
   "install",		`Vpkglist (Some []) ;
   "remove",		`Vpkglist (Some []) ;
   "upgrade",		`Vpkglist (Some []) ;

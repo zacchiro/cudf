@@ -61,6 +61,7 @@ val pp_vpkglist : Format.formatter -> vpkglist -> unit
 val pp_vpkgformula : Format.formatter -> vpkgformula -> unit
 val pp_veqpkg : Format.formatter -> veqpkg -> unit
 val pp_veqpkglist : Format.formatter -> veqpkglist -> unit
+val pp_typedecl : Format.formatter -> typedecl -> unit
 
 val pp_type : Format.formatter -> typ -> unit
 val pp_value : Format.formatter -> typed_value -> unit
@@ -82,6 +83,7 @@ val string_of_vpkglist : vpkglist -> string
 val string_of_vpkgformula : vpkgformula -> string
 val string_of_veqpkg : veqpkg -> string
 val string_of_veqpkglist : veqpkglist -> string
+val string_of_typedecl : typedecl -> string
 
 val string_of_type : typ -> string
 val string_of_value : typed_value -> string

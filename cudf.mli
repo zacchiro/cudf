@@ -62,7 +62,7 @@ val default_request : request	(** implement request defaults *)
 (** {6 Syntactic CUDF representation} *)
 
 (** a CUDF document with its information items *)
-type cudf_doc = preamble * package list * request
+type cudf_doc = preamble option * package list * request
 
 (** a single information item *)
 type cudf_item =
