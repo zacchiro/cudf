@@ -48,6 +48,8 @@ exception Type_error of typ * typed_value	(* <type, literal> *)
 exception Parse_error_822 of Lexing.position * Lexing.position
 exception Syntax_error of string * Lexing.position * Lexing.position
 
+let keep_type = `Enum ["version"; "package"; "feature"; "none"]
+
 let type_of_typedecl = function
   | `Int _ -> `Int
   | `Posint _ -> `Posint

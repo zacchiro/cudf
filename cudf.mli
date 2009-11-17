@@ -26,12 +26,12 @@ open Cudf_types
 type package = {
   package : pkgname ;
   version : version ;
-  depends : vpkgformula ;		(* default : [] *)
-  conflicts : vpkglist ;		(* default : [] *)
-  provides : veqpkglist ;		(* default : [] *)
-  installed : bool ;			(* default : false *)
-  keep :  enum_keep ;			(* default : Keep_none *)
-  extra : (string * typed_value) list ;	(* extra properties *)
+  depends : vpkgformula ;			(* default : [] *)
+  conflicts : vpkglist ;			(* default : [] *)
+  provides : veqpkglist ;			(* default : [] *)
+  installed : bool ;				(* default : false *)
+  keep :  enum_keep ;				(* default : Keep_none *)
+  pkg_extra : (string * typed_value) list ;	(* extra properties *)
 }
 
 (** package equality up to <name, version>
@@ -39,10 +39,11 @@ type package = {
 val (=%) : package -> package -> bool
 
 type request = {
-  problem_id : string ;
-  install : vpkglist ;	(* default : [] *)
-  remove : vpkglist ;	(* default : [] *)
-  upgrade : vpkglist ;	(* default : [] *)
+  problem_id : string ;				(* default : "" *)
+  install : vpkglist ;				(* default : [] *)
+  remove : vpkglist ;				(* default : [] *)
+  upgrade : vpkglist ;				(* default : [] *)
+  req_extra : (string * typed_value) list ;	(* default : [] *)
 }
 
 type preamble = {

@@ -16,9 +16,9 @@ open Printf
 open Cudf
 open Cudf_types
 
-(* INVARIANT: lines are always kept lstrip-ed (see [lstrip] below) *)
 type cudf_parser = {
   lexbuf: Lexing.lexbuf;
+  mutable types: Cudf_conf.stanza_types;
 }
 
 exception Parse_error of int * string
@@ -41,6 +41,14 @@ let parse_stanza p =
       | Some stanza -> stanza
       | None -> raise End_of_file)
   with Parse_error_822 _ as exn -> parse_error_e "" exn
+
+(* let parse_item p = *)
+(*   let stanza = parse_stanza p in *)
+(*   match stanza with *)
+(*     | [] -> assert false *)
+(*     | "preamble", _ :: tl -> *)
+(*     | "request", _ :: tl -> *)
+(*     | "package", _ :: tl -> *)
 
 (*
 (* we read the first paragraph. if it has a property declaration, we 

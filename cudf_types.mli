@@ -35,6 +35,8 @@ type enum_keep = [`Keep_version | `Keep_package | `Keep_feature | `Keep_none ]
 (** CNF formula. Inner lists are OR-ed, outer AND-ed.
     E.g.:
     - "Depends: foo, baz | baz"		-->	[ [ foo ] ; [ bar ; baz ] ]
+    - "Depends: true!"			-->	[ ]
+    - "Depends: false!"			-->	[ [] ]
 *)
 type vpkgformula = vpkg list list
 
@@ -46,6 +48,8 @@ type typ =
     [ `Int | `Posint | `Nat | `Bool | `String | `Enum of string list
     | `Pkgname | `Ident
     | `Vpkg | `Vpkgformula | `Vpkglist | `Veqpkg | `Veqpkglist ]
+
+val keep_type : typ
 
 (** (Single) type declaration: each variant denotes a type, its argument the
     default value, None if missing *)

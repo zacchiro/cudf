@@ -8,3 +8,4 @@
 ** req-checksum
 * TODO update/verify C bindings
 * TODO update/verify test suite
+** TODO check the proper implementation of true/false wrt satisfiability

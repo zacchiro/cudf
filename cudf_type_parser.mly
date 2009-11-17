@@ -54,6 +54,7 @@ let parse_typename = function
 %token <int> POSINT NEGINT
 %token LBRACKET RBRACKET LPAREN RPAREN
 %token COMMA PIPE COLON EQ
+%token VPKGTRUE VPKGFALSE
 %token EOL
 %type <int> int
 %type <string> ident
@@ -91,7 +92,11 @@ vpkglist:
   | vpkg vpkglist	{ $1 :: $2 }
 ;
 
-vpkgformula: and_formula { $1 } ;
+vpkgformula:
+  | and_formula		{ $1 }
+  | VPKGTRUE		{ [] }
+  | VPKGFALSE		{ [ [] ] }
+;
 
 and_formula:
   | or_formula				{ [ $1 ] }

@@ -48,13 +48,12 @@ let parse_enum ~enums s =
     | _ -> assert false
 
 let parse_keep s =
-  let keep_type = `Enum ["version"; "feature"; "package"; "none" ] in
   match parse_ident s with
     | "version" -> `Keep_version
     | "feature" -> `Keep_feature
     | "package" -> `Keep_package
     | "none" -> `Keep_none
-    | i -> raise (Type_error (keep_type, `Ident i))
+    | i -> raise (Type_error (Cudf_types.keep_type, `Ident i))
 
 let parse_value ty s =
   match ty with

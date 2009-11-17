@@ -31,7 +31,7 @@ let pp_package fmt pkg =
     pp ("installed", string_of_bool pkg.installed);
   if pkg.keep <> default_package.keep then
     Option.may (fun k -> pp ("keep", string_of_keep k)) pkg.keep;
-  List.iter (fun (name, t) -> pp (name, string_of_basetype t)) pkg.extra
+  List.iter (fun (name, t) -> pp (name, string_of_basetype t)) pkg.pkg_extra
 
 let pp_request fmt req =
   let pp = pp_property fmt in

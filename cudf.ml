@@ -26,7 +26,7 @@ type package = {
   provides : veqpkglist ;
   installed : bool ;
   keep : enum_keep ;
-  extra : (string * typed_value) list
+  pkg_extra : (string * typed_value) list
 }
 
 type request = {
@@ -34,6 +34,7 @@ type request = {
   install : vpkglist ;
   remove : vpkglist ;
   upgrade : vpkglist ;
+  req_extra : (string * typed_value) list
 }
 type preamble = {
   preamble_id : string ;
@@ -81,7 +82,7 @@ let default_package = {
   provides = [] ;
   installed = false ;
   keep = `Keep_none ;
-  extra = [] ;
+  pkg_extra = [] ;
 }
 
 let default_request = {
@@ -89,6 +90,7 @@ let default_request = {
   install = [] ;
   remove = [] ;
   upgrade = [] ;
+  req_extra = [] ;
 }
 
 let empty_universe () =
@@ -198,7 +200,7 @@ let lookup_package_property pkg = function
   | "provides" -> string_of_veqpkglist pkg.provides
   | "installed" -> string_of_bool pkg.installed
   | "keep" -> string_of_keep pkg.keep
-  | prop_name -> string_of_value (List.assoc prop_name pkg.extra)
+  | prop_name -> string_of_value (List.assoc prop_name pkg.pkg_extra)
 
 let lookup_request_property req = function
   | "install" -> string_of_vpkglist req.install
