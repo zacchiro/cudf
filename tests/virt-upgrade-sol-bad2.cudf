@@ -1,4 +1,4 @@
-Package: baz
-Version: 1
-Provides: virtual
-Installed: true
+package: baz
+version: 1
+provides: virtual
+installed: true

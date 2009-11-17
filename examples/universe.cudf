@@ -1,91 +1,91 @@
-Package: car
-Version: 1
-Depends: engine, wheel, door, battery
-Installed: true
+package: car
+version: 1
+depends: engine, wheel, door, battery
+installed: true
 
-Package: bicycle
-Version: 7
+package: bicycle
+version: 7
 
-Package: gasoline-engine
-Version: 1
-Depends: turbo
-Provides: engine
-Conflicts: engine, gasoline-engine
-Installed: true
+package: gasoline-engine
+version: 1
+depends: turbo
+provides: engine
+conflicts: engine, gasoline-engine
+installed: true
 
-Package: gasoline-engine
-Version: 2
-Conflicts: engine, gasoline-engine
+package: gasoline-engine
+version: 2
+conflicts: engine, gasoline-engine
 
-Package: electric-engine
-Version: 1
-Depends: solar-collector | huge-battery
-Provides: engine
-Conflicts: engine, electric-engine
+package: electric-engine
+version: 1
+depends: solar-collector | huge-battery
+provides: engine
+conflicts: engine, electric-engine
 
-Package: electric-engine
-Version: 2
-Depends: solar-collector | huge-battery
-Provides: engine
-Conflicts: engine, electric-engine
+package: electric-engine
+version: 2
+depends: solar-collector | huge-battery
+provides: engine
+conflicts: engine, electric-engine
 
-Package: solar-collector
-Version: 1
+package: solar-collector
+version: 1
 
-Package: battery
-Version: 3
-Provides: huge-battery
-Installed: true
+package: battery
+version: 3
+provides: huge-battery
+installed: true
 
-Package: wheel
-Version: 2
-Conflicts: wheel
-Installed: true
+package: wheel
+version: 2
+conflicts: wheel
+installed: true
 
-Package: wheel
-Version: 3
-Conflicts: wheel
+package: wheel
+version: 3
+conflicts: wheel
 
-Package: door
-Version: 1
-Conflicts: door
-Installed: true
+package: door
+version: 1
+conflicts: door
+installed: true
 
-Package: door
-Version: 2
-Depends: window
-Conflicts: door
+package: door
+version: 2
+depends: window
+conflicts: door
 
-Package: turbo
-Version: 1
-Installed: true
+package: turbo
+version: 1
+installed: true
 
-Package: tire
-Version: 1
-Conflicts: tire
+package: tire
+version: 1
+conflicts: tire
 
-Package: tire
-Version: 2
-Conflicts: tire
+package: tire
+version: 2
+conflicts: tire
 
-Package: window
-Version: 1
-Conflicts: window
+package: window
+version: 1
+conflicts: window
 
-Package: window
-Version: 2
-Depends: glass = 1
-Conflicts: window
+package: window
+version: 2
+depends: glass = 1
+conflicts: window
 
-Package: window
-Version: 3
-Depends: glass = 2
-Conflicts: window
+package: window
+version: 3
+depends: glass = 2
+conflicts: window
 
-Package: glass
-Version: 1
-Conflicts: glass
+package: glass
+version: 1
+conflicts: glass
 
-Package: glass
-Version: 2
-Conflicts: glass, tire = 2
+package: glass
+version: 2
+conflicts: glass, tire = 2

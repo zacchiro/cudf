@@ -1,9 +1,9 @@
-Package: foo
-Version: 1
-Provides: virtual = 1
-Installed: true
+package: foo
+version: 1
+provides: virtual = 1
+installed: true
 
-Package: bar
-Version: 1
-Provides: virtual = 2
-Installed: true
+package: bar
+version: 1
+provides: virtual = 2
+installed: true

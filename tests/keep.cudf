@@ -28,5 +28,5 @@ provides: bar
 version: 1
 
 
-request: source: Debian/DUDF 733fffffb9fe1f78fd551ad20485b217
+request: source: debian/dudf 733fffffb9fe1f78fd551ad20485b217
 upgrade: keep-version

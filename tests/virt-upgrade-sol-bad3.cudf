@@ -1,4 +1,4 @@
-Package: foo
-Version: 1
-Provides: virtual = 1
-Installed: true
+package: foo
+version: 1
+provides: virtual = 1
+installed: true
