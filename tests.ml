@@ -247,6 +247,7 @@ let feature_suite =
     univ_sizes ;
   ]
 
+(*
 let test_encode =
   "encode" >:: (fun () ->
     let s = "@/bin/*-+" in
@@ -266,6 +267,7 @@ let encoding_suite =
     test_encode;
     test_decode
   ]
+*)
 
 (** {5 Assemble and run tests} *)
 
@@ -279,6 +281,6 @@ let all =
     bad_solution_suite ;
     parse_reg_suite ;
     feature_suite ;
-    encoding_suite ;
+    (* encoding_suite ; *)
   ]
 
