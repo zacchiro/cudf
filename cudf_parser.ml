@@ -18,7 +18,7 @@ open Cudf_types
 
 type cudf_parser = {
   lexbuf: Lexing.lexbuf;
-  mutable types: Cudf_conf.stanza_types;
+  mutable typedecl: Cudf_conf.stanza_typedecl;
 }
 
 type 'ty stanza = (string * 'ty) list
@@ -34,7 +34,11 @@ let parse_error_e msg = function
       parse_error startpos.Lexing.pos_lnum msg
   | _ -> assert false
 
-let from_in_channel ic = { lexbuf = Lexing.from_channel ic; }
+let from_in_channel ?(typedecl=Cudf_conf.stanza_typedecl) ic =
+  { lexbuf = Lexing.from_channel ic ;
+    typedecl = typedecl ;
+  }
+
 let close p = ()
 
 let parse_stanza p =
@@ -48,60 +52,125 @@ let type_check_stanza stanza types =
   List.map
     (fun (k, v) ->
        try
-	 let ty = List.assoc k types in
-	 
+	 let decl = List.assoc k types in
+	 let typed_v = Cudf_types_pp.parse_value (type_of_typedecl decl) v in
+	 k, typed_v
        with Not_found ->
-	 parse_error ~-1 (sprintf "unexpected property \"%s\" in this stanza" k)
-    )
+	 parse_error ~-1 (sprintf "unexpected property \"%s\" in this stanza" k))
     stanza
 
-(* let parse_item p = *)
-(*   let stanza = parse_stanza p in *)
-(*   match stanza with *)
-(*     | [] -> assert false *)
-(*     | "preamble", _ :: tl -> *)
-(*     | "request", _ :: tl -> *)
-(*     | "package", _ :: tl -> *)
-
-(*
-(* we read the first paragraph. if it has a property declaration, we 
- * give back a parser. If it is not a property stanza, then we give back
- * the first paragraph to be parsed *)
-let parse ch =
-  let preamble, firstpar =
-    match parse_paragraph ch with
-    |Some par when has_preamble par -> (parse_stanza_preample par, [])
-    |Some par -> ([], par)
-    |None -> parse_error 0 "Error parsing file : empty file"
+(** cast a typed stanza starting with "preamble: " to a {!Cudf.preamble} *)
+let cast_preamble stanza =
+  let p = default_preamble in	(* assumption: should be completely overrode *)
+  let rec aux p = function
+    | ("preamble", `String v) :: tl -> aux { p with preamble_id = v } tl
+    | ("property", `Typedecl v) :: tl -> aux { p with property = v } tl
+    | ("univ-checksum", `String v) :: tl -> aux { p with univ_checksum = v } tl
+    | ("status-checksum", `String v) :: tl -> aux { p with status_checksum = v } tl
+    | ("req-checksum", `String v) :: tl -> aux { p with req_checksum = v } tl
+    | _ -> assert false
   in
-  let packages = ref [] in
-  let request = ref None in
-  let has_preable = ref (firstpar = []) in
-  while
-    match
-      if !has_preable then parse_paragraph ch
-      else (has_preable := true ; Some firstpar)
-    with
-    |None -> false
-    |Some paragraph -> begin
-        (match parse_stanza preamble paragraph with
-        |(`Package e) -> packages := e :: !packages
-        |(`Request e) -> request := Some (e));
-        true end 
-  do () done ;
-  (preamble,!packages,!request)
-*)
+  aux p stanza
 
-(*
-let load cudf_parser =
-  let pre, pkgs, req = parse cudf_parser in
+(** Cast a typed stanza starting with "package: " to a {!Cudf.package}.
+    ASSUMPTION: type checking of the stanza has already happend, in particular
+    all extra properties have already been checked for allowance. *)
+let cast_package stanza =
+  let p = default_package in	(* assumption: should be completely overrode *)
+  let rec aux p = function
+    | ("package", `Pkgname v) :: tl -> aux { p with package = v } tl
+    | ("version", `Posint v) :: tl -> aux { p with version = v } tl
+    | ("depends", `Vpkgformula v) :: tl -> aux { p with depends = v } tl
+    | ("conflicts", `Vpkglist v) :: tl -> aux { p with conflicts = v } tl
+    | ("provides", `Veqpkglist v) :: tl -> aux { p with provides = v } tl
+    | ("installed", `Bool v) :: tl -> aux { p with installed = v } tl
+    | ("was-installed", `Bool v) :: tl -> aux { p with was_installed = v } tl
+    | ("keep", `Enum (_, v)) :: tl ->
+	aux { p with keep = Cudf_types_pp.parse_keep v } tl
+    | (k, (v: typed_value)) :: tl ->
+	aux { p with pkg_extra = (k, v) :: p.pkg_extra } tl
+    | [] -> assert false
+  in
+  let p' = aux p stanza in
+  { p' with pkg_extra = List.rev p'.pkg_extra }
+
+(** Cast a typed stanza starting with "request: " to a {!Cudf.request}.
+    ASSUMPTION: as per {!Cudf_parser.cast_package} above. *)
+let cast_request stanza =
+  let r = default_request in	(* assumption: should be completely overrode *)
+  let rec aux r = function
+    | ("request", `String v) :: tl -> aux { r with request_id = v } tl
+    | ("install", `Vpkglist v) :: tl -> aux { r with install = v } tl
+    | ("remove", `Vpkglist v) :: tl -> aux { r with remove = v } tl
+    | ("upgrade", `Vpkglist v) :: tl -> aux { r with upgrade = v } tl
+    | (k, (v: typed_value)) :: tl ->
+	aux { r with req_extra = (k, v) :: r.req_extra } tl
+    | [] -> assert false
+  in
+  let r' = aux r stanza in
+  { r' with req_extra = List.rev r'.req_extra }
+
+let parse_item p =
+  let stanza = parse_stanza p in
+  let typed_stanza =
+    match stanza with
+      | [] -> parse_error ~-1 "empty stanza"
+      | (postmark, _) :: _ ->
+	  (try
+	     type_check_stanza stanza (List.assoc postmark p.typedecl)
+	   with Not_found ->
+	     parse_error ~-1
+	       (sprintf "Unknown stanza type, starting with \"%s\" postmark."
+		  postmark)) in
+  match typed_stanza with
+    | [] -> assert false
+    | ("preamble", _) :: _ ->
+	let preamble = cast_preamble typed_stanza in
+	p.typedecl <-	(* update type declaration for "package" stanza *)
+	  (let pkg_typedecl =
+	     (List.assoc "package" p.typedecl) @ preamble.property in
+	   ("package", pkg_typedecl) :: List.remove_assoc "package" p.typedecl);
+	`Preamble preamble
+    | ("package", _) :: _ -> `Package (cast_package typed_stanza)
+    | ("request", _) :: _ -> `Request (cast_request typed_stanza)
+    | _ -> assert false
+
+let parse p =
+  let pre, pkgs, req = ref None, ref [], ref None in
+  let rec aux_pkg () =
+    match parse_item p with
+      | `Package pkg -> pkgs := pkg :: !pkgs ; aux_pkg ()
+      | `Request req' -> req := Some req'	(* stop recursion after req *)
+      | `Preamble _ -> parse_error ~-1 "late preamble"
+  in
+  let parse () =
+    try
+      (match parse_item p with	(* parse first item *)
+	 | `Preamble pre' ->
+	     pre := Some pre' ;
+	     (try aux_pkg () with End_of_file -> ())
+	 | `Package pkg ->
+	     pkgs := [pkg] ;
+	     (try aux_pkg () with End_of_file -> ())
+	 | `Request req' -> req := Some req')
+    with End_of_file -> parse_error ~-1 "empty CUDF"
+  in
+  parse () ;
+  (try	(* check for forbidden trailing content *)
+     ignore (parse_item p);
+     parse_error ~-1 "trailing stanzas after final request stanza"
+   with End_of_file -> ());
+  (!pre, !pkgs, !req)
+  
+
+let load p =
+  let pre, pkgs, req = parse p in
   (pre, load_universe pkgs, req)
-*)
 
-let parser_wrapper fname f =
+let parser_wrapper ?typedecl fname f =
   let ic = open_in fname in
-  let p = from_in_channel ic in
+  let p = from_in_channel ?typedecl ic in
   finally (fun () -> close_in ic ; close p) f p
 
-(* let parse_from_file fname = parser_wrapper fname parse *)
-(* let load_from_file fname = parser_wrapper fname load *)
+let parse_from_file ?typedecl fname = parser_wrapper fname parse
+let load_from_file ?typedecl fname = parser_wrapper fname load

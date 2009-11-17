@@ -35,7 +35,7 @@ let pp_package fmt pkg =
 
 let pp_request fmt req =
   let pp = pp_property fmt in
-    pp ("request", req.problem_id);
+    pp ("request", req.request_id);
     if req.install <> default_request.install then
       pp ("install", string_of_vpkglist req.install);
     if req.remove <> default_request.remove then

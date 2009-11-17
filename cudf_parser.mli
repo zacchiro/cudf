@@ -28,11 +28,11 @@ type 'ty stanza = (string * 'ty) list
 
 (** create a CUDF parser reading data from an input channel
 
-    @param typedecls (initial) per-stanza and per-property type declarations to
-    be used while parsing. Default: {!Cudf_conf.stanza_types}
+    @param typedecl (initial) per-stanza and per-property type declarations to
+    be used while parsing. Default: {!Cudf_conf.stanza_typedecl}
 *)
-val from_in_channel :
-  in_channel -> ?typedecls:Cudf_conf.stanza_types -> cudf_parser
+val from_in_channel : ?typedecl:Cudf_conf.stanza_typedecl ->
+  in_channel -> cudf_parser
 
 (** Dispose a CUDF parser.
 
@@ -62,16 +62,27 @@ val parse : cudf_parser -> preamble option * package list * request option
     list as an abstract {!Cudf.universe} *)
 val load : cudf_parser -> preamble option * universe * request option
 
-(** shorthand: parse a file given its name *)
-val parse_from_file : string -> preamble option * package list * request option
+(** shorthand: parse a file given its name
 
-(** shorthand: load from a file given its name *)
-val load_from_file : string -> preamble option * universe * request option
+    @param typedecl see {!Cudf_parser.from_in_channel} *)
+val parse_from_file : ?typedecl:Cudf_conf.stanza_typedecl ->
+  string -> preamble option * package list * request option
+
+(** shorthand: load from a file given its name
+
+    @param typedecl see {!Cudf_parser.from_in_channel} *)
+val load_from_file : ?typedecl:Cudf_conf.stanza_typedecl ->
+  string -> preamble option * universe * request option
 
 (** {6 Item-by-item CUDF parsing} *)
 
-(** parse the next information item (either a package description, a user
-    request, or a preamble) from the given input channel. *)
+(** Parse the next information item (either a package description, a user
+    request, or a preamble) from the given input channel.
+
+    Beware that parsing is stateful; in particular when the preamble is parsed,
+    the list of allowed properties for future package stanzas is internally
+    updated.
+*)
 val parse_item : cudf_parser -> cudf_item
 
 (** {6 Low-level parsing functions} *)
@@ -87,7 +98,9 @@ val parse_item : cudf_parser -> cudf_item
 val parse_stanza : cudf_parser -> string stanza
 
 (** Type check an untyped stanza according to a given set of type declarations.
+    Also take care of default values, adding missing properties where needed;
+    fail if a required property is missing.
 
-    @raise Type_error on encountered type errors
+    @raise Parse_error
 *)
 val type_check_stanza : string stanza -> typedecl -> typed_value stanza

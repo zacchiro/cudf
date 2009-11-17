@@ -20,7 +20,7 @@ open Cudf_types
     map are type declarations for each supported property of that stanza;
     usually they only represent core property schemata (see CUDF §2.2.3).
 *)
-type stanza_types = (string * typedecl) list
+type stanza_typedecl = (string * typedecl) list
 
 (** {5 Global configuration} *)
 
@@ -29,5 +29,5 @@ type stanza_types = (string * typedecl) list
     For what concerns package stanzas, available types can be extended by using
     "property" declaration in the preamble stanza.
 *)
-val stanza_types: stanza_types
+val stanza_typedecl: stanza_typedecl
 

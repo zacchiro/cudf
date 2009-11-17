@@ -12,9 +12,9 @@
 
 open Cudf_types
 
-type stanza_types = (string * typedecl) list
+type stanza_typedecl = (string * typedecl) list
 
-let preamble_types = [
+let preamble_typedecl = [
   "preamble",		`String (Some "") ;
   "property",		`Typedecl (Some []) ;
   "univ-checksum",	`String (Some "") ;
@@ -22,7 +22,7 @@ let preamble_types = [
   "req-checksum",	`String (Some "") ;
 ]
 
-let package_types = [
+let package_typedecl = [
   "package",		`Pkgname None ;
   "version",		`Posint None ;
   "depends",		`Vpkgformula (Some []) ;
@@ -34,15 +34,16 @@ let package_types = [
 			       Some "none") ;
 ]
 
-let request_types = [
+let request_typedecl = [
+  "request",		`String (Some "") ;
   "install",		`Vpkglist (Some []) ;
   "remove",		`Vpkglist (Some []) ;
   "upgrade",		`Vpkglist (Some []) ;
 ]
 
 
-let stanza_types = [
-  "preamble",	preamble_types ;
-  "package",	package_types ;
-  "request",	request_types ;
+let stanza_typedecl = [
+  "preamble",	preamble_typedecl ;
+  "package",	package_typedecl ;
+  "request",	request_typedecl ;
 ]

@@ -30,6 +30,7 @@ type package = {
   conflicts : vpkglist ;			(* default : [] *)
   provides : veqpkglist ;			(* default : [] *)
   installed : bool ;				(* default : false *)
+  was_installed : bool ;			(* default : false *)
   keep :  enum_keep ;				(* default : Keep_none *)
   pkg_extra : (string * typed_value) list ;	(* extra properties *)
 }
@@ -39,7 +40,7 @@ type package = {
 val (=%) : package -> package -> bool
 
 type request = {
-  problem_id : string ;				(* default : "" *)
+  request_id : string ;				(* default : "" *)
   install : vpkglist ;				(* default : [] *)
   remove : vpkglist ;				(* default : [] *)
   upgrade : vpkglist ;				(* default : [] *)
@@ -48,7 +49,7 @@ type request = {
 
 type preamble = {
   preamble_id : string ;	(** text following the "preamble: " postmark *)
-  typedecl : typedecl ;		(** extra property declarations *)
+  property : typedecl ;		(** extra property declarations *)
   univ_checksum: string ;	(** universe checksum *)
   status_checksum: string ;	(** status checksum *)
   req_checksum: string ;	(** request checksum *)

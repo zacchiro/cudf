@@ -25,12 +25,13 @@ type package = {
   conflicts : vpkglist ;
   provides : veqpkglist ;
   installed : bool ;
+  was_installed : bool ;
   keep : enum_keep ;
   pkg_extra : (string * typed_value) list
 }
 
 type request = {
-  problem_id : string ;
+  request_id : string ;
   install : vpkglist ;
   remove : vpkglist ;
   upgrade : vpkglist ;
@@ -38,7 +39,7 @@ type request = {
 }
 type preamble = {
   preamble_id : string ;
-  typedecl : typedecl ;
+  property : typedecl ;
   univ_checksum: string ;
   status_checksum: string ;
   req_checksum: string ;
@@ -68,7 +69,7 @@ let (=%) pkg1 pkg2 =
 
 let default_preamble = {
   preamble_id = "" ;
-  typedecl = [] ;
+  property = [] ;
   univ_checksum = "" ;
   status_checksum = "" ;
   req_checksum = "" ;
@@ -81,12 +82,13 @@ let default_package = {
   conflicts = [] ;
   provides = [] ;
   installed = false ;
+  was_installed = false ;
   keep = `Keep_none ;
   pkg_extra = [] ;
 }
 
 let default_request = {
-  problem_id = "" ;
+  request_id = "" ;
   install = [] ;
   remove = [] ;
   upgrade = [] ;
