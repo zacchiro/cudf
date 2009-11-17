@@ -51,9 +51,11 @@ let print_inst_info inst =
 	  (explain_reason (r :> bad_solution_reason))
     | _ -> assert false
 
-let print_cudf cudf =
-  if !dump_arg then
-    print_endline (Cudf_printer.string_of_cudf cudf)
+let print_cudf (pre, univ, req) =
+  if !dump_arg then begin
+    let pre' = Option.default Cudf.default_preamble pre in
+    print_endline (Cudf_printer.string_of_cudf (pre', univ, req))
+  end
 
 let print_univ univ =
   if !dump_arg then
