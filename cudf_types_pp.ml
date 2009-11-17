@@ -70,6 +70,7 @@ let parse_value ty s =
     | `Vpkgformula -> `Vpkgformula (parse_vpkgformula s)
     | `Veqpkg -> `Veqpkg (parse_veqpkg s)
     | `Veqpkglist -> `Veqpkglist (parse_veqpkglist s)
+    | `Typedecl -> `Typedecl (parse_typedecl s)
 
 (** Pretty printers *)
 
@@ -123,10 +124,13 @@ let pp_list fmt ~pp_item ~sep l =
 let pp_vpkglist fmt = pp_list fmt ~pp_item:pp_vpkg ~sep:" , "
 
 (** ASSUMPTION: formula is in CNF *)
-let rec pp_vpkgformula =
-  let pp_or fmt = pp_list fmt ~pp_item:pp_vpkg ~sep:" | " in
-  let pp_and fmt = pp_list fmt ~pp_item:pp_or ~sep:" , " in
-  pp_and
+let rec pp_vpkgformula fmt = function
+  | [] -> Format.fprintf fmt "true!"
+  | [ [] ] -> Format.fprintf fmt "false!"
+  | fmla ->
+      let pp_or fmt = pp_list fmt ~pp_item:pp_vpkg ~sep:" | " in
+      let pp_and fmt = pp_list fmt ~pp_item:pp_or ~sep:" , " in
+      pp_and fmt fmla
 
 let pp_veqpkglist = pp_vpkglist
 let pp_veqpkg = pp_vpkg
@@ -145,8 +149,16 @@ let pp_type fmt = function
   | `Vpkglist -> Format.fprintf fmt "vpkglist"
   | `Veqpkg -> Format.fprintf fmt "veqpkg"
   | `Veqpkglist -> Format.fprintf fmt "veqpkglist"
+  | `Typedecl -> Format.fprintf fmt "typedecl"
 
-let pp_value fmt (v: typed_value) = match v with
+let rec pp_typedecl' fmt (name, decl1) =
+  match value_of_typedecl decl1 with
+    | None -> Format.fprintf fmt "%s: %a" name pp_type (type_of_typedecl decl1)
+    | Some v ->
+	Format.fprintf fmt "%s: %a = [%a]"
+	  name pp_type (type_of_typedecl decl1) pp_value v
+
+and pp_value fmt (v: typed_value) = match v with
   | (`Int i | `Posint i | `Nat i) -> pp_int fmt i
   | `Bool b -> pp_bool fmt b
   | (`String s | `Pkgname s | `Ident s | `Enum (_, s)) -> pp_string fmt s
@@ -155,22 +167,9 @@ let pp_value fmt (v: typed_value) = match v with
   | `Vpkglist l -> pp_vpkglist fmt l
   | `Veqpkglist l -> pp_vpkglist fmt l
   | `Vpkgformula f -> pp_vpkgformula fmt f
+  | `Typedecl d -> pp_typedecl fmt d
 
-(* TODO XXX rewrite using the Formatter module *)
-let dump_typedecl fmt = function
-  |`Int i -> pp_int fmt i; "int"
-  |`Posint i -> pp_int fmt i; "posint"
-  |`Nat i -> pp_int fmt i; "nat"
-  |`Bool b -> pp_bool fmt b; "bool"
-  |`String s -> pp_string fmt s; "string"
-  |`Enum (_,s) -> pp_string fmt s; "enum"
-  |`Vpkg x -> pp_vpkg fmt x; "vpkg"
-  |`Vpkgformula x -> pp_vpkgformula fmt x; "vpkgformula"
-  |`Vpkglist x -> pp_vpkglist fmt x ; "vpkglist"
-  |`Veqpkg x -> pp_veqpkg fmt x ; "veqpkg"
-  |`Veqpkglist x -> pp_veqpkglist fmt x ; "veqpkglist"
-
-let pp_basetype fmt t = ignore(dump_typedecl fmt t)
+and pp_typedecl fmt = pp_list fmt ~pp_item:pp_typedecl' ~sep:", "
 
 let buf = Buffer.create 1024
 let buf_formatter =
@@ -196,16 +195,9 @@ let string_of_vpkglist = string_of pp_vpkglist
 let string_of_vpkgformula = string_of pp_vpkgformula
 let string_of_veqpkg = string_of pp_veqpkg
 let string_of_veqpkglist = string_of pp_veqpkglist
-let string_of_basetype = string_of pp_basetype
 let string_of_type = string_of pp_type
 let string_of_value = string_of pp_value
-
-(* TODO XXX not really nice ... *)
-let string_of_typedecl b =
-  Buffer.clear buf;
-  let t = dump_typedecl buf_formatter b in
-  Format.pp_print_flush buf_formatter ();
-  (t,Buffer.contents buf)
+let string_of_typedecl = string_of pp_typedecl
 
 (*
 let encode s =

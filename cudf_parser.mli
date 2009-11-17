@@ -13,12 +13,26 @@
 (** Parser for CUDF related documents *)
 
 open Cudf
+open Cudf_types
 
 (** a CUDF parser opened on some input source *)
 type cudf_parser
 
-(** create a CUDF parser reading data from an input channel *)
-val from_in_channel : in_channel -> cudf_parser
+(** RFC-822-like stanza, i.e. an associative list mapping property names to
+    property values.
+
+    Values are typed according to the type variable ['ty]. Usually, libCUDF
+    uses either [string stanza] (for untyped stanzas) or
+    [Cudf_types.typed_value stanza] (for typed stanzas). *)
+type 'ty stanza = (string * 'ty) list
+
+(** create a CUDF parser reading data from an input channel
+
+    @param typedecls (initial) per-stanza and per-property type declarations to
+    be used while parsing. Default: {!Cudf_conf.stanza_types}
+*)
+val from_in_channel :
+  in_channel -> ?typedecls:Cudf_conf.stanza_types -> cudf_parser
 
 (** Dispose a CUDF parser.
 
@@ -70,4 +84,10 @@ val parse_item : cudf_parser -> cudf_item
     @return an associative list mapping field name to field values
     @raise End_of_file if no other stanza is available due to reached EOF
 *)
-val parse_stanza : cudf_parser -> (string * string) list
+val parse_stanza : cudf_parser -> string stanza
+
+(** Type check an untyped stanza according to a given set of type declarations.
+
+    @raise Type_error on encountered type errors
+*)
+val type_check_stanza : string stanza -> typedecl -> typed_value stanza

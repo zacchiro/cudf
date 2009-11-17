@@ -12,10 +12,7 @@
 
 open Cudf_types
 
-type stanza_typedecl1 = [ typedecl1 | `Typedecl of typedecl option ]
-type stanza_typedecl = (string * stanza_typedecl1) list
-
-type stanza_types = (string * stanza_typedecl) list
+type stanza_types = (string * typedecl) list
 
 let preamble_types = [
   "preamble",		`String (Some "") ;

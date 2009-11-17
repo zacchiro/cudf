@@ -28,21 +28,24 @@ type enum_keep = [`Keep_version | `Keep_package | `Keep_feature | `Keep_none ]
 type typ =
     [ `Int | `Posint | `Nat | `Bool | `String | `Enum of string list
     | `Pkgname | `Ident
-    | `Vpkg | `Vpkgformula | `Vpkglist | `Veqpkg | `Veqpkglist ]
+    | `Vpkg | `Vpkgformula | `Vpkglist | `Veqpkg | `Veqpkglist
+    | `Typedecl ]
 type typedecl1 =
     [ `Int of int option | `Posint of int option | `Nat of int option
     | `Bool of bool option | `String of string option
     | `Pkgname of string option | `Ident of string option
     | `Enum of string list * string option | `Vpkg of vpkg option
     | `Vpkgformula of vpkgformula option | `Vpkglist of vpkglist option
-    | `Veqpkg of veqpkg option | `Veqpkglist of veqpkglist option ]
+    | `Veqpkg of veqpkg option | `Veqpkglist of veqpkglist option
+    | `Typedecl of typedecl option ]
+and typedecl = (string * typedecl1) list
 type typed_value =
     [ `Int of int | `Posint of int | `Nat of int | `Bool of bool
     | `String of string | `Pkgname of string | `Ident of string
     | `Enum of string list * string | `Vpkg of vpkg
     | `Vpkgformula of vpkgformula | `Vpkglist of vpkglist
-    | `Veqpkg of veqpkg | `Veqpkglist of veqpkglist ]
-type typedecl = (string * typedecl1) list
+    | `Veqpkg of veqpkg | `Veqpkglist of veqpkglist
+    | `Typedecl of typedecl ]
 
 exception Type_error of typ * typed_value	(* <type, literal> *)
 exception Parse_error_822 of Lexing.position * Lexing.position
@@ -64,6 +67,7 @@ let type_of_typedecl = function
   | `Vpkglist _ -> `Vpkglist
   | `Veqpkg _ -> `Veqpkg
   | `Veqpkglist _ -> `Veqpkglist
+  | `Typedecl _ -> `Typedecl
 
 let typedecl_of_type = function
   | `Int -> `Int None
@@ -79,6 +83,7 @@ let typedecl_of_type = function
   | `Vpkglist -> `Vpkglist None
   | `Veqpkg -> `Veqpkg None
   | `Veqpkglist -> `Veqpkglist None
+  | `Typedecl -> `Typedecl None
 
 let typedecl_of_value = function
   | `Int n -> `Int (Some n)
@@ -94,6 +99,24 @@ let typedecl_of_value = function
   | `Vpkglist l -> `Vpkglist (Some l)
   | `Veqpkg p -> `Veqpkg (Some p)
   | `Veqpkglist l -> `Veqpkglist (Some l)
+  | `Typedecl l -> `Typedecl (Some l)
+
+let value_of_typedecl = function
+  | `Int (Some v) -> Some (`Int v)
+  | `Posint (Some v) -> Some (`Posint v)
+  | `Nat (Some v) -> Some (`Nat v)
+  | `Bool (Some v) -> Some (`Bool v)
+  | `String (Some v) -> Some (`String v)
+  | `Pkgname (Some v) -> Some (`Pkgname v)
+  | `Ident (Some v) -> Some (`Ident v)
+  | `Enum (enums, (Some v)) -> Some (`Enum (enums, v))
+  | `Vpkg (Some v) -> Some (`Vpkg v)
+  | `Vpkgformula (Some v) -> Some (`Vpkgformula v)
+  | `Vpkglist (Some v) -> Some (`Vpkglist v)
+  | `Veqpkg (Some v) -> Some (`Veqpkg v)
+  | `Veqpkglist (Some v) -> Some (`Veqpkglist v)
+  | `Typedecl (Some v) -> Some (`Typedecl v)
+  | _ -> None
 
 let type_of_value = function
   | `Int n -> `Int
@@ -109,6 +132,7 @@ let type_of_value = function
   | `Vpkglist l -> `Vpkglist
   | `Veqpkg p -> `Veqpkg
   | `Veqpkglist l -> `Veqpkglist
+  | `Typedecl l -> `Typedecl
 
 let cast typ v =
   let type_error () = raise (Type_error (typ, v)) in

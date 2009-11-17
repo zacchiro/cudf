@@ -21,6 +21,8 @@ type cudf_parser = {
   mutable types: Cudf_conf.stanza_types;
 }
 
+type 'ty stanza = (string * 'ty) list
+
 exception Parse_error of int * string
 
 let parse_error i msg = 
@@ -41,6 +43,17 @@ let parse_stanza p =
       | Some stanza -> stanza
       | None -> raise End_of_file)
   with Parse_error_822 _ as exn -> parse_error_e "" exn
+
+let type_check_stanza stanza types =
+  List.map
+    (fun (k, v) ->
+       try
+	 let ty = List.assoc k types in
+	 
+       with Not_found ->
+	 parse_error ~-1 (sprintf "unexpected property \"%s\" in this stanza" k)
+    )
+    stanza
 
 (* let parse_item p = *)
 (*   let stanza = parse_stanza p in *)

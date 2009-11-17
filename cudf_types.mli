@@ -21,7 +21,7 @@
 (** {5 CUDF types} *)
 
 type version = int	(* required to be non 0 *)
-type relop = [`Eq|`Neq|`Geq|`Gt|`Leq|`Lt]
+type relop = [`Eq | `Neq | `Geq | `Gt | `Leq | `Lt]
 type constr = (relop * version) option
 
 
@@ -47,7 +47,8 @@ type veqpkglist = veqpkg list
 type typ =
     [ `Int | `Posint | `Nat | `Bool | `String | `Enum of string list
     | `Pkgname | `Ident
-    | `Vpkg | `Vpkgformula | `Vpkglist | `Veqpkg | `Veqpkglist ]
+    | `Vpkg | `Vpkgformula | `Vpkglist | `Veqpkg | `Veqpkglist
+    | `Typedecl ]
 
 val keep_type : typ
 
@@ -67,7 +68,10 @@ type typedecl1 =
     | `Vpkglist of vpkglist option
     | `Veqpkg of veqpkg option
     | `Veqpkglist of veqpkglist option
+    | `Typedecl of typedecl option
     ]
+
+and typedecl = (string * typedecl1) list
 
 (** Typed value in the value space of all CUDF types *)
 type typed_value =
@@ -84,9 +88,8 @@ type typed_value =
     | `Vpkglist of vpkglist
     | `Veqpkg of veqpkg
     | `Veqpkglist of veqpkglist
+    | `Typedecl of typedecl
     ]
-
-type typedecl = (string * typedecl1) list
 
 
 (** {5 Manipulation of typed values} *)
@@ -97,6 +100,9 @@ val type_of_typedecl : typedecl1 -> typ
 (** Create a (single) type declaration having as default value the given typed
     value (i.e. apply the "Some" monad to typed values) *)
 val typedecl_of_value : typed_value -> typedecl1
+
+(** Extract the default value from a type declaration (or return [None]) *)
+val value_of_typedecl : typedecl1 -> typed_value option
 
 (** Create a (single) type declaration with no default value *)
 val typedecl_of_type : typ -> typedecl1

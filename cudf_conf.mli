@@ -12,13 +12,6 @@
 
 open Cudf_types
 
-(** Type declaration that also allows declaring fields of type "typedecl"
-    (needed to type "property" in the preamble stanza). *)
-type stanza_typedecl1 = [ typedecl1 | `Typedecl of typedecl option ]
-
-(** Type declarations for a whole stanza *)
-type stanza_typedecl = (string * stanza_typedecl1) list
-
 (** Mapping (in the form of associative list) from stanza postmarks to type
     declarations.
 
@@ -27,7 +20,7 @@ type stanza_typedecl = (string * stanza_typedecl1) list
     map are type declarations for each supported property of that stanza;
     usually they only represent core property schemata (see CUDF §2.2.3).
 *)
-type stanza_types = (string * stanza_typedecl) list
+type stanza_types = (string * typedecl) list
 
 (** {5 Global configuration} *)
 
