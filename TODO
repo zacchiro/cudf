@@ -8,5 +8,8 @@
 * TODO update/verify test suite
 ** TODO check the proper implementation of true/false wrt satisfiability
 * TODO add line position to stanzas
+* TODO suppress trailing character after value parsing
+  currently all trailing garbage is accepted because we create Lexbufs out of
+  string and the grammar entries have no EOF
 * DONE rewrite parser engine using a real parser
 ** ongoing (based on ocamllex/ocamlyacc)

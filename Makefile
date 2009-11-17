@@ -57,7 +57,7 @@ headers: header.txt .headache.conf
 	headache -h header.txt -c .headache.conf $(SOURCES) $(C_LIB_SOURCES)
 
 test: _build/test.byte
-	$<
+	$< -verbose
 _build/test.byte: $(SOURCES)
 
 tags: TAGS

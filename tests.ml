@@ -28,10 +28,8 @@ let good_pkgs = [	(* universes whose parsing must suceed *)
   "conflict-comma-sep" ;
   "plus-in-pkgname" ;
 ]
-(* XXX: with the quoting mechanism this is not true anymore *)
 let bad_pkgs = [	(* universes whose parsing must fail *)
   (* "weird-pkgname" ; *)
-
 ]
 let good_prob_sol = [	(* pairs cudf/sol, with sol being a good solution *)
   "legacy", "legacy-sol" ;
@@ -142,6 +140,27 @@ let bad_pkgs_parse_suite =
 
 (** {6 Regression tests} *)
 
+let value_parse_suite =
+  let value_parse_ok (desc, typ, s, v) = desc >: TestCase (fun _ ->
+    assert_equal (Cudf_types_pp.parse_value typ s) v) in
+  let value_parse_ko (desc, typ, s) = desc >: TestCase (fun _ ->
+    assert_raises'
+      ~cmp:(fun e1 e2 ->
+	      match e1, e2 with
+		| Cudf_types.Type_error _, Cudf_types.Type_error _ -> true
+		| _ -> e1 = e2)
+      ~exn:(Cudf_types.Type_error (`Int, `Int ~-1))
+      (fun () -> Cudf_types_pp.parse_value typ s)) in
+  "value parsing" >::: [
+    "good parse" >::: List.map value_parse_ok [
+      "bool true", `Bool, "true", `Bool true ;
+      "bool false", `Bool, "false", `Bool false ;
+    ] ;
+    "bad parse" >::: List.map value_parse_ko [
+      "bool", `Bool, "xxx" ;
+    ] ;
+  ]
+
 let or_dep =
   "disjunctive dependencies" >:: (fun () ->
     assert_equal
@@ -223,10 +242,12 @@ let consistency =
   ]
 
 let univ_sizes =
-  let _, univ, _ = load_cudf_test "legacy" in
+  let univ = lazy (let _, univ, _ = load_cudf_test "legacy" in univ) in
     "check universe size measuring" >::: [
-      "total size" >:: (fun () -> assert_equal (universe_size  univ) 20);
-      "installed size" >:: (fun () -> assert_equal (installed_size  univ) 6);
+      "total size" >::
+	(fun () -> assert_equal (universe_size (Lazy.force univ)) 20);
+      "installed size" >::
+	(fun () -> assert_equal (installed_size (Lazy.force univ)) 6);
     ]
 
 let good_solution_suite = "good solutions" >:::
@@ -234,6 +255,8 @@ let good_solution_suite = "good solutions" >:::
 
 let bad_solution_suite = "bad solutions" >:::
   List.map (fun (prob, sol) -> bad_solution prob sol) bad_prob_sol
+
+(** {6 Test suites} *)
 
 let feature_suite =
   "new feature tests" >::: [
@@ -273,6 +296,8 @@ let encoding_suite =
 
 let all =
   "all tests" >::: [
+    value_parse_suite ;
+(*
     good_cudf_parse_suite ;
     bad_cudf_parse_suite ;
     good_pkgs_parse_suite ;
@@ -281,6 +306,7 @@ let all =
     bad_solution_suite ;
     parse_reg_suite ;
     feature_suite ;
+*)
     (* encoding_suite ; *)
   ]
 

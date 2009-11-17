@@ -1,14 +1,14 @@
 #use "topfind";;
-#require "pcre";;
 #require "extlib";;
 #require "oUnit";;
 #load "_build/cudf.cma";;
 (* #load "_build/tests.cmo";; *)
 open ExtLib;;
 
+open Cudf_types_pp;;
 open Cudf_parser;;
 open Cudf_checker;;
-let p = Cudf_parser.from_in_channel (open_in "tests/or-dep.cudf")
+let p = Cudf_parser.from_in_channel (open_in "tests/legacy.cudf")
 
 (*
 let (pkgs, req) as cudf_doc =
