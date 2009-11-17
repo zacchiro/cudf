@@ -16,6 +16,8 @@ open Printf
 open Cudf_types
 open Cudf
 
+module PP = Cudf_types_pp
+
 let (!!) pred = fun x -> not (pred x)
 
 type inconsistency_reason =
@@ -36,27 +38,27 @@ type bad_solution_reason =
 let explain_reason = function
   | `Unsat_dep ((name, ver), fmla) ->
       sprintf "Cannot satisfy dependencies %s of package %s (version %d)"
-	(Cudf_types.string_of_vpkgformula fmla) name ver
+	(PP.string_of_vpkgformula fmla) name ver
   | `Conflict ((name, ver), pkgs) ->
       sprintf "Unresolved conflicts %s of package %s (version %d)"
-	(Cudf_types.string_of_vpkglist pkgs) name ver
+	(PP.string_of_vpkglist pkgs) name ver
   | `Missing_install vpkgs ->
       "Unmet installation request, missing packages: " ^
-	Cudf_types.string_of_vpkglist vpkgs
+	PP.string_of_vpkglist vpkgs
   | `Missing_upgrade vpkgs ->
       "Unmet upgrade request, missing packages: " ^
-	Cudf_types.string_of_vpkglist vpkgs
+	PP.string_of_vpkglist vpkgs
   | `Unremoved vpkgs ->
       "Unment remove request, still present packages: " ^
-	Cudf_types.string_of_vpkglist vpkgs
+	PP.string_of_vpkglist vpkgs
   | `Downgrade vpkgs ->
       "Unment upgrade request, not-upgraded: " ^
-	Cudf_types.string_of_vpkglist vpkgs
+	PP.string_of_vpkglist vpkgs
   | `Multi_upgrade pkgs ->
       "Unment upgrade request, not-unique: " ^ String.concat ", " pkgs
   | `Not_kept (name, ver, keep) ->
       sprintf "Unmet \"Keep\" request %s of package %s (version %d)"
-	(Cudf_types.string_of_keep keep) name ver
+	(PP.string_of_keep keep) name ver
 
 (* XXX not tail-recursive *)
 let satisfy_formula univ fmla =
@@ -163,34 +165,34 @@ let is_solution (univ, req) sol =
 		   @ (if multi <> [] then [`Multi_upgrade multi] else []))
   in
   let keep_ok () =	(* check "Keep" property semantics *)
-    let to_be_kept = get_packages ~filter:(fun pkg -> pkg.keep <> None) univ in
-      List.fold_left
-	(fun (ok, reasons) pkg ->
-	   let pkg_ok =
-	     match pkg.keep with
-	       | Some `Keep_version ->
-		   (try
-		      (lookup_package sol (pkg.package, pkg.version)).installed
-		    with Not_found -> false)
-	       | Some `Keep_package ->
-		   mem_installed ~include_features:false sol (pkg.package, None)
-	       | Some `Keep_feature ->
-		   fst (satisfy_formula sol (and_formula pkg.provides))
-	       | _ -> assert false	(* [get_packages ~filter] is broken *)
-	   in
-	     if pkg_ok then
-	       ok, reasons
-	     else
-	       false,
-	       (`Not_kept (pkg.package, pkg.version, Option.get pkg.keep))
-	         :: reasons)
-	(true, [])
-	to_be_kept
-  in
+    let to_be_kept =
+      get_packages ~filter:(fun pkg -> pkg.keep <> `Keep_none) univ in
     List.fold_left
-      (fun (is_sol, msgs) test ->
-	 let res, msg = test () in
-	   res && is_sol, msg @ msgs)
+      (fun (ok, reasons) pkg ->
+	 let pkg_ok =
+	   match pkg.keep with
+	     | `Keep_version ->
+		 (try
+		    (lookup_package sol (pkg.package, pkg.version)).installed
+		  with Not_found -> false)
+	     | `Keep_package ->
+		 mem_installed ~include_features:false sol (pkg.package, None)
+	     | `Keep_feature ->
+		 fst (satisfy_formula sol (and_formula pkg.provides))
+	     | _ -> assert false	(* [get_packages ~filter] is broken *)
+	 in
+	 if pkg_ok then
+	   ok, reasons
+	 else
+	   false,
+	 (`Not_kept (pkg.package, pkg.version, pkg.keep)) :: reasons)
       (true, [])
-      [is_succ; is_cons; install_ok; remove_ok; upgrade_ok; keep_ok]
+      to_be_kept
+  in
+  List.fold_left
+    (fun (is_sol, msgs) test ->
+       let res, msg = test () in
+       res && is_sol, msg @ msgs)
+    (true, [])
+    [is_succ; is_cons; install_ok; remove_ok; upgrade_ok; keep_ok]
 
