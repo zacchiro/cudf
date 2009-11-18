@@ -1,2 +1,2 @@
-package: lib@$%-broken
+package: lib@!%-broken
 version: 1

@@ -29,7 +29,7 @@ let good_pkgs = [	(* universes whose parsing must suceed *)
   "plus-in-pkgname" ;
 ]
 let bad_pkgs = [	(* universes whose parsing must fail *)
-  (* "weird-pkgname" ; *)
+  "weird-pkgname" ;
 ]
 let good_prob_sol = [	(* pairs cudf/sol, with sol being a good solution *)
   "legacy", "legacy-sol" ;
@@ -55,6 +55,7 @@ let bad_prob_sol = [	(* pairs cudf/sol, with sol being a bad solution *)
     i.e., missing stuff which should better be integrated into OUnit *)
 
 let assert_no_exn f = assert_equal true (try f () ; true with _ -> false)
+let assert_exn f = assert_equal true (try f () ; false with _ -> true)
 
 let assert_raises' ?(cmp = (=)) ~exn f =
   assert_equal true (try f () ; false with exn' -> cmp exn exn')
@@ -155,19 +156,25 @@ let value_parse_suite =
   in
   "value parsing" >::: [
     "good" >::: List.map value_parse_ok [
-      "bool true", `Bool, "true", `Bool true ;
-      "bool false", `Bool, "false", `Bool false ;
       "int 1", `Int, "1", `Int 1 ;
       "int -1", `Int, "-1", `Int ~-1 ;
       "posint", `Posint, "1", `Posint 1 ;
       "nat 0", `Nat, "0", `Nat 0 ;
-      "pkg", `Vpkg, "foo", `Vpkg ("foo", None) ;
+      "bool true", `Bool, "true", `Bool true ;
+      "bool false", `Bool, "false", `Bool false ;
+      "string", `String, "asfkjg 1%!@$% aaa", `String "asfkjg 1%!@$% aaa" ;
+      "pkgname", `Pkgname, "foo", `Pkgname "foo" ;
+      "pkgname /", `Pkgname, "/bin/bash", `Pkgname "/bin/bash" ;
+      "pkgname @", `Pkgname, "libfoo@bar", `Pkgname "libfoo@bar" ;
+      "pkgname ()", `Pkgname, "libfoo(bar)", `Pkgname "libfoo(bar)" ;
+      "ident", `Ident, "foo", `Ident "foo" ;
+      "ident -", `Ident, "foo-bar", `Ident "foo-bar" ;
+      "ident num", `Ident, "foo12", `Ident "foo12" ;
+      "enum", `Enum ["foo";"bar";"baz"], "foo",
+        `Enum(["foo";"bar";"baz"], "foo") ;
+      "keep", keep_type, "feature", `Enum (keep_enums, "feature") ;
+      "vpkg dumb", `Vpkg, "foo", `Vpkg ("foo", None) ;
       "vpkg", `Vpkg, "foo > 1", `Vpkg ("foo", Some (`Gt, 1)) ;
-      "veqpkg", `Veqpkg, "foo = 7", `Veqpkg ("foo", Some (`Eq, 7)) ;
-      "vpkgs nil", `Vpkglist, "", `Vpkglist [] ;
-      "vpkgs one", `Vpkglist, "foo", `Vpkglist ["foo", None] ;
-      "vpkgs cons", `Vpkglist, "foo != 1, bar",
-        `Vpkglist [ "foo", Some (`Neq, 1) ; "bar", None ] ;
       "fmla vpkg", `Vpkgformula, "foo", `Vpkgformula [["foo", None]] ;
       "fmla true", `Vpkgformula, "true!", `Vpkgformula [] ;
       "fmla false", `Vpkgformula, "false!", `Vpkgformula [ [] ] ;
@@ -178,27 +185,54 @@ let value_parse_suite =
       "fmla cnf", `Vpkgformula, "foo | bar, quux | baz | sup",
         `Vpkgformula [ ["foo",None; "bar",None] ;
 		       ["quux",None; "baz",None; "sup",None] ] ; 
-      "enum", `Enum ["foo";"bar";"baz"], "foo",
-        `Enum(["foo";"bar";"baz"], "foo") ;
-      "keep", keep_type, "feature", `Enum (keep_enums, "feature") ;
-      "string", `String, "asfkjg 1%!@$% aaa", `String "asfkjg 1%!@$% aaa" ;
+      "vpkgs nil", `Vpkglist, "", `Vpkglist [] ;
+      "vpkgs one", `Vpkglist, "foo", `Vpkglist ["foo", None] ;
+      "vpkgs cons", `Vpkglist, "foo != 1, bar",
+        `Vpkglist [ "foo", Some (`Neq, 1) ; "bar", None ] ;
+      "veqpkg", `Veqpkg, "foo = 7", `Veqpkg ("foo", Some (`Eq, 7)) ;
+      "veqpkgs", `Veqpkglist, "foo = 7", `Veqpkglist [("foo", Some (`Eq, 7))] ;
+      "typedecl", `Typedecl, "foo: vpkgformula = [ foo, bar | baz ]",
+        `Typedecl ["foo",
+		   `Vpkgformula (Some [["foo",None];["bar",None;"baz",None]])] ;
+      "typedecls", `Typedecl, "foo: int, bar: string = [\"baz quux\"]",
+        `Typedecl ["foo", `Int None ; "bar", `String (Some "baz quux")] ;
     ] ;
     "bad" >::: List.map value_parse_ko [
-      "bool", `Bool, "xxx" ;
-      "nat neg", `Nat, "-1" ;
-      "veqpkg", `Veqpkg, "foo > 1" ;
-      "vpkg garbage", `Vpkg, "foo > 1 gotcha" ;
-      "bool", `Bool, "foo" ;
-      "bool garbage", `Bool, "true gotcha" ;
       "int garbage", `Int, "78 gotcha" ;
-      "vpkgs trail", `Vpkglist, "foo ," ;
       "posint neg", `Posint, "-1" ;
       "posint zero", `Posint, "0" ;
-      "enum", `Enum ["foo"], "bar" ;
-      "keep", keep_type, "foo" ;
+      "nat neg", `Nat, "-1" ;
+      "bool", `Bool, "xxx" ;
+      "bool", `Bool, "foo" ;
+      "bool garbage", `Bool, "true gotcha" ;
       "string \\n", `String, "foo\nbar" ;
       "string \\r", `String, "foo\rbar" ;
+      "pkgname !", `Pkgname, "foo!bar" ;
+      "pkgname !", `Pkgname, "foo!bar" ;
+      "ident numstart", `Ident, "12foo" ;
+      "ident caps", `Ident, "foAo" ;
+      "ident symb", `Ident, "fo/o" ;
+      "enum", `Enum ["foo"], "bar" ;
+      "keep", keep_type, "foo" ;
+      "vpkg garbage", `Vpkg, "foo > 1 gotcha" ;
+      "vpkgs trail", `Vpkglist, "foo ," ;
+      "veqpkg", `Veqpkg, "foo > 1" ;
     ] ;
+  ]
+
+let misc_parse_suite =
+  "misc parsing" >::: [
+    "qstring" >::: [
+      "base" >:: (fun () ->
+        assert_equal (Cudf_types_pp.parse_qstring "\"foo\"") "foo") ;
+      "escape \"" >:: (fun () ->
+        assert_equal (Cudf_types_pp.parse_qstring "\"fo\\\"o\"") "fo\"o") ;
+      "escape \\" >:: (fun () ->
+        assert_equal (Cudf_types_pp.parse_qstring "\"fo\\\\o\"") "fo\\o") ;
+      "dangling \"" >:: (fun () -> "unexpected parse success" @?
+        (try ignore (Cudf_types_pp.parse_qstring "\"fo\"o\"") ; false
+	 with _ -> true)) ;
+    ]
   ]
 
 let or_dep =
@@ -337,6 +371,7 @@ let encoding_suite =
 let all =
   "all tests" >::: [
     value_parse_suite ;
+    misc_parse_suite ;
 (*
     good_cudf_parse_suite ;
     bad_cudf_parse_suite ;

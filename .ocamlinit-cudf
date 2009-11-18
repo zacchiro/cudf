@@ -9,6 +9,7 @@ open Cudf_types_pp;;
 open Cudf_parser;;
 open Cudf_checker;;
 let p = Cudf_parser.from_in_channel (open_in "tests/legacy.cudf")
+let s = "foo: int, bar: string = [\"baz quux\"]"
 
 (*
 let (pkgs, req) as cudf_doc =

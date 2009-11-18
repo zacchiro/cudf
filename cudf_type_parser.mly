@@ -42,7 +42,7 @@ let parse_typename = function
   | "pkgname"    -> `Pkgname
   | "ident"      -> `Ident
   | "vpkg"       -> `Vpkg
-  | "vpkformula" -> `Vpkgformula
+  | "vpkgformula" -> `Vpkgformula
   | "vpkglist"   -> `Vpkglist
   | "veqpkg"     -> `Veqpkg
   | "veqpkglist" -> `Veqpkglist
@@ -106,11 +106,11 @@ vpkg:
 ;
 vpkglist:
   |		{ [] }
-  | vpkglist_	{ $1 }
+  | vpkglist_ne	{ $1 }
 ;
-vpkglist_:
+vpkglist_ne:
   | vpkg			{ [ $1 ] }
-  | vpkg COMMA vpkglist_	{ $1 :: $3 }
+  | vpkg COMMA vpkglist_ne	{ $1 :: $3 }
 ;
 
 vpkgformula:
@@ -151,7 +151,11 @@ vpkg_ntriv:
 
 typedecl:
   |				{ [] }
-  | typedecl_ COMMA typedecl	{ $1 :: $3 }
+  | typedecl_ne			{ $1 }
+;
+typedecl_ne:
+  | typedecl_			{ [ $1 ] }
+  | typedecl_ COMMA typedecl_ne	{ $1 :: $3 }
 ;
 
 typedecl_:
@@ -182,14 +186,18 @@ typed_value:
 
 %%
 
+open ExtLib
+
 let error_wrapper f =
   fun lexer lexbuf ->
+    let syntax_error () =
+      raise (Cudf_types.Syntax_error
+	       ("", lexbuf.Lexing.lex_start_p, lexbuf.Lexing.lex_curr_p)) in
     try
       f lexer lexbuf
     with
-      | Parsing.Parse_error ->
-	  raise (Cudf_types.Syntax_error
-		   ("", lexbuf.Lexing.lex_start_p, lexbuf.Lexing.lex_curr_p))
+      | Parsing.Parse_error -> syntax_error ()
+      | Failure _m when String.starts_with _m "lexing" -> syntax_error ()
       | Parse_error_msg msg ->
 	  raise (Cudf_types.Syntax_error
 		   (msg, lexbuf.Lexing.lex_start_p, lexbuf.Lexing.lex_curr_p))
