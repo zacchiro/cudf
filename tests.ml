@@ -20,7 +20,6 @@ open Cudf
 let cudf_test_path name = sprintf "./tests/%s.cudf" name
 
 let good_cudfs = [	(* CUDF whose parsing must suceed *)
-  "adjacent-stanzas" ;
 ]
 let bad_cudfs = [	(* CUDF whose parsing must fail *)
 ]
@@ -29,7 +28,6 @@ let good_pkgs = [	(* universes whose parsing must suceed *)
   "plus-in-pkgname" ;
 ]
 let bad_pkgs = [	(* universes whose parsing must fail *)
-  "weird-pkgname" ;
 ]
 let good_prob_sol = [	(* pairs cudf/sol, with sol being a good solution *)
   "legacy", "legacy-sol" ;
