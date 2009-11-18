@@ -198,6 +198,10 @@ let value_parse_suite =
         `Typedecl ["p", `Enum (["a"; "b"; "c"], None)] ;
       "typedecl enum def", `Typedecl, "p: enum[a,b,c] = [a]",
         `Typedecl ["p", `Enum (["a"; "b"; "c"], Some "a")] ;
+      "typedecl pkgname ident", `Typedecl, "p: pkgname = [ pkg ]",
+        `Typedecl ["p", `Pkgname (Some "pkg")] ;
+      "typedecl pkgname int", `Typedecl, "p: pkgname = [ 1 ]",
+        `Typedecl ["p", `Pkgname (Some "pkg")] ;
     ] ;
     "bad" >::: List.map value_parse_ko [
       "int garbage", `Int, "78 gotcha" ;
