@@ -159,10 +159,18 @@ let value_parse_suite =
       "int 1", `Int, "1", `Int 1 ;
       "int -1", `Int, "-1", `Int ~-1 ;
       "nat 0", `Nat, "0", `Nat 0 ;
+      "pkg", `Vpkg, "foo", `Vpkg ("foo", None) ;
+      "vpkg", `Vpkg, "foo > 1", `Vpkg ("foo", Some (`Gt, 1)) ;
+      "veqpkg", `Veqpkg, "foo = 7", `Veqpkg ("foo", Some (`Eq, 7)) ;
+      "vpkgs nil", `Vpkglist, "", `Vpkglist [] ;
+      "vpkgs one", `Vpkglist, "foo", `Vpkglist ["foo", None] ;
+      "vpkgs cons", `Vpkglist, "foo != 1, bar",
+        `Vpkglist [ "foo", Some (`Neq, 1) ; "bar", None ] ;
     ] ;
     "bad parse" >::: List.map value_parse_ko [
       "bool", `Bool, "xxx" ;
       "neg nat", `Nat, "-1" ;
+      "veqpkg", `Veqpkg, "foo > 1" ;
     ] ;
   ]
 

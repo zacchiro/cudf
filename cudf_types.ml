@@ -175,6 +175,8 @@ let rec cast typ v =
 		  | _ -> type_error ())
 	     l [])
     | `Enum enums, `Ident i when List.mem i enums -> `Enum (enums, i)
+    | `Vpkgformula, `Ident i -> `Vpkgformula [[i, None]]
+    | `Vpkgformula, `Int n -> `Vpkgformula [[string_of_int n, None]]
     | typ, v when type_of_value v = typ -> v	(* identity cast *)
     | _ -> type_error ()
 

@@ -106,8 +106,12 @@ vpkg:
   | pkgname relop version	{ ($1, Some ($2, $3)) }
 ;
 vpkglist:
-  |			{ [] }
-  | vpkg vpkglist	{ $1 :: $2 }
+  |		{ [] }
+  | vpkglist_	{ $1 }
+;
+vpkglist_:
+  | vpkg			{ [ $1 ] }
+  | vpkg COMMA vpkglist_	{ $1 :: $3 }
 ;
 
 vpkgformula:
