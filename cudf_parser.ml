@@ -68,6 +68,7 @@ let cast_preamble stanza =
     | ("univ-checksum", `String v) :: tl -> aux { p with univ_checksum = v } tl
     | ("status-checksum", `String v) :: tl -> aux { p with status_checksum = v } tl
     | ("req-checksum", `String v) :: tl -> aux { p with req_checksum = v } tl
+    | [] -> p
     | _ -> assert false
   in
   aux p stanza
@@ -89,7 +90,7 @@ let cast_package stanza =
 	aux { p with keep = Cudf_types_pp.parse_keep v } tl
     | (k, (v: typed_value)) :: tl ->
 	aux { p with pkg_extra = (k, v) :: p.pkg_extra } tl
-    | [] -> assert false
+    | [] -> p
   in
   let p' = aux p stanza in
   { p' with pkg_extra = List.rev p'.pkg_extra }
@@ -105,7 +106,7 @@ let cast_request stanza =
     | ("upgrade", `Vpkglist v) :: tl -> aux { r with upgrade = v } tl
     | (k, (v: typed_value)) :: tl ->
 	aux { r with req_extra = (k, v) :: r.req_extra } tl
-    | [] -> assert false
+    | [] -> r
   in
   let r' = aux r stanza in
   { r' with req_extra = List.rev r'.req_extra }
