@@ -380,7 +380,6 @@ let all =
   "all tests" >::: [
     value_parse_suite ;
     misc_parse_suite ;
-(*
     good_cudf_parse_suite ;
     bad_cudf_parse_suite ;
     good_pkgs_parse_suite ;
@@ -389,7 +388,6 @@ let all =
     bad_solution_suite ;
     parse_reg_suite ;
     feature_suite ;
-*)
     (* encoding_suite ; *)
   ]
 
