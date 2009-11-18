@@ -38,6 +38,19 @@ val parse_veqpkg : string -> veqpkg
 val parse_veqpkglist : string -> veqpkglist
 val parse_typedecl : string -> typedecl
 
+(** Parse a quoted string, enclosed by double quotes as it happens within the
+    "property" property of preamble stanzas. The only place where such strings
+    are allowed in CUDF are within type declarations; see
+    {!Cudf_types_pp.parse_typedecl}.
+
+    @return the parsed string after having resolved escaping and removed
+    surrounding double quotes
+*)
+val parse_qstring : string -> string
+
+(** Parse the enum value corresponding to the "keep" core property of package
+    stanzas. Shorthand to avoid parsing the corresponding `Enum and then
+    casting to {!Cudf_types.enum_keep} *)
 val parse_keep : string -> enum_keep
 
 (** generic, type-based parsing *)

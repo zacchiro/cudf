@@ -18,7 +18,7 @@ let lexbuf_wrapper type_parser =
 
 let parse_int = lexbuf_wrapper Cudf_type_parser.int_top
 let parse_ident = lexbuf_wrapper Cudf_type_parser.ident_top
-let parse_string = lexbuf_wrapper Cudf_type_parser.qstring_top
+let parse_qstring = lexbuf_wrapper Cudf_type_parser.qstring_top
 let parse_pkgname = lexbuf_wrapper Cudf_type_parser.pkgname_top
 let parse_vpkg = lexbuf_wrapper Cudf_type_parser.vpkg_top
 let parse_vpkglist = lexbuf_wrapper Cudf_type_parser.vpkglist_top
@@ -54,13 +54,19 @@ let parse_keep = function
   | "none" -> `Keep_none
   | i -> raise (Type_error (Cudf_types.keep_type, `Ident i))
 
+let parse_string s =
+  let type_error () = raise (Type_error (`String, `String s)) in
+  (try ignore (String.index s '\n') ; type_error () with Not_found -> ());
+  (try ignore (String.index s '\r') ; type_error () with Not_found -> ());
+  s
+
 let parse_value ty s =
   match ty with
     | `Int -> `Int (parse_int s)
     | `Posint -> `Posint (parse_posint s)
     | `Nat -> `Nat (parse_nat s)
     | `Bool -> `Bool (parse_bool s)
-    | `String -> `String s
+    | `String -> `String (parse_string s)
     | `Enum l -> `Enum (l, parse_enum l s)
     | `Pkgname -> `Pkgname (parse_pkgname s)
     | `Ident -> `Ident (parse_ident s)

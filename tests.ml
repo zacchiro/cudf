@@ -148,16 +148,18 @@ let value_parse_suite =
       ~cmp:(fun e1 e2 ->
 	      match e1, e2 with
 		| Cudf_types.Type_error _, Cudf_types.Type_error _ -> true
+		| Cudf_types.Type_error _, Cudf_types.Syntax_error _ -> true
 		| _ -> e1 = e2)
       ~exn:(Cudf_types.Type_error (`Int, `Int ~-1))
       (fun () -> Cudf_types_pp.parse_value typ s))
   in
   "value parsing" >::: [
-    "good parse" >::: List.map value_parse_ok [
+    "good" >::: List.map value_parse_ok [
       "bool true", `Bool, "true", `Bool true ;
       "bool false", `Bool, "false", `Bool false ;
       "int 1", `Int, "1", `Int 1 ;
       "int -1", `Int, "-1", `Int ~-1 ;
+      "posint", `Posint, "1", `Posint 1 ;
       "nat 0", `Nat, "0", `Nat 0 ;
       "pkg", `Vpkg, "foo", `Vpkg ("foo", None) ;
       "vpkg", `Vpkg, "foo > 1", `Vpkg ("foo", Some (`Gt, 1)) ;
@@ -166,11 +168,36 @@ let value_parse_suite =
       "vpkgs one", `Vpkglist, "foo", `Vpkglist ["foo", None] ;
       "vpkgs cons", `Vpkglist, "foo != 1, bar",
         `Vpkglist [ "foo", Some (`Neq, 1) ; "bar", None ] ;
+      "fmla vpkg", `Vpkgformula, "foo", `Vpkgformula [["foo", None]] ;
+      "fmla true", `Vpkgformula, "true!", `Vpkgformula [] ;
+      "fmla false", `Vpkgformula, "false!", `Vpkgformula [ [] ] ;
+      "fmla and", `Vpkgformula, "foo, bar > 1",
+        `Vpkgformula [ ["foo", None] ; ["bar", Some (`Gt, 1)] ] ;
+      "fmla or", `Vpkgformula, "foo < 7 | bar",
+        `Vpkgformula [ ["foo", Some (`Lt, 7) ; "bar", None] ] ;
+      "fmla cnf", `Vpkgformula, "foo | bar, quux | baz | sup",
+        `Vpkgformula [ ["foo",None; "bar",None] ;
+		       ["quux",None; "baz",None; "sup",None] ] ; 
+      "enum", `Enum ["foo";"bar";"baz"], "foo",
+        `Enum(["foo";"bar";"baz"], "foo") ;
+      "keep", keep_type, "feature", `Enum (keep_enums, "feature") ;
+      "string", `String, "asfkjg 1%!@$% aaa", `String "asfkjg 1%!@$% aaa" ;
     ] ;
-    "bad parse" >::: List.map value_parse_ko [
+    "bad" >::: List.map value_parse_ko [
       "bool", `Bool, "xxx" ;
-      "neg nat", `Nat, "-1" ;
+      "nat neg", `Nat, "-1" ;
       "veqpkg", `Veqpkg, "foo > 1" ;
+      "vpkg garbage", `Vpkg, "foo > 1 gotcha" ;
+      "bool", `Bool, "foo" ;
+      "bool garbage", `Bool, "true gotcha" ;
+      "int garbage", `Int, "78 gotcha" ;
+      "vpkgs trail", `Vpkglist, "foo ," ;
+      "posint neg", `Posint, "-1" ;
+      "posint zero", `Posint, "0" ;
+      "enum", `Enum ["foo"], "bar" ;
+      "keep", keep_type, "foo" ;
+      "string \\n", `String, "foo\nbar" ;
+      "string \\r", `String, "foo\rbar" ;
     ] ;
   ]
 

@@ -51,6 +51,7 @@ type typ =
     | `Typedecl ]
 
 val keep_type : typ
+val keep_enums : string list
 
 (** (Single) type declaration: each variant denotes a type, its argument the
     default value, None if missing *)

@@ -50,7 +50,7 @@ let parse_typename = function
 
 %}
 
-%token <string> IDENT PKGNAME QSTRING RELOP
+%token <string> NESTRING IDENT PKGNAME QSTRING RELOP
 %token <string> POSINT NEGINT
 %token LBRACKET RBRACKET LPAREN RPAREN
 %token COMMA PIPE COLON EQ
@@ -58,8 +58,7 @@ let parse_typename = function
 %token EOL
 
 %type <int> int_top
-%type <string> ident_top
-%type <string> qstring_top
+%type <string> ident_top qstring_top
 %type <Cudf_types.pkgname> pkgname_top
 %type <Cudf_types.vpkg> vpkg_top
 %type <Cudf_types.vpkglist> vpkglist_top
