@@ -24,6 +24,8 @@ let parse_vpkg = lexbuf_wrapper Cudf_type_parser.vpkg_top
 let parse_vpkglist = lexbuf_wrapper Cudf_type_parser.vpkglist_top
 let parse_vpkgformula = lexbuf_wrapper Cudf_type_parser.vpkgformula_top
 let parse_typedecl = lexbuf_wrapper Cudf_type_parser.typedecl_top
+let parse_type = lexbuf_wrapper Cudf_type_parser.type_top
+
 
 (** DEFCON 4, use with care!
 

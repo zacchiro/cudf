@@ -48,6 +48,11 @@ val parse_typedecl : string -> typedecl
 *)
 val parse_qstring : string -> string
 
+(** Parse a CUDF type expression.
+
+    At present it can be either a typename or an enum with its values. *)
+val parse_type : string -> typ
+
 (** Parse the enum value corresponding to the "keep" core property of package
     stanzas. Shorthand to avoid parsing the corresponding `Enum and then
     casting to {!Cudf_types.enum_keep} *)

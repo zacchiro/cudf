@@ -64,8 +64,9 @@ let parse_typename = function
 %type <Cudf_types.vpkglist> vpkglist_top
 %type <Cudf_types.vpkgformula> vpkgformula_top
 %type <Cudf_types.typedecl> typedecl_top
+%type <Cudf_types.typ> type_top
 
-%start int_top ident_top qstring_top pkgname_top
+%start int_top ident_top qstring_top pkgname_top type_top
 %start vpkg_top vpkglist_top vpkgformula_top typedecl_top
 
 %%
@@ -78,6 +79,7 @@ vpkg_top: vpkg EOL { $1 } ;
 vpkglist_top: vpkglist EOL { $1 } ;
 vpkgformula_top: vpkgformula EOL { $1 } ;
 typedecl_top: typedecl EOL { $1 } ;
+type_top: type_ EOL { $1 } ;
 
 ident: IDENT { $1 } ;
 qstring: QSTRING { $1 } ;
@@ -159,17 +161,19 @@ typedecl_ne:
 ;
 
 typedecl_:
-  | ident COLON typename		{ ($1, Cudf_types.typedecl_of_type $3) }
-  | ident COLON typename
+  | ident COLON type_			{ ($1, Cudf_types.typedecl_of_type $3) }
+  | ident COLON type_
       EQ LBRACKET typed_value RBRACKET	{ let name, typ, v = $1, $3, $6 in
 					  (name,
 					   Cudf_types.typedecl_of_value
 					     (Cudf_types.cast typ v)) }
 ;
 
-typename:
-  | ident			{ parse_typename $1 }
-  | ident LPAREN enums RPAREN	{ `Enum $3 }
+type_:
+  | ident				{ parse_typename $1 }
+  | ident LBRACKET enums RBRACKET	{ if $1 = "enum"
+					  then `Enum $3
+					  else raise Parsing.Parse_error }
 ;
 
 enums:
@@ -209,4 +213,6 @@ let vpkg_top = error_wrapper vpkg_top
 let vpkglist_top = error_wrapper vpkglist_top
 let vpkgformula_top = error_wrapper vpkgformula_top
 let typedecl_top = error_wrapper typedecl_top
+
 let qstring_top = error_wrapper qstring_top
+let type_top = error_wrapper type_top

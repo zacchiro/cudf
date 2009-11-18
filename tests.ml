@@ -196,6 +196,10 @@ let value_parse_suite =
 		   `Vpkgformula (Some [["foo",None];["bar",None;"baz",None]])] ;
       "typedecls", `Typedecl, "foo: int, bar: string = [\"baz quux\"]",
         `Typedecl ["foo", `Int None ; "bar", `String (Some "baz quux")] ;
+      "typedecl enum", `Typedecl, "p: enum[a,b,c]",
+        `Typedecl ["p", `Enum (["a"; "b"; "c"], None)] ;
+      "typedecl enum def", `Typedecl, "p: enum[a,b,c] = [a]",
+        `Typedecl ["p", `Enum (["a"; "b"; "c"], Some "a")] ;
     ] ;
     "bad" >::: List.map value_parse_ko [
       "int garbage", `Int, "78 gotcha" ;
@@ -214,9 +218,11 @@ let value_parse_suite =
       "ident symb", `Ident, "fo/o" ;
       "enum", `Enum ["foo"], "bar" ;
       "keep", keep_type, "foo" ;
+      "empty fmla", `Vpkgformula, "" ;
       "vpkg garbage", `Vpkg, "foo > 1 gotcha" ;
       "vpkgs trail", `Vpkglist, "foo ," ;
       "veqpkg", `Veqpkg, "foo > 1" ;
+      "enum bad def", `Typedecl, "p: enum[a,b,c] = [z]" ;
     ] ;
   ]
 
@@ -232,6 +238,8 @@ let misc_parse_suite =
       "dangling \"" >:: (fun () -> "unexpected parse success" @?
         (try ignore (Cudf_types_pp.parse_qstring "\"fo\"o\"") ; false
 	 with _ -> true)) ;
+      "typename ident" >:: (fun () ->
+        assert_equal (Cudf_types_pp.parse_type "ident") `Ident) ;
     ]
   ]
 
