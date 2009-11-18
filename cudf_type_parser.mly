@@ -50,7 +50,7 @@ let parse_typename = function
 
 %}
 
-%token <string> NESTRING IDENT PKGNAME QSTRING RELOP
+%token <string> IDENT PKGNAME QSTRING RELOP
 %token <string> POSINT NEGINT
 %token LBRACKET RBRACKET LPAREN RPAREN
 %token COMMA PIPE COLON EQ
@@ -129,8 +129,8 @@ or_formula:
   | vpkg PIPE or_formula	{ $1 :: $3 }
 ;
 
-/* non trivial formula, i.e. a formula based on package names which are neither
-   identifiers nor integers */
+/* non trivial formula, i.e. a formula based which is syntactially different from
+   both an integer and an identifier */
 vpkgformula_ntriv:
   | and_formula_ntriv	{ $1 }
   | VPKGTRUE		{ [] }
@@ -138,11 +138,11 @@ vpkgformula_ntriv:
 ;
 and_formula_ntriv:
   | or_formula_ntriv				{ [ $1 ] }
-  | or_formula_ntriv COMMA and_formula_ntriv	{ $1 :: $3 }
+  | or_formula COMMA and_formula		{ $1 :: $3 }
 ;
 or_formula_ntriv:
-  | vpkg_ntriv				{ [ $1 ] }
-  | vpkg_ntriv PIPE or_formula_ntriv	{ $1 :: $3 }
+  | vpkg_ntriv			{ [ $1 ] }
+  | vpkg PIPE or_formula	{ $1 :: $3 }
 ;
 vpkg_ntriv:
   | PKGNAME			{ ($1, None) }
