@@ -30,9 +30,9 @@ rule token_cudf = parse
   | "true!"		{ VPKGTRUE }
   | "false!"		{ VPKGFALSE }
   | ident as s		{ IDENT s }
+  | digit+ as s		{ POSINT s }
+  | '-' digit+ as s	{ NEGINT s }
   | pkgname as s	{ PKGNAME s }
-  | digit+ as s		{ POSINT (int_of_string s) }
-  | '-' digit+ as s	{ NEGINT (- (int_of_string s)) }
   | (">=" | "<=") as op	{ RELOP op }
   | "!=" as op		{ RELOP op }
   | ('>' | '<') as op	{ RELOP (String.make 1 op) }

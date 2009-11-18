@@ -51,27 +51,45 @@ let parse_typename = function
 %}
 
 %token <string> IDENT PKGNAME QSTRING RELOP
-%token <int> POSINT NEGINT
+%token <string> POSINT NEGINT
 %token LBRACKET RBRACKET LPAREN RPAREN
 %token COMMA PIPE COLON EQ
 %token VPKGTRUE VPKGFALSE
 %token EOL
-%type <int> int
-%type <string> ident
-%type <string> qstring
-%type <Cudf_types.pkgname> pkgname
-%type <Cudf_types.vpkg> vpkg
-%type <Cudf_types.vpkglist> vpkglist
-%type <Cudf_types.vpkgformula> vpkgformula
-%type <Cudf_types.typedecl> typedecl
-%start int ident qstring pkgname vpkg vpkglist vpkgformula typedecl
+
+%type <int> int_top
+%type <string> ident_top
+%type <string> qstring_top
+%type <Cudf_types.pkgname> pkgname_top
+%type <Cudf_types.vpkg> vpkg_top
+%type <Cudf_types.vpkglist> vpkglist_top
+%type <Cudf_types.vpkgformula> vpkgformula_top
+%type <Cudf_types.typedecl> typedecl_top
+
+%start int_top ident_top qstring_top pkgname_top
+%start vpkg_top vpkglist_top vpkgformula_top typedecl_top
 
 %%
 
-pkgname: PKGNAME { $1 } ;
+int_top: int EOL { $1 } ;
+ident_top: ident EOL { $1 } ;
+qstring_top: qstring EOL { $1 } ;
+pkgname_top: pkgname EOL { $1 } ;
+vpkg_top: vpkg EOL { $1 } ;
+vpkglist_top: vpkglist EOL { $1 } ;
+vpkgformula_top: vpkgformula EOL { $1 } ;
+typedecl_top: typedecl EOL { $1 } ;
+
 ident: IDENT { $1 } ;
 qstring: QSTRING { $1 } ;
-version: POSINT { $1 } ;
+version: POSINT { int_of_string $1 } ;
+
+pkgname:
+  | PKGNAME	{ $1 }
+  | IDENT	{ $1 }
+  | POSINT	{ $1 }
+  | NEGINT	{ $1 }
+;
 
 relop:
   | RELOP	{ parse_relop $1 }
@@ -79,13 +97,13 @@ relop:
 ;
 
 int:
-  | POSINT	{ $1 }
-  | NEGINT	{ $1 }
+  | POSINT	{ int_of_string $1 }
+  | NEGINT	{ int_of_string $1 }
 ;
 
 vpkg:
-  | PKGNAME			{ ($1, None) }
-  | PKGNAME relop version	{ ($1, Some ($2, $3)) }
+  | pkgname			{ ($1, None) }
+  | pkgname relop version	{ ($1, Some ($2, $3)) }
 ;
 vpkglist:
   |			{ [] }
@@ -106,6 +124,26 @@ and_formula:
 or_formula:
   | vpkg			{ [ $1 ] }
   | vpkg PIPE or_formula	{ $1 :: $3 }
+;
+
+/* non trivial formula, i.e. a formula based on package names which are neither
+   identifiers nor integers */
+vpkgformula_ntriv:
+  | and_formula_ntriv	{ $1 }
+  | VPKGTRUE		{ [] }
+  | VPKGFALSE		{ [ [] ] }
+;
+and_formula_ntriv:
+  | or_formula_ntriv				{ [ $1 ] }
+  | or_formula_ntriv COMMA and_formula_ntriv	{ $1 :: $3 }
+;
+or_formula_ntriv:
+  | vpkg_ntriv				{ [ $1 ] }
+  | vpkg_ntriv PIPE or_formula_ntriv	{ $1 :: $3 }
+;
+vpkg_ntriv:
+  | PKGNAME			{ ($1, None) }
+  | pkgname relop version	{ ($1, Some ($2, $3)) }
 ;
 
 typedecl:
@@ -134,10 +172,9 @@ enums:
 
 typed_value:
   | ident		{ `Ident $1 }
-  | POSINT		{ `Int $1 }
-  | NEGINT		{ `Int $1 }
+  | int			{ `Int $1 }
   | qstring		{ `String $1 }
-  | vpkgformula		{ `Vpkgformula $1 }
+  | vpkgformula_ntriv	{ `Vpkgformula $1 }
 ;
 
 %%
@@ -154,11 +191,11 @@ let error_wrapper f =
 	  raise (Cudf_types.Syntax_error
 		   (msg, lexbuf.Lexing.lex_start_p, lexbuf.Lexing.lex_curr_p))
 
-let int = error_wrapper int
-let ident = error_wrapper ident
-let pkgname = error_wrapper pkgname
-let vpkg = error_wrapper vpkg
-let vpkglist = error_wrapper vpkglist
-let vpkgformula = error_wrapper vpkgformula
-let typedecl = error_wrapper typedecl
-let qstring = error_wrapper qstring
+let int_top = error_wrapper int_top
+let ident_top = error_wrapper ident_top
+let pkgname_top = error_wrapper pkgname_top
+let vpkg_top = error_wrapper vpkg_top
+let vpkglist_top = error_wrapper vpkglist_top
+let vpkgformula_top = error_wrapper vpkgformula_top
+let typedecl_top = error_wrapper typedecl_top
+let qstring_top = error_wrapper qstring_top

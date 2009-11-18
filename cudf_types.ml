@@ -134,7 +134,7 @@ let type_of_value = function
   | `Veqpkglist l -> `Veqpkglist
   | `Typedecl l -> `Typedecl
 
-let cast typ v =
+let rec cast typ v =
   let type_error () = raise (Type_error (typ, v)) in
   match typ, v with
     | `Posint, `Int n when n > 0 -> `Posint n
@@ -142,6 +142,13 @@ let cast typ v =
     | `Bool, `Ident "true" -> `Bool true
     | `Bool, `Ident "false" -> `Bool false
     | `Pkgname, `Vpkgformula [[(pkg, None)]] -> `Pkgname pkg
+(*
+    | `Int, `Vpkgformula [[(pkg, None)]] -> 
+	(try `Int (int_of_string pkg) with Failure _ -> type_error ())
+    | `Ident, `Vpkgformula [[(pkg, None)]] ->	(* XXX horrible! *)
+	`Ident pkg
+    | (`Nat | `Posint), `Vpkgformula _ -> cast typ (cast `Int v)
+*)
     | `Vpkg, `Vpkgformula [[vpkg]] -> `Vpkg vpkg
     | `Vpkglist, `Vpkgformula f ->
 	if List.exists (function _ :: _ :: _ -> true | _ -> false) f then

@@ -150,14 +150,19 @@ let value_parse_suite =
 		| Cudf_types.Type_error _, Cudf_types.Type_error _ -> true
 		| _ -> e1 = e2)
       ~exn:(Cudf_types.Type_error (`Int, `Int ~-1))
-      (fun () -> Cudf_types_pp.parse_value typ s)) in
+      (fun () -> Cudf_types_pp.parse_value typ s))
+  in
   "value parsing" >::: [
     "good parse" >::: List.map value_parse_ok [
       "bool true", `Bool, "true", `Bool true ;
       "bool false", `Bool, "false", `Bool false ;
+      "int 1", `Int, "1", `Int 1 ;
+      "int -1", `Int, "-1", `Int ~-1 ;
+      "nat 0", `Nat, "0", `Nat 0 ;
     ] ;
     "bad parse" >::: List.map value_parse_ko [
       "bool", `Bool, "xxx" ;
+      "neg nat", `Nat, "-1" ;
     ] ;
   ]
 

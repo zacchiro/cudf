@@ -16,14 +16,14 @@ let lexbuf_wrapper type_parser =
   fun s ->
     type_parser Cudf_type_lexer.token_cudf (Lexing.from_string s)
 
-let parse_int = lexbuf_wrapper Cudf_type_parser.int
-let parse_ident = lexbuf_wrapper Cudf_type_parser.ident
-let parse_string = lexbuf_wrapper Cudf_type_parser.qstring
-let parse_pkgname = lexbuf_wrapper Cudf_type_parser.pkgname
-let parse_vpkg = lexbuf_wrapper Cudf_type_parser.vpkg
-let parse_vpkglist = lexbuf_wrapper Cudf_type_parser.vpkglist
-let parse_vpkgformula = lexbuf_wrapper Cudf_type_parser.vpkgformula
-let parse_typedecl = lexbuf_wrapper Cudf_type_parser.typedecl
+let parse_int = lexbuf_wrapper Cudf_type_parser.int_top
+let parse_ident = lexbuf_wrapper Cudf_type_parser.ident_top
+let parse_string = lexbuf_wrapper Cudf_type_parser.qstring_top
+let parse_pkgname = lexbuf_wrapper Cudf_type_parser.pkgname_top
+let parse_vpkg = lexbuf_wrapper Cudf_type_parser.vpkg_top
+let parse_vpkglist = lexbuf_wrapper Cudf_type_parser.vpkglist_top
+let parse_vpkgformula = lexbuf_wrapper Cudf_type_parser.vpkgformula_top
+let parse_typedecl = lexbuf_wrapper Cudf_type_parser.typedecl_top
 
 (** DEFCON 4, use with care!
 
