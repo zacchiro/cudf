@@ -143,13 +143,13 @@ let rec cast typ v =
     | `Bool, `Ident "true" -> `Bool true
     | `Bool, `Ident "false" -> `Bool false
     | `Pkgname, `Vpkgformula [[(pkg, None)]] -> `Pkgname pkg
-(*
-    | `Int, `Vpkgformula [[(pkg, None)]] -> 
-	(try `Int (int_of_string pkg) with Failure _ -> type_error ())
-    | `Ident, `Vpkgformula [[(pkg, None)]] ->	(* XXX horrible! *)
-	`Ident pkg
-    | (`Nat | `Posint), `Vpkgformula _ -> cast typ (cast `Int v)
-*)
+    | `Pkgname, (`Int n | `Posint n | `Nat n) -> `Pkgname (string_of_int n)
+    | `Pkgname, `Ident i-> `Pkgname i
+    | (`Vpkg | `Veqpkg | `Vpkglist | `Veqpkglist),
+      (`Int n | `Posint n | `Nat n) ->
+	cast typ (`Vpkgformula [[string_of_int n, None]])
+    | (`Vpkg | `Veqpkg | `Vpkglist | `Veqpkglist), `Ident i ->
+	cast typ (`Vpkgformula [[i, None]])
     | `Vpkg, `Vpkgformula [[vpkg]] -> `Vpkg vpkg
     | `Vpkglist, `Vpkgformula f ->
 	if List.exists (function _ :: _ :: _ -> true | _ -> false) f then

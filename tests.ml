@@ -207,7 +207,19 @@ let value_parse_suite =
       "typedecl pkgname ident", `Typedecl, "p: pkgname = [ pkg ]",
         `Typedecl ["p", `Pkgname (Some "pkg")] ;
       "typedecl pkgname int", `Typedecl, "p: pkgname = [ 1 ]",
-        `Typedecl ["p", `Pkgname (Some "pkg")] ;
+        `Typedecl ["p", `Pkgname (Some "1")] ;
+      "typedecl vpkg ident", `Typedecl, "p: vpkg = [ pkg ]",
+        `Typedecl ["p", `Vpkg (Some ("pkg", None))] ;
+      "typedecl vpkg int", `Typedecl, "p: vpkg = [ 1 ]",
+        `Typedecl ["p", `Vpkg (Some ("1", None))] ;
+      "typedecl veqpkg int", `Typedecl, "p: veqpkg = [ 1 ]",
+        `Typedecl ["p", `Veqpkg (Some ("1", None))] ;
+      "typedecl vpkgs ident", `Typedecl, "l: vpkglist = [ pkg ]",
+        `Typedecl ["l", `Vpkglist (Some [("pkg", None)])] ;
+      "typedecl vpkgs int", `Typedecl, "l: vpkglist = [ 1 ]",
+        `Typedecl ["l", `Vpkglist (Some [("1", None)])] ;
+      "typedecl veqpkgs int", `Typedecl, "l: veqpkglist = [ 1 ]",
+        `Typedecl ["l", `Veqpkglist (Some [("1", None)])] ;
     ] ;
     "bad" >::: List.map value_parse_ko [
       "int garbage", `Int, "78 gotcha" ;
