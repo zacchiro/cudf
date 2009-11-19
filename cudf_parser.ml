@@ -60,7 +60,7 @@ let type_check_stanza stanza types =
     stanza
 
 (** cast a typed stanza starting with "preamble: " to a {!Cudf.preamble} *)
-let cast_preamble stanza =
+let bless_preamble stanza =
   let p = default_preamble in	(* assumption: should be completely overrode *)
   let rec aux p = function
     | ("preamble", `String v) :: tl -> aux { p with preamble_id = v } tl
@@ -76,7 +76,7 @@ let cast_preamble stanza =
 (** Cast a typed stanza starting with "package: " to a {!Cudf.package}.
     ASSUMPTION: type checking of the stanza has already happend, in particular
     all extra properties have already been checked for allowance. *)
-let cast_package stanza =
+let bless_package stanza =
   let p = default_package in	(* assumption: should be completely overrode *)
   let rec aux p = function
     | ("package", `Pkgname v) :: tl -> aux { p with package = v } tl
@@ -96,8 +96,8 @@ let cast_package stanza =
   { p' with pkg_extra = List.rev p'.pkg_extra }
 
 (** Cast a typed stanza starting with "request: " to a {!Cudf.request}.
-    ASSUMPTION: as per {!Cudf_parser.cast_package} above. *)
-let cast_request stanza =
+    ASSUMPTION: as per {!Cudf_parser.bless_package} above. *)
+let bless_request stanza =
   let r = default_request in	(* assumption: should be completely overrode *)
   let rec aux r = function
     | ("request", `String v) :: tl -> aux { r with request_id = v } tl
@@ -126,14 +126,14 @@ let parse_item p =
   match typed_stanza with
     | [] -> assert false
     | ("preamble", _) :: _ ->
-	let preamble = cast_preamble typed_stanza in
+	let preamble = bless_preamble typed_stanza in
 	p.typedecl <-	(* update type declaration for "package" stanza *)
 	  (let pkg_typedecl =
 	     (List.assoc "package" p.typedecl) @ preamble.property in
 	   ("package", pkg_typedecl) :: List.remove_assoc "package" p.typedecl);
 	`Preamble preamble
-    | ("package", _) :: _ -> `Package (cast_package typed_stanza)
-    | ("request", _) :: _ -> `Request (cast_request typed_stanza)
+    | ("package", _) :: _ -> `Package (bless_package typed_stanza)
+    | ("request", _) :: _ -> `Request (bless_request typed_stanza)
     | _ -> assert false
 
 let parse p =
