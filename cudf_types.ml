@@ -47,9 +47,15 @@ type typed_value =
     | `Veqpkg of veqpkg | `Veqpkglist of veqpkglist
     | `Typedecl of typedecl ]
 
-exception Type_error of typ * typed_value	(* <type, literal> *)
-exception Parse_error_822 of Lexing.position * Lexing.position
-exception Syntax_error of string * Lexing.position * Lexing.position
+type loc = Lexing.position * Lexing.position
+let dummy_loc: loc = Lexing.dummy_pos, Lexing.dummy_pos
+let extend_loc (r1_start, _r1_end) (_r2_start, r2_end) = (r1_start, r2_end)
+let loc_of_lexbuf b = (b.Lexing.lex_start_p, b.Lexing.lex_curr_p)
+
+exception Parse_error_822 of string * loc	(* <msg, loc> *)
+exception Syntax_error of string * loc		(* <msg, loc> *)
+exception Type_error of typ * typed_value * loc	(* <type, literal, loc> *)
+
 
 let keep_enums = ["version"; "package"; "feature"; "none"]
 let keep_type = `Enum keep_enums
@@ -136,7 +142,7 @@ let type_of_value = function
   | `Typedecl l -> `Typedecl
 
 let rec cast typ v =
-  let type_error () = raise (Type_error (typ, v)) in
+  let type_error () = raise (Type_error (typ, v, dummy_loc)) in
   match typ, v with
     | `Posint, `Int n when n > 0 -> `Posint n
     | `Nat, `Int n when n >= 0 -> `Nat n

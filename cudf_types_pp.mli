@@ -19,9 +19,16 @@
 
 open Cudf_types
 
+(** {5 Errors} *)
+
+exception Type_error of typ * typed_value
+
 (** {5 Parsers} *)
 
-(** {6 Public types} *)
+(** {6 Public types}
+
+    All parsing function are granted to raise only {!Cudf_types_pp.Type_error},
+    lower lever exception (e.g. syntax errors) are wrapped into it *)
 
 val parse_int : string -> int
 val parse_posint : string -> int
@@ -38,6 +45,10 @@ val parse_veqpkg : string -> veqpkg
 val parse_veqpkglist : string -> veqpkglist
 val parse_typedecl : string -> typedecl
 
+(** {6 Parsing of other CUDF entities}
+
+    Mostly for application relying on CUDF conventions *)
+
 (** Parse a quoted string, enclosed by double quotes as it happens within the
     "property" property of preamble stanzas. The only place where such strings
     are allowed in CUDF are within type declarations; see
@@ -45,12 +56,17 @@ val parse_typedecl : string -> typedecl
 
     @return the parsed string after having resolved escaping and removed
     surrounding double quotes
+
+    @raise Cudf_types.Syntax_error
 *)
 val parse_qstring : string -> string
 
 (** Parse a CUDF type expression.
 
-    At present it can be either a typename or an enum with its values. *)
+    At present it can be either a typename or an enum with its values.
+
+    @raise Cudf_types.Syntax_error
+*)
 val parse_type : string -> typ
 
 (** Parse the enum value corresponding to the "keep" core property of package

@@ -25,7 +25,7 @@ let die_usage () = Arg.usage arg_spec usage_msg ; exit (-2)
 
 let pp_822 =
   let pp_stanza stanza =
-    List.iter (fun (k, v) -> printf "%s: %s\n%!" k v) stanza;
+    List.iter (fun (k, (_loc, v)) -> printf "%s: %s\n%!" k v) stanza;
     print_newline ()
   in
   List.iter pp_stanza
@@ -43,7 +43,7 @@ let main () =
   try
     let stanzas = Cudf_822_parser.doc_822 Cudf_822_lexer.token_822 lexbuf in
     pp_822 stanzas
-  with Parse_error_822 (startpos, endpos) ->
+  with Parse_error_822 (msg, (startpos, endpos)) ->
     failwith (sprintf "Parse error on file %s:%s--%s" !file_arg
 		(pp_lpos startpos) (pp_lpos endpos))
 

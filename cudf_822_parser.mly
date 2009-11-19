@@ -17,11 +17,17 @@
   and empty lines
 */
 
-%token <string> CONT
-%token <string * string> FIELD
+%{
+
+let join (r1, v) (r2, cont) = Cudf_types.extend_loc r1 r2, v ^ cont
+
+%}
+
+%token <string * (Cudf_types.loc * string)> FIELD
+%token <Cudf_types.loc * string> CONT
 %token EOL EOF
-%type <(string * string) list list> doc_822
-%type <(string * string) list option> stanza_822
+%type <(string * (Cudf_types.loc * string)) list list> doc_822
+%type <(string * (Cudf_types.loc * string)) list option> stanza_822
 %start doc_822 stanza_822
 
 %%
@@ -61,12 +67,12 @@ fields:
 field:
   | FIELD EOL		{ $1 }
   | FIELD EOL linecont	{ let k, v = $1 in
-			  k, v ^ $3 }
+			  k, (join v $3) }
 ;
 
 linecont:
   | CONT EOL		{ $1 }
-  | CONT EOL linecont	{ $1 ^ $3 }
+  | CONT EOL linecont	{ join $1 $3 }
 ;
 
 %%
@@ -76,8 +82,9 @@ let error_wrapper f =
     try
       f lexer lexbuf
     with Parsing.Parse_error ->
-      raise (Cudf_types.Parse_error_822 (lexbuf.Lexing.lex_start_p,
-					 lexbuf.Lexing.lex_curr_p))
+      raise (Cudf_types.Parse_error_822
+	       ("RFC 822 (stanza structure) parse error",
+		Cudf_types.loc_of_lexbuf lexbuf))
 
 let doc_822 = error_wrapper doc_822
 let stanza_822 = error_wrapper stanza_822

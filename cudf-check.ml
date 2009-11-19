@@ -68,25 +68,36 @@ let print_sol_info inst sol =
 	printf "is_solution: false (reason: %s)\n%!"
 	  (String.concat "; " (List.map explain_reason rs))
 
+let pp_loc (start_pos, end_pos) =
+  let pp_lpos { Lexing.pos_fname = _fname;
+		pos_lnum = lnum; pos_bol = bol; pos_cnum = cnum } =
+    sprintf "%d:%d" lnum (cnum - bol) in
+  sprintf "%s" (pp_lpos start_pos)
+
 let main () =
   let load_univ p = 
     let pre,univ,req = Cudf_parser.load p in
-    univ
+    univ in
+  let fail_parse source msg loc =
+    eprintf "Error while parsing %s: %s\n" source msg ;
+    eprintf "Location: %s\n%!" (pp_loc loc) ;
+    exit 1
   in
   if !cudf_arg <> "" then begin
     try
       let p = Cudf_parser.from_in_channel (open_in !cudf_arg) in
       eprintf "loading CUDF ...\n%!";
       (match Cudf_parser.load p with
-      |pre, univ, None ->
-          eprintf "Error: problem description item.\n%!"; exit (-1)
-      |pre, univ, Some req -> cudf := Some (pre, univ, req))
+	 | pre, univ, None ->
+             eprintf "Error: missing request description item.\n%!";
+	     exit (-1)
+	 | pre, univ, Some req -> cudf := Some (pre, univ, req))
     with
-    |Cudf_parser.Parse_error _
-    |Cudf.Constraint_violation _ as exn ->
-        eprintf "Error while loading CUDF from %s: %s\n%!"
-        !cudf_arg (Printexc.to_string exn);
-        exit (-1)
+      | Cudf_parser.Parse_error (msg, loc) -> fail_parse "CUDF" msg loc
+      | Cudf.Constraint_violation _ as exn ->
+          eprintf "Error while loading CUDF from %s: %s\n%!"
+            !cudf_arg (Printexc.to_string exn);
+          exit (-1)
   end;
   if !univ_arg <> "" then begin
     try
@@ -94,11 +105,11 @@ let main () =
       eprintf "loading package universe ...\n%!";
       univ := Some (load_univ p)
     with
-    |Cudf_parser.Parse_error _
-    |Cudf.Constraint_violation _ as exn ->
-        eprintf "Error while loading universe from %s: %s\n%!" 
-        !univ_arg (Printexc.to_string exn);
-        exit (-1)
+      | Cudf_parser.Parse_error (msg, loc) -> fail_parse "universe" msg loc
+      | Cudf.Constraint_violation _ as exn ->
+          eprintf "Error while loading universe from %s: %s\n%!" 
+            !univ_arg (Printexc.to_string exn);
+          exit (-1)
   end;
   if !sol_arg <> "" then begin
     try
@@ -106,11 +117,11 @@ let main () =
       eprintf "loading solution ...\n%!";
       sol := Some (load_univ p)
     with
-    |Cudf_parser.Parse_error _
-    |Cudf.Constraint_violation _ as exn ->
-        eprintf "Error while loading solution from %s: %s\n%!"
-        !sol_arg (Printexc.to_string exn);
-        exit (-1)
+      | Cudf_parser.Parse_error (msg, loc) -> fail_parse "solution" msg loc
+      | Cudf.Constraint_violation _ as exn ->
+          eprintf "Error while loading solution from %s: %s\n%!"
+            !sol_arg (Printexc.to_string exn);
+          exit (-1)
   end;
   match !cudf, !univ, !sol with
   | Some (pre,univ,req), None, None ->

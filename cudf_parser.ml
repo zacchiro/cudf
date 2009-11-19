@@ -17,46 +17,62 @@ open Cudf
 open Cudf_types
 
 type cudf_parser = {
-  lexbuf: Lexing.lexbuf;
-  mutable typedecl: Cudf_conf.stanza_typedecl;
+  lexbuf: Lexing.lexbuf ;
+  fname: string ;
+  mutable typedecl: Cudf_conf.stanza_typedecl ;
 }
 
 type 'ty stanza = (string * 'ty) list
+type loc_map = (string * loc) list
 
-exception Parse_error of int * string
-
-let parse_error i msg = 
-  Printf.eprintf "Parse error at line %d: %s\n" i msg;
-  raise (Parse_error (i, msg))
-
-let parse_error_e msg = function
-  | Parse_error_822 (startpos, endpos) ->
-      parse_error startpos.Lexing.pos_lnum msg
-  | _ -> assert false
+exception Parse_error of string * loc
+let parse_error loc msg = raise (Parse_error (msg, loc))
 
 let from_in_channel ?(typedecl=Cudf_conf.stanza_typedecl) ic =
   { lexbuf = Lexing.from_channel ic ;
     typedecl = typedecl ;
+    fname = "" ;
   }
+
+let from_file ?typedecl fname =
+  { from_in_channel ?typedecl (open_in fname)
+    with fname = fname }
 
 let close p = ()
 
 let parse_stanza p =
   try
     (match Cudf_822_parser.stanza_822 Cudf_822_lexer.token_822 p.lexbuf with
-      | Some stanza -> stanza
+      | Some stanza ->
+	  List.fold_right	(* split loc_map from (string * loc) stanzas *)
+    		  (* non tail recursive, but should be ok: stanzas are short *)
+	    (fun (k, (loc, v)) (locs, stanza) ->
+	       (k, loc) :: locs, (k, v) :: stanza)
+	    stanza ([], [])
       | None -> raise End_of_file)
-  with Parse_error_822 _ as exn -> parse_error_e "" exn
+  with Parse_error_822 (msg, loc) -> raise (Syntax_error (msg, loc))
 
-let type_check_stanza stanza types =
+let loc_lookuper locs =
+  (fun p -> try List.assoc p locs with Not_found -> dummy_loc)
+
+let type_check_stanza ?locs stanza types =
+  let lookup_loc =
+    match locs with
+      | None -> (fun p -> dummy_loc)
+      | Some locs -> loc_lookuper locs
+  in
   List.map
     (fun (k, v) ->
        try
 	 let decl = List.assoc k types in
 	 let typed_v = Cudf_types_pp.parse_value (type_of_typedecl decl) v in
 	 k, typed_v
-       with Not_found ->
-	 parse_error ~-1 (sprintf "unexpected property \"%s\" in this stanza" k))
+       with
+	 | Not_found ->
+	     parse_error (lookup_loc k)
+	       (sprintf "unexpected property \"%s\" in this stanza" k)
+	 | Cudf_types_pp.Type_error (typ, v) ->	(* localize type errors *)
+	     raise (Cudf_types.Type_error (typ, v, lookup_loc k)))
     stanza
 
 (** cast a typed stanza starting with "preamble: " to a {!Cudf.preamble} *)
@@ -111,38 +127,50 @@ let bless_request stanza =
   let r' = aux r stanza in
   { r' with req_extra = List.rev r'.req_extra }
 
-let parse_item p =
-  let stanza = parse_stanza p in
+let parse_item' p =
+  let locs, stanza = parse_stanza p in
+  let lookup_loc = loc_lookuper locs in
   let typed_stanza =
     match stanza with
-      | [] -> parse_error ~-1 "empty stanza"
+      | [] -> eprintf "empty stanza\n%!"; assert false
       | (postmark, _) :: _ ->
 	  (try
 	     type_check_stanza stanza (List.assoc postmark p.typedecl)
 	   with Not_found ->
-	     parse_error ~-1
+	     parse_error (lookup_loc postmark)
 	       (sprintf "Unknown stanza type, starting with \"%s\" postmark."
 		  postmark)) in
-  match typed_stanza with
-    | [] -> assert false
-    | ("preamble", _) :: _ ->
-	let preamble = bless_preamble typed_stanza in
-	p.typedecl <-	(* update type declaration for "package" stanza *)
-	  (let pkg_typedecl =
-	     (List.assoc "package" p.typedecl) @ preamble.property in
-	   ("package", pkg_typedecl) :: List.remove_assoc "package" p.typedecl);
-	`Preamble preamble
-    | ("package", _) :: _ -> `Package (bless_package typed_stanza)
-    | ("request", _) :: _ -> `Request (bless_request typed_stanza)
-    | _ -> assert false
+  let item =
+    match typed_stanza with
+      | [] -> assert false
+      | ("preamble", _) :: _ ->
+	  let preamble = bless_preamble typed_stanza in
+	  p.typedecl <-	(* update type declaration for "package" stanza *)
+	    (let pkg_typedecl =
+	       (List.assoc "package" p.typedecl) @ preamble.property in
+	     ("package", pkg_typedecl)
+	     :: List.remove_assoc "package" p.typedecl);
+	  `Preamble preamble
+      | ("package", _) :: _ -> `Package (bless_package typed_stanza)
+      | ("request", _) :: _ -> `Request (bless_request typed_stanza)
+      | _ -> assert false in
+  (locs, item)
+
+let parse_item p = snd (parse_item' p)
+
+let get_postmark = function
+  | `Package pkg -> pkg.package
+  | `Request req -> req.request_id
+  | `Preamble pre -> pre.preamble_id
 
 let parse p =
   let pre, pkgs, req = ref None, ref [], ref None in
   let rec aux_pkg () =
-    match parse_item p with
-      | `Package pkg -> pkgs := pkg :: !pkgs ; aux_pkg ()
-      | `Request req' -> req := Some req'	(* stop recursion after req *)
-      | `Preamble _ -> parse_error ~-1 "late preamble"
+    match parse_item' p with
+      | locs, `Package pkg -> pkgs := pkg :: !pkgs ; aux_pkg ()
+      | locs, `Request req' -> req := Some req'	(* stop recursion after req *)
+      | locs, `Preamble pre ->
+	  parse_error (loc_lookuper locs pre.preamble_id) "late preamble"
   in
   let parse () =
     try
@@ -154,12 +182,20 @@ let parse p =
 	     pkgs := [pkg] ;
 	     (try aux_pkg () with End_of_file -> ())
 	 | `Request req' -> req := Some req')
-    with End_of_file -> parse_error ~-1 "empty CUDF"
+    with End_of_file -> parse_error (loc_of_lexbuf p.lexbuf) "empty CUDF"
   in
-  parse () ;
+  (try
+     parse () ;
+   with Cudf_types.Type_error (typ, v, loc) ->
+     parse_error loc
+       (sprintf
+	  ("a value of type \"%s\" was expected, but \"%s\" has been found")
+	  (Cudf_types_pp.string_of_type typ)
+	  (Cudf_types_pp.string_of_value v)));
   (try	(* check for forbidden trailing content *)
-     ignore (parse_item p);
-     parse_error ~-1 "trailing stanzas after final request stanza"
+     let locs, item = parse_item' p in
+     parse_error (loc_lookuper locs (get_postmark item))
+       "trailing stanzas after final request stanza"
    with End_of_file -> ());
   (!pre, !pkgs, !req)
   

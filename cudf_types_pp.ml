@@ -12,19 +12,31 @@
 
 open Cudf_types
 
-let lexbuf_wrapper type_parser =
+(* note: Type_error <> Cudf_types.Type_error, this one is not located *)
+exception Type_error of typ * typed_value
+
+let lexbuf_wrapper type_parser typ =
+  fun s ->
+    try
+      type_parser Cudf_type_lexer.token_cudf (Lexing.from_string s)
+    with Cudf_types.Syntax_error (_msg, loc) ->
+      raise (Type_error (typ, `String s))
+
+let lexbuf_wrapper' type_parser =
   fun s ->
     type_parser Cudf_type_lexer.token_cudf (Lexing.from_string s)
 
-let parse_int = lexbuf_wrapper Cudf_type_parser.int_top
-let parse_ident = lexbuf_wrapper Cudf_type_parser.ident_top
-let parse_qstring = lexbuf_wrapper Cudf_type_parser.qstring_top
-let parse_pkgname = lexbuf_wrapper Cudf_type_parser.pkgname_top
-let parse_vpkg = lexbuf_wrapper Cudf_type_parser.vpkg_top
-let parse_vpkglist = lexbuf_wrapper Cudf_type_parser.vpkglist_top
-let parse_vpkgformula = lexbuf_wrapper Cudf_type_parser.vpkgformula_top
-let parse_typedecl = lexbuf_wrapper Cudf_type_parser.typedecl_top
-let parse_type = lexbuf_wrapper Cudf_type_parser.type_top
+let parse_int = lexbuf_wrapper Cudf_type_parser.int_top `Int
+let parse_ident = lexbuf_wrapper Cudf_type_parser.ident_top `Ident
+let parse_pkgname = lexbuf_wrapper Cudf_type_parser.pkgname_top `Pkgname
+let parse_vpkg = lexbuf_wrapper Cudf_type_parser.vpkg_top `Vpkg
+let parse_vpkglist = lexbuf_wrapper Cudf_type_parser.vpkglist_top `Vpkglist
+let parse_vpkgformula =
+  lexbuf_wrapper Cudf_type_parser.vpkgformula_top `Vpkgformula
+let parse_typedecl = lexbuf_wrapper Cudf_type_parser.typedecl_top `Typedecl
+
+let parse_qstring = lexbuf_wrapper' Cudf_type_parser.qstring_top
+let parse_type = lexbuf_wrapper' Cudf_type_parser.type_top
 
 
 (** DEFCON 4, use with care!
@@ -37,15 +49,20 @@ let parse_type = lexbuf_wrapper Cudf_type_parser.type_top
 *)
 let unbox v = snd (Obj.magic v: 'a * 'b)
 
-let parse_posint s: int = unbox (cast `Posint (`Int (parse_int s)))
-let parse_nat s: int = unbox (cast `Nat (`Int (parse_int s)))
-let parse_bool s: bool = unbox (cast `Bool (`Ident (parse_ident s)))
-let parse_veqpkg s: veqpkg = unbox (cast `Veqpkg (`Vpkg (parse_vpkg s)))
+let cast' typ v =
+  try
+    cast typ v
+  with Cudf_types.Type_error _ -> raise (Type_error (typ, v))
+
+let parse_posint s: int = unbox (cast' `Posint (`Int (parse_int s)))
+let parse_nat s: int = unbox (cast' `Nat (`Int (parse_int s)))
+let parse_bool s: bool = unbox (cast' `Bool (`Ident (parse_ident s)))
+let parse_veqpkg s: veqpkg = unbox (cast' `Veqpkg (`Vpkg (parse_vpkg s)))
 let parse_veqpkglist s: veqpkglist =
-  unbox (cast `Veqpkglist (`Vpkglist (parse_vpkglist s)))
+  unbox (cast' `Veqpkglist (`Vpkglist (parse_vpkglist s)))
 
 let parse_enum ~enums s =
-  match cast (`Enum enums) (`Ident (parse_ident s)) with
+  match cast' (`Enum enums) (`Ident (parse_ident s)) with
     | `Enum (_, i) -> i
     | _ -> assert false
 

@@ -15,6 +15,20 @@
 {
   open Cudf_types
   open Cudf_822_parser
+
+  let get_range { Lexing.lex_start_p = start_pos;
+		  Lexing.lex_curr_p = end_pos } =
+    (start_pos, end_pos)
+
+  (* Lexing.new_line is only available in OCaml 3.11 or greater *)
+  (* let lexing_new_line = Lexing.new_line *)
+  let lexing_new_line lexbuf =
+    let lcp = lexbuf.Lexing.lex_curr_p in
+    lexbuf.Lexing.lex_curr_p <-
+      { lcp with
+	  Lexing.pos_lnum = lcp.Lexing.pos_lnum + 1;
+	  Lexing.pos_bol = lcp.Lexing.pos_cnum; }
+
 }
 
 let lower_letter = [ 'a' - 'z' ]
@@ -24,12 +38,13 @@ let ident = lower_letter (lower_letter | digit | '-')*
 
 rule token_822 = parse
   | (ident as field) ':' ' '
-    ([^'\n']* as rest)		{ FIELD(field, rest) }
-  | ' ' ([^'\n']* as rest)	{ CONT(rest) }
+    ([^'\n']* as rest)		{ FIELD(field, (get_range lexbuf, rest)) }
+  | ' ' ([^'\n']* as rest)	{ CONT(get_range lexbuf, rest) }
   | '#' [^'\n']*		{ token_822 lexbuf }
-  | blank* '\n'			{ Lexing.new_line lexbuf;
+  | blank* '\n'			{ lexing_new_line lexbuf;
 				  EOL }
   | eof				{ EOF }
   | _				{ raise (Parse_error_822
-					   (lexbuf.Lexing.lex_start_p,
-					    lexbuf.Lexing.lex_curr_p)) }
+					   ("unexpected RFC 822 token",
+					    (lexbuf.Lexing.lex_start_p,
+					     lexbuf.Lexing.lex_curr_p))) }

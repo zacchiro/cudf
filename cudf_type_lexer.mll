@@ -58,5 +58,6 @@ and qstring buf = parse
   | [^ '\n' '\r' '\\' '"']+ as s	{ Buffer.add_string buf s;
 					  qstring buf lexbuf }
   | _					{ raise (Parse_error_822
-						   (lexbuf.Lexing.lex_start_p,
-						    lexbuf.Lexing.lex_curr_p)) }
+						   ("unexpected end of quoted string",
+						    (lexbuf.Lexing.lex_start_p,
+						     lexbuf.Lexing.lex_curr_p))) }

@@ -90,6 +90,8 @@ type cudf = preamble * universe * request
     status *)
 type solution = preamble * universe
 
+(** @raise Constraint_violation when a global CUDF constraint is violated in
+    the given package list *)
 val load_universe : package list -> universe
 
 (** {5 CUDF manipulation} *)

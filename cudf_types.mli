@@ -118,21 +118,44 @@ val type_of_value : typed_value -> typ
 val cast: typ -> typed_value -> typed_value
 
 
+(**/**)
+
+(** {5 Parsing helpers}
+
+    Used internally for pasring, generally otherwise uninteresting.
+*)
+
+(** Range in a file being parsed *)
+type loc = Lexing.position * Lexing.position
+
+(** Dummy location, pointing nowhere, going nowhere, ... *)
+val dummy_loc : loc
+
+(** [extend_range (p1, _) (_, p2)] return [(p1, p2)] *)
+val extend_loc : loc -> loc -> loc
+
+(** Get file range corresponding to the last read token *)
+val loc_of_lexbuf : Lexing.lexbuf -> loc
+
+(**/**)
+
+
 (** {5 Various errors} *)
+
+(** Error while parsing RFC822-like syntax of CUDF documents.
+
+    arguments: error message and file range, respectively. *)
+exception Parse_error_822 of string * loc
+
+(** Syntax error while parsing some literal value
+
+    arguments: error message and file range, respectively *)
+exception Syntax_error of string * loc
 
 (** Type error: mismatch between typed value and expected type
 
     arguments: expected type, found value *)
-exception Type_error of typ * typed_value
-
-(** Error while parsing RFC822-like syntax of CUDF documents.
-    Arguments: start and end position of the error, respectively. *)
-exception Parse_error_822 of Lexing.position * Lexing.position
-
-(** Syntax error while parsing some literal value
-
-    arguments: message, stand and end error location (wrt some lexbuf) *)
-exception Syntax_error of string * Lexing.position * Lexing.position
+exception Type_error of typ * typed_value * loc
 
 
 (** {5 Accessors, predicates, etc.} *)

@@ -194,17 +194,16 @@ open ExtLib
 
 let error_wrapper f =
   fun lexer lexbuf ->
-    let syntax_error () =
-      raise (Cudf_types.Syntax_error
-	       ("", lexbuf.Lexing.lex_start_p, lexbuf.Lexing.lex_curr_p)) in
+    let syntax_error msg =
+      raise (Cudf_types.Syntax_error (msg, Cudf_types.loc_of_lexbuf lexbuf)) in
     try
       f lexer lexbuf
     with
-      | Parsing.Parse_error -> syntax_error ()
-      | Failure _m when String.starts_with _m "lexing" -> syntax_error ()
-      | Parse_error_msg msg ->
-	  raise (Cudf_types.Syntax_error
-		   (msg, lexbuf.Lexing.lex_start_p, lexbuf.Lexing.lex_curr_p))
+      | Parsing.Parse_error -> syntax_error "parse error"
+      | Failure _m when String.starts_with _m "lexing" ->
+	  syntax_error "lexer error"
+      | Cudf_types.Type_error _ -> syntax_error "type error"
+      | Parse_error_msg msg -> syntax_error msg
 
 let int_top = error_wrapper int_top
 let ident_top = error_wrapper ident_top

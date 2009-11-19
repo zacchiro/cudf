@@ -76,18 +76,18 @@ let parse_test ~parse_fun name =
 let parse_cudf_wrapper p =
   match Cudf_parser.parse p with
     | pre, pkgs, Some req -> pre, pkgs, req
-    | pre, pkgs, None -> raise (Cudf_parser.Parse_error (-1, ""))
+    | pre, pkgs, None -> raise (Cudf_parser.Parse_error ("", dummy_loc))
 let parse_pkgs_wrapper p =
   match Cudf_parser.parse p with
-    | pre, pkgs, Some req -> raise (Cudf_parser.Parse_error (-1, ""))
+    | pre, pkgs, Some req -> raise (Cudf_parser.Parse_error ("", dummy_loc))
     | pre, pkgs, None -> pkgs
 let load_cudf_wrapper p =
   match Cudf_parser.load p with
     | pre, pkgs, Some req -> pre, pkgs, req
-    | pre, pkgs, None -> raise (Cudf_parser.Parse_error (-1, ""))
+    | pre, pkgs, None -> raise (Cudf_parser.Parse_error ("", dummy_loc))
 let load_pkgs_wrapper p =
   match Cudf_parser.load p with
-    | pre, pkgs, Some req -> raise (Cudf_parser.Parse_error (-1, ""))
+    | pre, pkgs, Some req -> raise (Cudf_parser.Parse_error ("", dummy_loc))
     | pre, pkgs, None -> pkgs
 
 let parse_cudf_test = parse_test ~parse_fun:parse_cudf_wrapper
@@ -106,7 +106,7 @@ let bad_parse ~parse_fun name = TestCase (fun _ ->
 	    match e1, e2 with
 	      | Cudf_parser.Parse_error _, Cudf_parser.Parse_error _ -> true
 	      | _ -> false)
-    ~exn:(Cudf_parser.Parse_error (0, ""))
+    ~exn:(Cudf_parser.Parse_error ("", dummy_loc))
     (fun () -> parse_test ~parse_fun name))
 
 let good_solution prob_name sol_name = TestCase (fun _ ->
@@ -152,10 +152,9 @@ let value_parse_suite =
     assert_raises'
       ~cmp:(fun e1 e2 ->
 	      match e1, e2 with
-		| Cudf_types.Type_error _, Cudf_types.Type_error _ -> true
-		| Cudf_types.Type_error _, Cudf_types.Syntax_error _ -> true
+		| Cudf_types_pp.Type_error _, Cudf_types_pp.Type_error _ -> true
 		| _ -> e1 = e2)
-      ~exn:(Cudf_types.Type_error (`Int, `Int ~-1))
+      ~exn:(Cudf_types_pp.Type_error (`Int, `Int ~-1))
       (fun () -> Cudf_types_pp.parse_value typ s))
   in
   "value parsing" >::: [
