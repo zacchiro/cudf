@@ -23,6 +23,12 @@ let good_cudfs = [	(* CUDF whose parsing must suceed *)
 ]
 let bad_cudfs = [	(* CUDF whose parsing must fail *)
 ]
+let consistent_univs = [	(* CUDF whose status is expected to be consistent *)
+  "assert-true" ;
+]
+let inconsistent_univs = [	(* CUDF whose status has some broken dep *)
+  "assert-false" ;
+]
 let good_pkgs = [	(* universes whose parsing must suceed *)
   "conflict-comma-sep" ;
   "plus-in-pkgname" ;
@@ -340,6 +346,18 @@ let good_solution_suite = "good solutions" >:::
 let bad_solution_suite = "bad solutions" >:::
   List.map (fun (prob, sol) -> bad_solution prob sol) bad_prob_sol
 
+let consistency_suite = "consistent universes" >:::
+  List.map
+    (fun u -> TestCase (fun () -> "consistent" @?
+       fst (Cudf_checker.is_consistent (load_univ_test u))))
+    consistent_univs
+
+let inconsistency_suite = "inconsistent universes" >:::
+  List.map
+    (fun u -> TestCase (fun () -> "inconsistent" @?
+       not (fst (Cudf_checker.is_consistent (load_univ_test u)))))
+    inconsistent_univs
+
 (** {6 Test suites} *)
 
 let feature_suite =
@@ -386,6 +404,8 @@ let all =
     bad_cudf_parse_suite ;
     good_pkgs_parse_suite ;
     bad_pkgs_parse_suite ;
+    consistency_suite ;
+    inconsistency_suite ;
     good_solution_suite ;
     bad_solution_suite ;
     parse_reg_suite ;
