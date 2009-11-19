@@ -69,10 +69,10 @@ let print_sol_info inst sol =
 	  (String.concat "; " (List.map explain_reason rs))
 
 let pp_loc (start_pos, end_pos) =
-  let pp_lpos { Lexing.pos_fname = _fname;
-		pos_lnum = lnum; pos_bol = bol; pos_cnum = cnum } =
-    sprintf "%d" lnum in
-  sprintf "line: %s" (pp_lpos start_pos)
+  let line { Lexing.pos_lnum = l } = l in
+  if line start_pos = line end_pos
+  then sprintf "line: %d" (line start_pos)
+  else sprintf "lines: %d-%d" (line start_pos) (line end_pos)
 
 let main () =
   let load_univ p = 

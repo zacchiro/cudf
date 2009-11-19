@@ -22,7 +22,7 @@ let cudf_test_path name = sprintf "./tests/%s.cudf" name
 let good_cudfs = [	(* CUDF whose parsing must suceed *)
 ]
 let bad_cudfs = [	(* CUDF whose parsing must fail (@ location) *)
-  "line-111", 111 ;
+  "line-111", (111, 111) ;
 ]
 let consistent_univs = [	(* CUDF whose status is expected to be consistent *)
   "assert-true" ;
@@ -34,7 +34,8 @@ let good_pkgs = [	(* universes whose parsing must suceed *)
   "conflict-comma-sep" ;
   "plus-in-pkgname" ;
 ]
-let bad_pkgs = [	(* universes whose parsing must fail *)
+let bad_pkgs = [	(* universes whose parsing must fail (@ location) *)
+  "multiline-error", (93, 95) ;
 ]
 let good_prob_sol = [	(* pairs cudf/sol, with sol being a good solution *)
   "legacy", "legacy-sol" ;
@@ -101,13 +102,13 @@ let load_univ_test = parse_test ~parse_fun:load_pkgs_wrapper
 let good_parse ~parse_fun name = TestCase (fun _ ->
   assert_no_exn (fun () -> parse_test ~parse_fun name))
 
-let bad_parse ~parse_fun name lineno = TestCase (fun _ ->
+let bad_parse ~parse_fun name (l1, l2) = TestCase (fun _ ->
   assert_raises'
     ~cmp:(fun e1 e2 ->
 	    match e1, e2 with
 	      | Cudf_parser.Parse_error _,
-		Cudf_parser.Parse_error (_msg, (loc, _)) ->
-		  loc.Lexing.pos_lnum = lineno
+		Cudf_parser.Parse_error (_msg, (loc1, loc2)) ->
+		  loc1.Lexing.pos_lnum = l1 && loc2.Lexing.pos_lnum = l2
 	      | _ -> false)
     ~exn:(Cudf_parser.Parse_error ("", dummy_loc))
     (fun () -> parse_test ~parse_fun name))
@@ -133,7 +134,8 @@ let good_cudf_parse_suite =
 
 let bad_cudf_parse_suite =
   "parsing of bad CUDFs" >::: List.map
-      (fun (n, lineno) -> n >: bad_parse ~parse_fun:parse_cudf_wrapper n lineno)
+      (fun (n, (l1, l2)) -> n >:
+	 bad_parse ~parse_fun:parse_cudf_wrapper n (l1, l2))
       bad_cudfs
 
 let good_pkgs_parse_suite =
@@ -143,7 +145,8 @@ let good_pkgs_parse_suite =
 
 let bad_pkgs_parse_suite =
   "parsing of bad package universes" >::: List.map
-      (fun (n, lineno) -> n >: bad_parse ~parse_fun:parse_pkgs_wrapper n lineno)
+      (fun (n, (l1, l2)) -> n >:
+	 bad_parse ~parse_fun:parse_pkgs_wrapper n (l1,l2))
       bad_pkgs
 
 (** {6 Regression tests} *)
