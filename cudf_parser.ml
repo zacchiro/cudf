@@ -53,7 +53,8 @@ let parse_stanza p =
   with Parse_error_822 (msg, loc) -> raise (Syntax_error (msg, loc))
 
 let loc_lookuper locs =
-  (fun p -> try List.assoc p locs with Not_found -> dummy_loc)
+  (fun p -> try List.assoc p locs
+   with Not_found -> prerr_endline "non located property" ; assert false)
 
 let type_check_stanza ?locs stanza types =
   let lookup_loc =
@@ -135,7 +136,7 @@ let parse_item' p =
       | [] -> eprintf "empty stanza\n%!"; assert false
       | (postmark, _) :: _ ->
 	  (try
-	     type_check_stanza stanza (List.assoc postmark p.typedecl)
+	     type_check_stanza ~locs stanza (List.assoc postmark p.typedecl)
 	   with Not_found ->
 	     parse_error (lookup_loc postmark)
 	       (sprintf "Unknown stanza type, starting with \"%s\" postmark."

@@ -71,8 +71,8 @@ let print_sol_info inst sol =
 let pp_loc (start_pos, end_pos) =
   let pp_lpos { Lexing.pos_fname = _fname;
 		pos_lnum = lnum; pos_bol = bol; pos_cnum = cnum } =
-    sprintf "%d:%d" lnum (cnum - bol) in
-  sprintf "%s" (pp_lpos start_pos)
+    sprintf "%d" lnum in
+  sprintf "line: %s" (pp_lpos start_pos)
 
 let main () =
   let load_univ p = 

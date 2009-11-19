@@ -21,7 +21,8 @@ let cudf_test_path name = sprintf "./tests/%s.cudf" name
 
 let good_cudfs = [	(* CUDF whose parsing must suceed *)
 ]
-let bad_cudfs = [	(* CUDF whose parsing must fail *)
+let bad_cudfs = [	(* CUDF whose parsing must fail (@ location) *)
+  "line-111", 111 ;
 ]
 let consistent_univs = [	(* CUDF whose status is expected to be consistent *)
   "assert-true" ;
@@ -100,11 +101,13 @@ let load_univ_test = parse_test ~parse_fun:load_pkgs_wrapper
 let good_parse ~parse_fun name = TestCase (fun _ ->
   assert_no_exn (fun () -> parse_test ~parse_fun name))
 
-let bad_parse ~parse_fun name = TestCase (fun _ ->
+let bad_parse ~parse_fun name lineno = TestCase (fun _ ->
   assert_raises'
     ~cmp:(fun e1 e2 ->
 	    match e1, e2 with
-	      | Cudf_parser.Parse_error _, Cudf_parser.Parse_error _ -> true
+	      | Cudf_parser.Parse_error _,
+		Cudf_parser.Parse_error (_msg, (loc, _)) ->
+		  loc.Lexing.pos_lnum = lineno
 	      | _ -> false)
     ~exn:(Cudf_parser.Parse_error ("", dummy_loc))
     (fun () -> parse_test ~parse_fun name))
@@ -130,7 +133,7 @@ let good_cudf_parse_suite =
 
 let bad_cudf_parse_suite =
   "parsing of bad CUDFs" >::: List.map
-      (fun n -> n >: bad_parse ~parse_fun:parse_cudf_wrapper n)
+      (fun (n, lineno) -> n >: bad_parse ~parse_fun:parse_cudf_wrapper n lineno)
       bad_cudfs
 
 let good_pkgs_parse_suite =
@@ -140,7 +143,7 @@ let good_pkgs_parse_suite =
 
 let bad_pkgs_parse_suite =
   "parsing of bad package universes" >::: List.map
-      (fun n -> n >: bad_parse ~parse_fun:parse_pkgs_wrapper n)
+      (fun (n, lineno) -> n >: bad_parse ~parse_fun:parse_pkgs_wrapper n lineno)
       bad_pkgs
 
 (** {6 Regression tests} *)

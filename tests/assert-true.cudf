@@ -1,0 +1,3 @@
+package: easy
+depends: true!
+installed: true
