@@ -45,7 +45,8 @@ type preamble = {
   req_checksum: string ;
 }
 type cudf_doc = preamble option * package list * request
-type cudf_item = [ `Preamble of preamble | `Package of package | `Request of request ]
+type cudf_item =
+    [ `Preamble of preamble | `Package of package | `Request of request ]
 type universe = {
   id2pkg: ((string * int), package) Hashtbl.t;	(** <name, ver> -> pkg *)
   name2pkgs: (string, package) Hashtbl.t; (** name -> pkg (multi-bindings) *)
@@ -208,5 +209,5 @@ let lookup_request_property req = function
   | "install" -> string_of_vpkglist req.install
   | "remove" -> string_of_vpkglist req.remove
   | "upgrade" -> string_of_vpkglist req.upgrade
-  | _ -> raise Not_found
+  | prop_name -> string_of_value (List.assoc prop_name req.req_extra)
 
