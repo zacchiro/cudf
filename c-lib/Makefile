@@ -2,13 +2,12 @@ include ../Makefile.config
 include Makefile.variants
 
 NULL =
-CFLAGS = -Wall
+CFLAGS = -Wall -DG_LOG_DOMAIN=\"libCUDF\"
 INCLUDES = -I . $(shell pkg-config --cflags glib-2.0)
 OCAML_LIBDIR := $(shell ocamlc -where)
-OCAML_PCRE_LIBDIR := $(shell ocamlfind query pcre)
-CUDF_LDFLAGS = -L$(OCAML_LIBDIR) -L$(OCAML_PCRE_LIBDIR) -L$(CURDIR)
-CUDF_CLIBS = -lcudf -lpcre -lm -ldl -lpcre_stubs -lunix -lncurses -lglib-2.0
-OCAMLC = ocamlfind ocamlc -package unix,extlib,pcre
+CUDF_LDFLAGS = -L$(OCAML_LIBDIR) -L$(CURDIR)
+CUDF_CLIBS = -lcudf -lm -ldl -lunix -lncurses -lglib-2.0
+OCAMLC = ocamlfind ocamlc -package unix,extlib
 
 all: libcudf.a test cudf.pc
 

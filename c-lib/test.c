@@ -73,10 +73,10 @@ void print_vpkgformula(cudf_vpkgformula fmla) {
 
 void print_keep(int keep) {
 	switch (keep) {
-	case KEEP_NONE : break;
-	case KEEP_VERSION : printf("  Keep: version\n"); break;
-	case KEEP_PACKAGE : printf("  Keep: package\n"); break;
-	case KEEP_FEATURE : printf("  Keep: feature\n"); break;
+	case KEEP_NONE : printf("  keep: version\n"); break;
+	case KEEP_VERSION : printf("  keep: version\n"); break;
+	case KEEP_PACKAGE : printf("  keep: package\n"); break;
+	case KEEP_FEATURE : printf("  keep: feature\n"); break;
 	default : g_error("Unexpected \"keep\" value: %d", keep);
 	}
 }
@@ -97,32 +97,35 @@ int main(int argc, char **argv) {
 		exit(2);
 	}
 
-	g_message("Parsing CUDF document and do \"stuff\" on it ...");
+	g_message("Parsing CUDF document %s ...", argv[1]);
 	doc = cudf_parse_from_file(argv[1]);
+	printf("Has preamble: %s\n", doc.has_preamble ? "yes" : "no");
 	printf("Has request: %s\n", doc.has_request ? "yes" : "no");
 	printf("Universe:\n");
 	l = doc.packages;
 	while (l != NULL) {
 		pkg = * (cudf_package *) g_list_nth_data(l, 0);
-		printf("  Package: %s\n", cudf_pkg_name(pkg));
-		printf("  Version: %d\n", cudf_pkg_version(pkg));
-		printf("  Installed: %s\n", cudf_pkg_installed(pkg) ?
+		printf("  package: %s\n", cudf_pkg_name(pkg));
+		printf("  version: %d\n", cudf_pkg_version(pkg));
+		printf("  installed: %s\n", cudf_pkg_installed(pkg) ?
+		       "true" : "false");
+		printf("  was-installed: %s\n", cudf_pkg_was_installed(pkg) ?
 		       "true" : "false");
 
 		fmla = cudf_pkg_depends(pkg);
-		printf("  Depends: ");
+		printf("  depends: ");
 		print_vpkgformula(fmla);
 		printf("\n");
 		cudf_free_vpkgformula(fmla);
 
 		vpkglist = cudf_pkg_conflicts(pkg);		/* Conflicts */
-		printf("  Conflicts: ");
+		printf("  conflicts: ");
 		print_vpkglist(vpkglist, ", ");
 		printf("\n");
 		cudf_free_vpkglist(vpkglist);
 
 		vpkglist = cudf_pkg_provides(pkg);		/* Provides */
-		printf("  Provides: ");
+		printf("  provides: ");
 		print_vpkglist(vpkglist, ", ");
 		printf("\n");
 		cudf_free_vpkglist(vpkglist);

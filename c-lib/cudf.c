@@ -11,6 +11,7 @@
 /*****************************************************************************/
 
 // TODO should check / handle exceptions for all invoked caml_callback-s
+// TODO better management of G_LOG_LEVEL_ERROR (not all should be fatal)
 
 #include <stdio.h>
 #include <string.h>
@@ -55,8 +56,9 @@ static int relop_val(value v) {
 	case MLPVAR_Leq : return RELOP_LEQ ;
 	case MLPVAR_Lt : return RELOP_LT ;
 	default :
-		g_error("Internal error: unexpected variant for \"relop\": %d",
-			Int_val(v));
+		g_error(
+		      "Internal error: unexpected variant for \"relop\": %d",
+		      Int_val(v));
 	}
 }
 
@@ -179,8 +181,9 @@ int cudf_pkg_keep(cudf_package p) {
 	case MLPVAR_Keep_package : return KEEP_PACKAGE;
 	case MLPVAR_Keep_feature : return KEEP_FEATURE;
 	default :
-		g_error("Internal error: unexpected variant for \"keep\": %d",
-			Int_val(keep));
+		g_error(
+		      "Internal error: unexpected variant for \"keep\": %d",
+		      Int_val(keep));
 	}
 }
 
@@ -291,7 +294,8 @@ int cudf_is_solution(cudf cudf, cudf_universe solution) {
 	if (closure_f == NULL)
 		closure_f = caml_named_value("is_solution");
 	if (! cudf.has_request)
-		g_error("Given CUDF has no request: cannot compare it with a solution.");
+		g_log(G_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
+		      "Given CUDF has no request: cannot compare it with a solution.");
 	ml_cudf = caml_alloc(3, 0);
 	Store_field(ml_cudf, CUDF_preamble, cudf.preamble);
 	Store_field(ml_cudf, CUDF_universe, cudf.universe);
