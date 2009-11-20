@@ -3,3 +3,7 @@
 
 <*.ml> or <*.mli> : pkg_extlib, pp(camlp4o)
 <*.byte> or <*.native> : pkg_extlib, pkg_str
+
+
+<c-lib/*>: not_hygienic
+<java-lib/*>: not_hygienic
