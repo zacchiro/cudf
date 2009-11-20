@@ -107,12 +107,12 @@ cudf_doc cudf_parse_from_file(char *fname) {
 	ml_doc = caml_callback(*closure_f, caml_copy_string(fname));
   
 	caml_register_global_root(&doc.preamble);	/* preamble */
-	if (Field(ml_doc, CUDF_preamble) != Val_emptylist) {
+	if (Field(ml_doc, CUDF_preamble) != Val_none) {
 		doc.has_preamble = 1;
-		doc.preamble = Val_emptylist;
+		doc.preamble = Some_val(Field(ml_doc, CUDF_preamble));
 	} else {
 		doc.has_preamble = 0;
-		doc.preamble = Val_emptylist;
+		doc.preamble = Val_none;
 	}
 
 	caml_register_global_root(&doc.request);	/* request */
@@ -147,16 +147,16 @@ cudf cudf_load_from_file(char *fname) {
 	ml_cudf = caml_callback(*closure_f, caml_copy_string(fname));
 
 	caml_register_global_root(&cudf.preamble);	/* preamble */
-	if (Field(ml_cudf, CUDF_preamble) != Val_emptylist) {
+	if (Field(ml_cudf, CUDF_preamble) != Val_none) {
 		cudf.has_preamble = 1;
-		cudf.preamble = Val_emptylist;
+		cudf.preamble = Some_val(Field(ml_cudf, CUDF_preamble));
 	} else {
 		cudf.has_preamble = 0;
-		cudf.preamble = Val_emptylist;
+		cudf.preamble = Val_none;
 	}
 
 	caml_register_global_root(&cudf.request);	/* request */
-	if (Field(ml_cudf, 2) != Val_none) {
+	if (Field(ml_cudf, CUDF_request) != Val_none) {
 		cudf.has_request = 1;
 		cudf.request = Some_val(Field(ml_cudf, CUDF_request));
 	} else {
@@ -173,17 +173,15 @@ cudf cudf_load_from_file(char *fname) {
 int cudf_pkg_keep(cudf_package p) {
 	value keep = Field(p, 6);
 
-	if (keep == Val_none)
-		return KEEP_NONE;
-	else
-		switch (Some_val(keep)) {
-		case MLPVAR_Keep_version : return KEEP_VERSION;
-		case MLPVAR_Keep_package : return KEEP_PACKAGE;
-		case MLPVAR_Keep_feature : return KEEP_FEATURE;
-		default:
-			g_error("Internal error: unexpected variant for \"keep\": %d",
-				Int_val(Some_val(p)));
-		}
+	switch (Int_val(keep)) {
+	case MLPVAR_Keep_none : return KEEP_NONE;
+	case MLPVAR_Keep_version : return KEEP_VERSION;
+	case MLPVAR_Keep_package : return KEEP_PACKAGE;
+	case MLPVAR_Keep_feature : return KEEP_FEATURE;
+	default :
+		g_error("Internal error: unexpected variant for \"keep\": %d",
+			Int_val(keep));
+	}
 }
 
 cudf_vpkgformula cudf_pkg_depends(cudf_package pkg) {
@@ -308,6 +306,8 @@ int cudf_is_solution(cudf cudf, cudf_universe solution) {
 void cudf_free_doc(cudf_doc doc) {
 	GList *l;
 
+	caml_remove_global_root(&doc.preamble);
+	caml_remove_global_root(&doc.request);
 	l = doc.packages;
 	while (l != NULL) {
 		caml_remove_global_root(g_list_nth_data(l, 0));
@@ -317,6 +317,7 @@ void cudf_free_doc(cudf_doc doc) {
 }
 
 void cudf_free_cudf(cudf cudf) {
+	caml_remove_global_root(&cudf.preamble);
 	caml_remove_global_root(&cudf.request);
 	caml_remove_global_root(&cudf.universe);
 }
