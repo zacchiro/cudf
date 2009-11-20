@@ -16,16 +16,20 @@
 int main(int argc, char **argv)
 {
   int i;
+  char *shortname, *variant;
 
-  if (argc < 2) {
-    printf("Usage: hash_variant VARIANT...\n");
+  if (argc == 2) {
+    variant = argv[1];
+    shortname = argv[1];
+  } else if (argc ==3) {
+    variant = argv[1];
+    shortname = argv[2];
+  } else {
+    printf("Usage: hash_variant VARIANT [SHORT_NAME]\n");
     exit(2);
   }
-  
-  for (i = 1; i < argc; i++) {
-    printf("#define\tMLPVAR_%s\t(%d)\t/* caml hash for \"%s\" */\n",
-	   argv[i], caml_hash_variant(argv[i]), argv[i]);
-  }
 
+  printf("#define\tMLPVAR_%s\t(%d)\t/* caml hash for \"%s\" */\n",
+	 shortname, caml_hash_variant(variant), variant);
   return 0;
 }

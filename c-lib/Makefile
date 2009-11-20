@@ -1,4 +1,5 @@
 include ../Makefile.config
+include Makefile.variants
 
 NULL =
 CFLAGS = -Wall
@@ -30,12 +31,6 @@ test.o: test.c
 test: test.o libcudf.a
 	$(CC) $(CFLAGS) -o $@ $(INCLUDES) $(CUDF_LDFLAGS) $< $(CUDF_CLIBS)
 
-caml_hash_variant: caml_hash_variant.o
-	> dummy.ml
-	ocamlc -o dummy.o -output-obj dummy.ml
-	$(CC) $(CFLAGS) -o $@ $< dummy.o -L$(OCAML_LIBDIR) -lcamlrun -lm -lcurses
-	@rm -f dummy.*
-
 cudf.pc: cudf.pc.in
 	cat $< | sed -e "s,@OCAML_LIBDIR@,$(OCAML_LIBDIR),g" \
 			-e "s,@OCAML_PCRE_LIBDIR@,$(OCAML_PCRE_LIBDIR),g" \
@@ -44,8 +39,7 @@ cudf.pc: cudf.pc.in
 
 clean:
 	rm -f *.a *.o *.cmo *.cmi
-	rm -f caml_hash_variant test
-	rm -f dummy.*
+	rm -f test
 	rm -f cudf.pc
 
 .PHONY: all clean

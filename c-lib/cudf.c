@@ -21,19 +21,10 @@
 #include <caml/mlvalues.h>
 
 #include <cudf.h>
+#include <cudf-variants.h>
 
 #define Val_none	Val_int(0)
 #define Some_val(v)	Field(v,0)
-
-#define MLPVAR_version	(-251800451)    /* caml hash for "Keep_version" */
-#define MLPVAR_package	(2054970713)    /* caml hash for "Keep_package" */
-#define MLPVAR_feature	(739503033)     /* caml hash for "Keep_feature" */
-#define	MLPVAR_eq	(31001)		/* caml hash for "Eq" */
-#define	MLPVAR_neq	(7802997)	/* caml hash for "Neq" */
-#define	MLPVAR_geq	(7106791)	/* caml hash for "Geq" */
-#define	MLPVAR_gt	(31899)		/* caml hash for "Gt" */
-#define	MLPVAR_leq	(7604081)	/* caml hash for "Leq" */
-#define	MLPVAR_lt	(34129)		/* caml hash for "Lt" */
 
 #define CUDF_preamble 0
 #define CUDF_universe 1
@@ -57,12 +48,12 @@ static int caml_list_length(value l) {
 
 static int relop_val(value v) {
   switch (v) {
-  case MLPVAR_eq : return RELOP_EQ ;
-  case MLPVAR_neq : return RELOP_NEQ ;
-  case MLPVAR_geq : return RELOP_GEQ ;
-  case MLPVAR_gt : return RELOP_GT ;
-  case MLPVAR_leq : return RELOP_LEQ ;
-  case MLPVAR_lt : return RELOP_LT ;
+  case MLPVAR_Eq : return RELOP_EQ ;
+  case MLPVAR_Neq : return RELOP_NEQ ;
+  case MLPVAR_Geq : return RELOP_GEQ ;
+  case MLPVAR_Gt : return RELOP_GT ;
+  case MLPVAR_Leq : return RELOP_LEQ ;
+  case MLPVAR_Lt : return RELOP_LT ;
   default :
     g_error("Internal error: unexpected variant for \"relop\": %d", Int_val(v));
   }
@@ -185,9 +176,9 @@ int cudf_pkg_keep(cudf_package p) {
     return KEEP_NONE;
   else
     switch (Some_val(keep)) {
-    case MLPVAR_version : return KEEP_VERSION;
-    case MLPVAR_package : return KEEP_PACKAGE;
-    case MLPVAR_feature : return KEEP_FEATURE;
+    case MLPVAR_Keep_version : return KEEP_VERSION;
+    case MLPVAR_Keep_package : return KEEP_PACKAGE;
+    case MLPVAR_Keep_feature : return KEEP_FEATURE;
     default:
       g_error("Internal error: unexpected variant for \"keep\": %d",
 	      Int_val(Some_val(p)));
