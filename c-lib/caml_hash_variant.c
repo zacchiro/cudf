@@ -15,7 +15,6 @@
 
 int main(int argc, char **argv)
 {
-  int i;
   char *shortname, *variant;
 
   if (argc == 2) {
