@@ -11,7 +11,7 @@
 /*****************************************************************************/
 
 // TODO should check / handle exceptions for all invoked caml_callback-s
-// TODO better management of G_LOG_LEVEL_ERROR (not all should be fatal)
+// TODO better management of g_error() (not all should be fatal)
 
 #include <stdio.h>
 #include <string.h>
@@ -320,12 +320,10 @@ int cudf_is_solution(cudf cudf, cudf_universe solution) {
 	if (closure_f == NULL)
 		closure_f = caml_named_value("is_solution");
 	if (! cudf.has_request)
-		g_log(G_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-		      "Given CUDF has no request: cannot compare it with a solution.");
-	ml_cudf = caml_alloc(3, 0);
-	Store_field(ml_cudf, FIELD_PRE, cudf.preamble);
-	Store_field(ml_cudf, FIELD_UNIV, cudf.universe);
-	Store_field(ml_cudf, FIELD_REQ, cudf.request);
+		g_error("Given CUDF has no request: cannot compare it with a solution.");
+	ml_cudf = caml_alloc(2, 0);
+	Store_field(ml_cudf, 0, cudf.universe);
+	Store_field(ml_cudf, 1, cudf.request);
 
 	return Bool_val(Field(caml_callback2(*closure_f, ml_cudf, solution), 0));
 }
