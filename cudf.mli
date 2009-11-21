@@ -172,9 +172,16 @@ val lookup_package_property : package -> string -> string
 (** Same as {!Cudf.lookup_package_property}, but acting on request
     information items.
 
-    To lookup the problem identifier as a string (which strictly
-    speaking is not a property) you should lookup "Problem" *)
+    To lookup the request identifier as a string (which strictly
+    speaking is not a property) you should lookup "request" *)
 val lookup_request_property : request -> string -> string
+
+(** Same as {!Cudf.lookup_package_property}, but acting on preamble
+    information items.
+
+    To lookup the preamble identifier as a string (which strictly
+    speaking is not a property) you should lookup "preamble" *)
+val lookup_preamble_property : preamble -> string -> string
 
 (** Check whether a version matches a version constraint,
     e.g. [version_matches 1 (Some(`Eq, 2)) = false] *)

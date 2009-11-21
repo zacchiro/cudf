@@ -211,3 +211,11 @@ let lookup_request_property req = function
   | "upgrade" -> string_of_vpkglist req.upgrade
   | prop_name -> string_of_value (List.assoc prop_name req.req_extra)
 
+let lookup_preamble_property pre = function
+  | "preamble" -> pre.preamble_id
+  | "property" -> string_of_typedecl pre.property
+  | "univ-checksum" -> pre.univ_checksum
+  | "status-checksum" -> pre.status_checksum
+  | "req-checksum" -> pre.req_checksum
+  | _ -> raise Not_found
+
