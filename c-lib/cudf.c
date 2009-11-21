@@ -27,9 +27,35 @@
 #define Val_none	Val_int(0)
 #define Some_val(v)	Field(v,0)
 
-#define CUDF_preamble 0
-#define CUDF_universe 1
-#define CUDF_request 2
+/* field indexes in the return type of {parse,load}_from file */
+#define FIELD_PRE	0
+#define FIELD_UNIV	1
+#define FIELD_REQ	2
+
+/* field indexes in {!Cudf.package} */
+#define FIELD_PKG	0
+#define FIELD_VERSION	1
+#define FIELD_DEPS	2
+#define FIELD_CONFL	3
+#define FIELD_PROV	4
+#define FIELD_INST	5
+#define FIELD_WASINST	6
+#define FIELD_KEEP	7
+#define FIELD_PKGEXTRA	8
+
+/* field indexes in {!Cudf.request} */
+#define FIELD_REQID	0
+#define FIELD_REQINST	1
+#define FIELD_REQREM	2
+#define FIELD_REQUP	3
+#define FIELD_REQEXTRA	4
+
+/* field indexes in {!Cudf.preamble} */
+#define FIELD_PREID	0
+#define FIELD_TYPEDECL	1
+#define FIELD_UCHECK	2
+#define FIELD_SCHECK	3
+#define FIELD_RCHECK	4
 
 /** generic OCaml binding helpers */
 
@@ -48,7 +74,7 @@ static int caml_list_length(value l) {
 /** CUDF-specific binding helpers */
 
 static int relop_val(value v) {
-	switch (v) {
+	switch (Int_val(v)) {
 	case MLPVAR_Eq : return RELOP_EQ ;
 	case MLPVAR_Neq : return RELOP_NEQ ;
 	case MLPVAR_Geq : return RELOP_GEQ ;
@@ -109,24 +135,24 @@ cudf_doc cudf_parse_from_file(char *fname) {
 	ml_doc = caml_callback(*closure_f, caml_copy_string(fname));
   
 	caml_register_global_root(&doc.preamble);	/* preamble */
-	if (Field(ml_doc, CUDF_preamble) != Val_none) {
+	if (Field(ml_doc, FIELD_PRE) != Val_none) {
 		doc.has_preamble = 1;
-		doc.preamble = Some_val(Field(ml_doc, CUDF_preamble));
+		doc.preamble = Some_val(Field(ml_doc, FIELD_PRE));
 	} else {
 		doc.has_preamble = 0;
 		doc.preamble = Val_none;
 	}
 
 	caml_register_global_root(&doc.request);	/* request */
-	if (Field(ml_doc, CUDF_request) != Val_none) {
+	if (Field(ml_doc, FIELD_REQ) != Val_none) {
 		doc.has_request = 1;
-		doc.request = Some_val(Field(ml_doc, CUDF_request));
+		doc.request = Some_val(Field(ml_doc, FIELD_REQ));
 	} else {
 		doc.has_request = 0;
 		doc.request = Val_none;
 	}
 
-	ml_pkgs = Field(ml_doc, CUDF_universe);		/* packages */
+	ml_pkgs = Field(ml_doc, FIELD_UNIV);		/* packages */
 	while (ml_pkgs != Val_emptylist) {
 		pkg = malloc(sizeof(value));
 		caml_register_global_root(pkg);
@@ -149,31 +175,31 @@ cudf cudf_load_from_file(char *fname) {
 	ml_cudf = caml_callback(*closure_f, caml_copy_string(fname));
 
 	caml_register_global_root(&cudf.preamble);	/* preamble */
-	if (Field(ml_cudf, CUDF_preamble) != Val_none) {
+	if (Field(ml_cudf, FIELD_PRE) != Val_none) {
 		cudf.has_preamble = 1;
-		cudf.preamble = Some_val(Field(ml_cudf, CUDF_preamble));
+		cudf.preamble = Some_val(Field(ml_cudf, FIELD_PRE));
 	} else {
 		cudf.has_preamble = 0;
 		cudf.preamble = Val_none;
 	}
 
 	caml_register_global_root(&cudf.request);	/* request */
-	if (Field(ml_cudf, CUDF_request) != Val_none) {
+	if (Field(ml_cudf, FIELD_REQ) != Val_none) {
 		cudf.has_request = 1;
-		cudf.request = Some_val(Field(ml_cudf, CUDF_request));
+		cudf.request = Some_val(Field(ml_cudf, FIELD_REQ));
 	} else {
 		cudf.has_request = 0;
 		cudf.request = Val_none;
 	}
 
 	caml_register_global_root(&cudf.universe);	/* universe */
-	cudf.universe = Field(ml_cudf, CUDF_universe);
+	cudf.universe = Field(ml_cudf, FIELD_UNIV);
 
 	return cudf;
 }
 
 int cudf_pkg_keep(cudf_package p) {
-	value keep = Field(p, 6);
+	value keep = Field(p, FIELD_KEEP);
 
 	switch (Int_val(keep)) {
 	case MLPVAR_Keep_none : return KEEP_NONE;
@@ -194,7 +220,7 @@ cudf_vpkgformula cudf_pkg_depends(cudf_package pkg) {
 	value ml_or;	/* iterates over vpkg-s (which are OR-ed together) */
 	cudf_vpkg *vpkg;
 
-	ml_and = Field(pkg, 2);	/* 3rd field of "package": "depends" */
+	ml_and = Field(pkg, FIELD_DEPS);
 	while (ml_and != Val_emptylist) {
 		ml_or = Field(ml_and, 0);
 		or_l = NULL;
@@ -297,9 +323,9 @@ int cudf_is_solution(cudf cudf, cudf_universe solution) {
 		g_log(G_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
 		      "Given CUDF has no request: cannot compare it with a solution.");
 	ml_cudf = caml_alloc(3, 0);
-	Store_field(ml_cudf, CUDF_preamble, cudf.preamble);
-	Store_field(ml_cudf, CUDF_universe, cudf.universe);
-	Store_field(ml_cudf, CUDF_request, cudf.request);
+	Store_field(ml_cudf, FIELD_PRE, cudf.preamble);
+	Store_field(ml_cudf, FIELD_UNIV, cudf.universe);
+	Store_field(ml_cudf, FIELD_REQ, cudf.request);
 
 	return Bool_val(Field(caml_callback2(*closure_f, ml_cudf, solution), 0));
 }

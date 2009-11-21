@@ -29,6 +29,6 @@ int main(int argc, char **argv)
 	}
 
 	printf("#define\tMLPVAR_%s\t(%d)\t/* caml hash for \"`%s\" */\n",
-	       shortname, caml_hash_variant(variant), variant);
+	       shortname, Int_val(caml_hash_variant(variant)), variant);
 	return 0;
 }
