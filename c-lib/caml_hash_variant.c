@@ -15,20 +15,20 @@
 
 int main(int argc, char **argv)
 {
-  char *shortname, *variant;
+	char *shortname, *variant;
 
-  if (argc == 2) {
-    variant = argv[1];
-    shortname = argv[1];
-  } else if (argc ==3) {
-    variant = argv[1];
-    shortname = argv[2];
-  } else {
-    printf("Usage: hash_variant VARIANT [SHORT_NAME]\n");
-    exit(2);
-  }
+	if (argc == 2) {
+		variant = argv[1];
+		shortname = argv[1];
+	} else if (argc == 3) {
+		variant = argv[1];
+		shortname = argv[2];
+	} else {
+		printf("Usage: hash_variant VARIANT [SHORT_NAME]\n");
+		exit(2);
+	}
 
-  printf("#define\tMLPVAR_%s\t(%d)\t/* caml hash for \"%s\" */\n",
-	 shortname, caml_hash_variant(variant), variant);
-  return 0;
+	printf("#define\tMLPVAR_%s\t(%d)\t/* caml hash for \"`%s\" */\n",
+	       shortname, caml_hash_variant(variant), variant);
+	return 0;
 }
