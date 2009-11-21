@@ -8,7 +8,7 @@ DESTDIR := $(CURDIR)/debian/tmp
 DOCDIR = $(CURDIR)/debian/doc/html
 OCAML_OCAMLDOC_PACKAGES = $(OCAML_LIBDEV_PACKAGES)
 
-OBFLAGS = -classic-display
+OBFLAGS = -classic-display -no-hygiene
 DEB_MAKE_BUILD_TARGET = all
 ifeq ($(OCAML_HAVE_OCAMLOPT),yes)
 DEB_MAKE_BUILD_TARGET += opt

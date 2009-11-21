@@ -5,6 +5,7 @@ cudf (0.5.92-1) UNRELEASED; urgency=low
   * debian/control:
     - bump Standards-Version to 3.8.3 (no changes needed)
     - drop deps on libpcre-ocaml{,-dev} (no longer needed)
+  * Enable generation of ocamldoc HTML API reference
 
  -- Stefano Zacchiroli <zack@debian.org>  Sat, 21 Nov 2009 18:59:34 +0100
 
