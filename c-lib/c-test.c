@@ -12,7 +12,7 @@
 
 /* Compile with:
 
-   cc -o test test.c `pkg-config --cflags cudf` `pkg-config --cflags cudf`
+   cc -o c-test c-test.c `pkg-config --cflags cudf` `pkg-config --libs cudf`
 */
 
 #include <stdio.h>
