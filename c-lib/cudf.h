@@ -55,6 +55,9 @@ typedef struct cudf_vpkg {
 
 typedef GList *cudf_vpkglist;		/* List of cudf_vpkg */
 
+/* Hash table mapping property names (string) to typed values (cudf_value). */
+typedef GHashTable *cudf_extra;
+
 /* List of cudf_vpkg lists.
    CNF encoding: the inner lists are OR-ed, while the outer are AND-ed */
 typedef GList *cudf_vpkgformula;
@@ -92,9 +95,9 @@ typedef struct cudf_value {
 	union {
 		int i;
 		char *s;
-		cudf_vpkg pkg;
+		cudf_vpkg *vpkg;
 		cudf_vpkgformula f;
-		cudf_vpkglist pkgs;
+		cudf_vpkglist vpkgs;
 		/* cudf_typedecl types;	/\* currently not supported *\/ */
 	} val;	/* CUDF value
 		   depending on typ above, one of the above union field is set:
@@ -108,11 +111,11 @@ typedef struct cudf_value {
 		     TYPE_ENUM        | char *s
 		     TYPE_PKGNAME     | char *s
 		     TYPE_IDENT       | char *s
-		     TYPE_VPKG        | cudf_vpkg pkg
-		     TYPE_VPKGFORMULA | cudf_vpkgformula f
+		     TYPE_VPKG        | cudf_vpkg *pkg
+		     TYPE_VEQPKG      | cudf_vpkg *pkg
 		     TYPE_VPKGLIST    | cudf_vpkglist pkgs
-		     TYPE_VEQPKG      | cudf_vpkg pkg
-		     TYPE_VEQPKGLIST  | cudf_vpkg pkgs
+		     TYPE_VEQPKGLIST  | cudf_vpkglist pkgs
+		     TYPE_VPKGFORMULA | cudf_vpkgformula f
 		     TYPE_TYPEDECL    | cudf_typedecl types
 		*/
 } cudf_value;
@@ -151,18 +154,20 @@ cudf_vpkglist cudf_pkg_conflicts(cudf_package pkg);
 cudf_vpkglist cudf_pkg_provides(cudf_package pkg);
 
 
-/* Get extra properties of a package.
-   Return a hashtable mapping property names (string) to typed values
-   (cudf_value) */
-GHashTable *cudf_pkg_extra(cudf_package pkg);		/* Extra properties */
+/* Get extra properties of a package. */
+cudf_extra cudf_pkg_extra(cudf_package pkg);
 
 /* Lookup package property by name. Returned string should be manually freed.
-   Return NULL if the property is missing (and had no default value). */
+   Return NULL if the property is missing (and has no default value). */
 char *cudf_pkg_property(cudf_package pkg, const char *prop);
 
 /* Lookup request property by name. Returned string should be manually freed.
-   Return NULL if the property is missing (and had no default value). */
+   Return NULL if the property is missing (and has no default value). */
 char *cudf_req_property(cudf_request req, const char *prop);
+
+/* Lookup preamble property by name. Returned string should be manually freed.
+   Return NULL if the property is missing (and has no default value). */
+char *cudf_pre_property(cudf_request req, const char *prop);
 
 
 /* Universe management */
@@ -184,8 +189,11 @@ int cudf_is_solution(cudf cudf, cudf_universe solution);
 void cudf_free_doc(cudf_doc doc);
 void cudf_free_cudf(cudf cudf);
 void cudf_free_universe(cudf_universe *univ);
+void cudf_free_vpkg(cudf_vpkg *vpkg);
 void cudf_free_vpkglist(cudf_vpkglist l);
 void cudf_free_vpkgformula(cudf_vpkgformula fmla);
+void cudf_free_value(cudf_value *val);
+void cudf_free_extra(cudf_extra extra);
 
 
 #endif	/* end of cudf.h */

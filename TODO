@@ -1,9 +1,8 @@
 #    -*- mode: org -*-
 
-* TODO update/verify C bindings [33%]
+* TODO update/verify C bindings [100%]
 ** DONE port old bindings to new types (fix all segfaults)
-** TODO provide access to typed values
-** TODO bind extra properties on packages and request
+** DONE provide access to typed values
 * TODO add detection of multiple parse errors at once
 * TODO provide Java bindings (via O'Jacare)
 * TODO add support for computing checksums

@@ -12,6 +12,8 @@
 
 // TODO should check / handle exceptions for all invoked caml_callback-s
 // TODO better management of g_error() (not all should be fatal)
+// TODO property-by-property access for request (as per packages)
+// TODO property-by-property access for preamble (as per packages)
 
 #include <stdio.h>
 #include <string.h>
@@ -82,13 +84,12 @@ static int relop_val(value v) {
 	case MLPVAR_Leq : return RELOP_LEQ ;
 	case MLPVAR_Lt : return RELOP_LT ;
 	default :
-		g_error(
-		      "Internal error: unexpected variant for \"relop\": %d",
-		      Int_val(v));
+		g_error("Internal error: unexpected variant for \"relop\": %d",
+			Int_val(v));
 	}
 }
 
-cudf_vpkg *vpkg_val(value ml_vpkg) {
+cudf_vpkg *cudf_vpkg_val(value ml_vpkg) {
 	cudf_vpkg *vpkg;
 	value ml_constr;
 
@@ -106,19 +107,62 @@ cudf_vpkg *vpkg_val(value ml_vpkg) {
 	return vpkg;
 }
 
-cudf_vpkglist cudf_pkg_vpkglist(cudf_package pkg, int field) {
+cudf_vpkglist cudf_vpkglist_val(value ml_vpkgs) {
 	GList *l = NULL;
-	value ml_vpkg, ml_vpkgs;
+	value ml_vpkg;
 	cudf_vpkg *vpkg;
 	
-	ml_vpkgs = Field(pkg, field);
 	while (ml_vpkgs != Val_emptylist) {
 		ml_vpkg = Field(ml_vpkgs, 0);
-		vpkg = vpkg_val(ml_vpkg);
+		vpkg = cudf_vpkg_val(ml_vpkg);
 		l = g_list_append(l, vpkg);
 		ml_vpkgs = Field(ml_vpkgs, 1);
 	}
 	return l;
+}
+
+cudf_value *cudf_value_val(value ml_v) {
+	cudf_value *v;
+	int typ;
+
+	v = malloc(sizeof(cudf_value));
+	typ = Int_val(Field(ml_v, 0));
+
+	v->typ = typ;
+	switch (typ) {
+	case MLPVAR_Int :
+	case MLPVAR_Posint :
+	case MLPVAR_Nat :
+		v->val.i = Int_val(Field(ml_v, 1));
+		break;
+	case MLPVAR_Bool :
+		v->val.i = Bool_val(Field(ml_v, 1));
+		break;
+	case MLPVAR_String :
+	case MLPVAR_Pkgname :
+	case MLPVAR_Ident :
+		v->val.s = strdup(String_val(Field(ml_v, 1)));
+		break;
+	case MLPVAR_Enum :
+		/* Skip enum list and jump to the actual enum.  Enum list is
+		 * currently not accessible using C bindings. */
+		v->val.s = strdup(String_val(Field(Field(ml_v, 1), 1)));
+		break;
+	case MLPVAR_Vpkg :
+	case MLPVAR_Veqpkg :
+		v->val.vpkg = cudf_vpkg_val(Field(ml_v, 1));
+		break;
+	case MLPVAR_Vpkglist :
+	case MLPVAR_Veqpkglist :
+		v->val.vpkgs = cudf_vpkglist_val(Field(ml_v, 1));
+		break;
+	case MLPVAR_Typedecl :
+		break;
+	default :
+		g_error("Internal error: unexpected variant for type: %d", typ);
+	}
+
+	return v;
 }
 
 /** libCUDF binding public interface */
@@ -207,9 +251,8 @@ int cudf_pkg_keep(cudf_package p) {
 	case MLPVAR_Keep_package : return KEEP_PACKAGE;
 	case MLPVAR_Keep_feature : return KEEP_FEATURE;
 	default :
-		g_error(
-		      "Internal error: unexpected variant for \"keep\": %d",
-		      Int_val(keep));
+		g_error("Internal error: unexpected variant for \"keep\": %d",
+			Int_val(keep));
 	}
 }
 
@@ -225,7 +268,7 @@ cudf_vpkgformula cudf_pkg_depends(cudf_package pkg) {
 		ml_or = Field(ml_and, 0);
 		or_l = NULL;
 		while (ml_or != Val_emptylist) {
-			vpkg = vpkg_val(Field(ml_or, 0));
+			vpkg = cudf_vpkg_val(Field(ml_or, 0));
 			or_l = g_list_append(or_l, vpkg);
 			ml_or = Field(ml_or, 1);
 		}
@@ -237,11 +280,11 @@ cudf_vpkgformula cudf_pkg_depends(cudf_package pkg) {
 }
 
 cudf_vpkglist cudf_pkg_conflicts(cudf_package pkg) {
-	return cudf_pkg_vpkglist(pkg, 3);	/* 4th pkg field: conflicts */
+	return cudf_vpkglist_val(Field(pkg, FIELD_CONFL));
 }
 
 cudf_vpkglist cudf_pkg_provides(cudf_package pkg) {
-	return cudf_pkg_vpkglist(pkg, 4);	/* 5th pkg field: conflicts */
+	return cudf_vpkglist_val(Field(pkg, FIELD_PROV));
 }
 
 char *cudf_pkg_property(cudf_package pkg, const char *prop) {
@@ -264,6 +307,23 @@ char *cudf_req_property(cudf_request req, const char *prop) {
 	prop_val = caml_callback2_exn(*closure_f, req, caml_copy_string(prop));
 	return Is_exception_result(prop_val) ? NULL :
 		strdup(String_val(prop_val));
+}
+
+cudf_extra cudf_pkg_extra(cudf_package pkg) {
+	GHashTable *h = NULL;
+	value ml_extras, ml_prop;
+
+	g_hash_table_new_full(g_str_hash, g_str_equal,
+			      g_free, (GDestroyNotify) cudf_free_value);
+
+	ml_extras = Field(pkg, FIELD_PKGEXTRA);
+	while (ml_extras != Val_emptylist) {
+		ml_prop = Field(ml_extras, 0);
+		g_hash_table_insert(h, strdup(String_val(Field(ml_prop, 0))),
+				    cudf_value_val(Field(ml_prop, 1)));
+		ml_extras = Field(ml_extras, 1);
+	}
+	return h;
 }
 
 
@@ -354,6 +414,14 @@ void cudf_free_universe(cudf_universe *univ) {
 	caml_remove_global_root(univ);
 }
 
+void cudf_free_vpkg(cudf_vpkg *vpkg) {
+	if (vpkg != NULL) {
+		if (vpkg->name != NULL)
+			free(vpkg->name);
+		free(vpkg);
+	}
+}
+
 void cudf_free_vpkglist(cudf_vpkglist l) {
 	cudf_vpkg *vpkg;
 
@@ -374,5 +442,45 @@ void cudf_free_vpkgformula(cudf_vpkgformula fmla) {
 		l = g_list_next(l);
 	}
 	g_list_free(fmla);
+}
+
+void cudf_free_value(cudf_value *v) {
+	int typ;
+
+	if (v == NULL)
+		return;
+
+	typ = v->typ;
+	switch (typ) {
+	case MLPVAR_Int :
+	case MLPVAR_Posint :
+	case MLPVAR_Nat :
+	case MLPVAR_Bool :
+		break;	/* integers don't require any freeing */
+	case MLPVAR_String :
+	case MLPVAR_Pkgname :
+	case MLPVAR_Ident :
+	case MLPVAR_Enum :
+		free(v->val.s);
+		break;
+	case MLPVAR_Vpkg :
+	case MLPVAR_Veqpkg :
+		cudf_free_vpkg(v->val.vpkg);
+		break;
+	case MLPVAR_Vpkglist :
+	case MLPVAR_Veqpkglist :
+		cudf_free_vpkglist(v->val.vpkgs);
+		break;
+	case MLPVAR_Typedecl :
+		break;
+	default :
+		g_error("Internal error: unexpected variant for type: %d", typ);
+	}
+
+	free(v);
+}
+
+void cudf_free_extra(cudf_extra extra) {
+	g_hash_table_destroy(extra);
 }
 
