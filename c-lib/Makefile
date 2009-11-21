@@ -1,4 +1,5 @@
 include ../Makefile.config
+all: libcudf.a test cudf.pc
 include Makefile.variants
 
 NULL =
@@ -8,8 +9,6 @@ OCAML_LIBDIR := $(shell ocamlc -where)
 CUDF_LDFLAGS = -L$(OCAML_LIBDIR) -L$(CURDIR)
 CUDF_CLIBS = -lcudf -lm -ldl -lunix -lncurses -lglib-2.0
 OCAMLC = ocamlfind ocamlc -package unix,extlib
-
-all: libcudf.a test cudf.pc
 
 libcudf.a: cudf-caml.o cudf.o
 	cp $(OCAML_LIBDIR)/libcamlrun.a $@
