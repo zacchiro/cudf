@@ -1,4 +1,4 @@
-cudf (0.5.92-1) UNRELEASED; urgency=low
+cudf (0.5.92-1) unstable; urgency=low
 
   * New upstream release
   * Port packaging to recent dh-ocaml (w/ ABI-based dependencies)
@@ -7,7 +7,7 @@ cudf (0.5.92-1) UNRELEASED; urgency=low
     - drop deps on libpcre-ocaml{,-dev} (no longer needed)
   * Enable generation of ocamldoc HTML API reference
 
- -- Stefano Zacchiroli <zack@debian.org>  Sat, 21 Nov 2009 18:59:34 +0100
+ -- Stefano Zacchiroli <zack@debian.org>  Sat, 21 Nov 2009 19:38:54 +0100
 
 cudf (0.4-1) unstable; urgency=low
 
