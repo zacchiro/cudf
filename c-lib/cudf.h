@@ -16,6 +16,8 @@
 #include <glib.h>
 #include <caml/mlvalues.h>
 
+#include <cudf-variants.h>
+
 typedef value cudf_package;
 typedef value cudf_universe;
 typedef value cudf_request;

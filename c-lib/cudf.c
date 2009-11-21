@@ -24,7 +24,6 @@
 #include <caml/mlvalues.h>
 
 #include <cudf.h>
-#include <cudf-variants.h>
 
 #define Val_none	Val_int(0)
 #define Some_val(v)	Field(v,0)
@@ -324,8 +323,8 @@ cudf_extra cudf_pkg_extra(cudf_package pkg) {
 	GHashTable *h = NULL;
 	value ml_extras, ml_prop;
 
-	g_hash_table_new_full(g_str_hash, g_str_equal,
-			      g_free, (GDestroyNotify) cudf_free_value);
+	h = g_hash_table_new_full(g_str_hash, g_str_equal,
+				  g_free, (GDestroyNotify) cudf_free_value);
 
 	ml_extras = Field(pkg, FIELD_PKGEXTRA);
 	while (ml_extras != Val_emptylist) {

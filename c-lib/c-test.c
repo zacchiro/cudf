@@ -21,7 +21,7 @@
 
 #include <cudf.h>
 
-/** Print to stdout a relational operator (on versions) */
+/* Print to stdout a relational operator (on versions) */
 void print_relop(int relop) {
 	switch (relop) {
 	case RELOP_EQ : printf("=") ; break ;
@@ -37,8 +37,21 @@ void print_relop(int relop) {
 	}
 }
 
-/** Print to stdout a list of package predicates, separated by a given
-    separator */
+/* Print to stdout a package version predicate */
+void print_vpkg(cudf_vpkg *vpkg) {
+	if (vpkg == NULL)
+		return;
+
+	printf("%s", vpkg->name);
+	if (vpkg->relop) {
+		printf(" ");
+		print_relop(vpkg->relop);
+		printf(" %d", vpkg->version);
+	}
+}
+
+/* Print to stdout a list of package predicates, separated by a given
+   separator */
 void print_vpkglist(cudf_vpkglist l, const char *sep) {
 	cudf_vpkg *vpkg;
 	GList *last;
@@ -46,19 +59,14 @@ void print_vpkglist(cudf_vpkglist l, const char *sep) {
 	last = g_list_last(l);
 	while (l != NULL) {
 		vpkg = g_list_nth_data(l, 0);
-		printf("%s", vpkg->name);
-		if (vpkg->relop) {
-			printf(" ");
-			print_relop(vpkg->relop);
-			printf(" %d", vpkg->version);
-		}
+		print_vpkg(vpkg);
 		if (l != last)
 			printf(sep);
 		l = g_list_next(l);
 	}
 }
 
-/** Print to stdout a package formula */
+/* Print to stdout a package formula */
 void print_vpkgformula(cudf_vpkgformula fmla) {
 	GList *last;
 
@@ -71,6 +79,7 @@ void print_vpkgformula(cudf_vpkgformula fmla) {
 	}
 }
 
+/* Print to stdout a CUDF preamble */
 void print_preamble(cudf_preamble pre) {
 	printf("  %s: %s\n", "preamble", cudf_pre_property(pre, "preamble"));
 	printf("  %s: %s\n", "property", cudf_pre_property(pre, "property"));
@@ -82,6 +91,7 @@ void print_preamble(cudf_preamble pre) {
 	       cudf_pre_property(pre, "req-checksum"));
 }
 
+/* Print to stdout a CUDF request */
 void print_request(cudf_request req) {
 	printf("  %s: %s\n", "request", cudf_req_property(req, "request"));
 	printf("  %s: %s\n", "install", cudf_req_property(req, "install"));
@@ -89,6 +99,7 @@ void print_request(cudf_request req) {
 	printf("  %s: %s\n", "upgrade", cudf_req_property(req, "upgrade"));
 }
 
+/* Print to stdout a possible value of the "keep" package property */
 void print_keep(int keep) {
 	switch (keep) {
 	case KEEP_NONE : printf("  keep: version\n"); break;
@@ -99,13 +110,91 @@ void print_keep(int keep) {
 	}
 }
 
+void print_value(cudf_value *v) {
+	int typ;
+
+	if (v == NULL)
+		return;
+
+	typ = v->typ;
+	switch (typ) {
+	case MLPVAR_Int :
+	case MLPVAR_Posint :
+	case MLPVAR_Nat :
+	case MLPVAR_Bool :
+		printf("%d", v->val.i);
+		break;
+	case MLPVAR_String :
+	case MLPVAR_Pkgname :
+	case MLPVAR_Ident :
+	case MLPVAR_Enum :
+		printf("%s", v->val.s);
+		break;
+	case MLPVAR_Vpkg :
+	case MLPVAR_Veqpkg :
+		print_vpkg(v->val.vpkg);
+		break;
+	case MLPVAR_Vpkglist :
+	case MLPVAR_Veqpkglist :
+		print_vpkglist(v->val.vpkgs, ", ");
+		break;
+	case MLPVAR_Typedecl :
+		break;
+	default :
+		g_error("Internal error: unexpected variant for type: %d", typ);
+	}
+}
+
+/* Print to stdout a generic property, i.e. a pair <name, typed value> */
+void print_property(gpointer k, gpointer v, gpointer user_data) {
+	printf("  %s: ", (char *) k);
+	print_value(v);
+	printf("\n");
+}
+
+/* Print to stdout a set of extra properties */
+#define print_extra(e)	(g_hash_table_foreach(e, print_property, NULL))
+
+/* Print to stdout a CUDF package */
+void print_pkg(cudf_package pkg) {
+	cudf_vpkgformula fmla;
+	cudf_vpkglist vpkglist;
+
+	printf("  package: %s\n", cudf_pkg_name(pkg));
+	printf("  version: %d\n", cudf_pkg_version(pkg));
+	printf("  installed: %s\n",
+	       cudf_pkg_installed(pkg) ? "true" : "false");
+	printf("  was-installed: %s\n",
+	       cudf_pkg_was_installed(pkg) ? "true" : "false");
+
+	fmla = cudf_pkg_depends(pkg);
+	printf("  depends: ");
+	print_vpkgformula(fmla);
+	printf("\n");
+	cudf_free_vpkgformula(fmla);
+
+	vpkglist = cudf_pkg_conflicts(pkg);	/* conflicts */
+	printf("  conflicts: ");
+	print_vpkglist(vpkglist, ", ");
+	printf("\n");
+	cudf_free_vpkglist(vpkglist);
+
+	vpkglist = cudf_pkg_provides(pkg);	/* provides */
+	printf("  provides: ");
+	print_vpkglist(vpkglist, ", ");
+	printf("\n");
+	cudf_free_vpkglist(vpkglist);
+
+	print_keep(cudf_pkg_keep(pkg));		/* keep */
+
+	print_extra(cudf_pkg_extra(pkg));	/* extra properties */
+	printf("\n");
+}
 
 int main(int argc, char **argv) {
 	cudf_doc doc;
 	cudf cudf, sol;
 	cudf_package pkg;
-	cudf_vpkglist vpkglist;
-	cudf_vpkgformula fmla;
 	cudf_universe univ;
 	GList *l;
 
@@ -133,34 +222,7 @@ int main(int argc, char **argv) {
 	l = doc.packages;
 	while (l != NULL) {
 		pkg = * (cudf_package *) g_list_nth_data(l, 0);
-		printf("  package: %s\n", cudf_pkg_name(pkg));
-		printf("  version: %d\n", cudf_pkg_version(pkg));
-		printf("  installed: %s\n", cudf_pkg_installed(pkg) ?
-		       "true" : "false");
-		printf("  was-installed: %s\n", cudf_pkg_was_installed(pkg) ?
-		       "true" : "false");
-
-		fmla = cudf_pkg_depends(pkg);
-		printf("  depends: ");
-		print_vpkgformula(fmla);
-		printf("\n");
-		cudf_free_vpkgformula(fmla);
-
-		vpkglist = cudf_pkg_conflicts(pkg);		/* Conflicts */
-		printf("  conflicts: ");
-		print_vpkglist(vpkglist, ", ");
-		printf("\n");
-		cudf_free_vpkglist(vpkglist);
-
-		vpkglist = cudf_pkg_provides(pkg);		/* Provides */
-		printf("  provides: ");
-		print_vpkglist(vpkglist, ", ");
-		printf("\n");
-		cudf_free_vpkglist(vpkglist);
-
-		print_keep(cudf_pkg_keep(pkg));			/* Keep */
-		printf("\n");
-
+		print_pkg(pkg);
 		l = g_list_next(l);
 	}
 	g_message("Try packages -> universe conversion ...");

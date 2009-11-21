@@ -1,8 +1,5 @@
 #    -*- mode: org -*-
 
-* TODO update/verify C bindings [100%]
-** DONE port old bindings to new types (fix all segfaults)
-** DONE provide access to typed values
 * TODO add detection of multiple parse errors at once
 * TODO provide Java bindings (via O'Jacare)
 * TODO add support for computing checksums
@@ -13,6 +10,9 @@
 ** TODO port to recent dh-ocaml
 ** TODO general packaging update
 ** TODO upload to mancoosi.debian.net and Debian itself
+* DONE update/verify C bindings [100%]
+** DONE port old bindings to new types (fix all segfaults)
+** DONE provide access to typed values
 * DONE add line position to stanzas
 * DONE add Lexing.new_line for backward compatibility w/ OCaml 3.10.x
 ** then update INSTALL downgrading OCaml dep

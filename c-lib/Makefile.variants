@@ -52,9 +52,15 @@ cudf-variants.h: caml_hash_variant Makefile.variants
 	@echo "/* THIS FILE IS GENERATED, DO NOT EDIT */" > $@
 	@echo "/* See Makefile.variants for generation logics */" >> $@
 	@echo >> $@
+	@echo "#ifndef _CUDF_VARIANTS_H" >> $@
+	@echo "#define _CUDF_VARIANTS_H" >> $@
+	@echo >> $@
 	@(for variant in $(ML_VARIANTS) ; do \
 		./$< $$variant ; \
 	done) >> $@
+	@echo >> $@
+	@echo "#endif\t/* end of cudf-variants.h */" >> $@
+	@echo >> $@
 
 caml_hash_variant: caml_hash_variant.o
 	> dummy.ml
@@ -64,7 +70,7 @@ caml_hash_variant: caml_hash_variant.o
 
 clean: clean-variants
 clean-variants:
-	rm -f caml_hash_variant
+	rm -f caml_hash_variant cudf-variants.h
 	rm -f dummy.*
 
 .PHONY: clean-variants
