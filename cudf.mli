@@ -31,7 +31,7 @@ type package = {
   provides : veqpkglist ;			(* default : [] *)
   installed : bool ;				(* default : false *)
   was_installed : bool ;			(* default : false *)
-  keep :  enum_keep ;				(* default : Keep_none *)
+  keep :  enum_keep ;				(* default : `Keep_none *)
   pkg_extra : (string * typed_value) list ;	(* extra properties *)
 }
 
