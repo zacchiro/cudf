@@ -4,6 +4,7 @@ include Makefile.variants
 
 NULL =
 CFLAGS = -Wall -DG_LOG_DOMAIN=\"libCUDF\"
+PROG_CFLAGS = -Wall
 INCLUDES = -I . $(shell pkg-config --cflags glib-2.0)
 OCAML_LIBDIR := $(shell ocamlc -where)
 CUDF_LDFLAGS = -L$(OCAML_LIBDIR) -L$(CURDIR)
@@ -24,10 +25,10 @@ cudf.o: cudf.c cudf.h
 	$(CC) $(CFLAGS) $(INCLUDES) -c $<
 
 c-test.o: c-test.c
-	$(CC) $(CFLAGS) $(INCLUDES) -c $<
+	$(CC) $(PROG_CFLAGS) $(INCLUDES) -c $<
 
 c-test: c-test.o libcudf.a
-	$(CC) $(CFLAGS) -o $@ $(INCLUDES) $(CUDF_LDFLAGS) $< $(CUDF_CLIBS)
+	$(CC) $(PROG_CFLAGS) -o $@ $(INCLUDES) $(CUDF_LDFLAGS) $< $(CUDF_CLIBS)
 
 test: ../tests/legacy.cudf ../tests/legacy-sol.cudf c-test
 	./c-test ../tests/legacy.cudf ../tests/legacy-sol.cudf > /dev/null
