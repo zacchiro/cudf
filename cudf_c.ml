@@ -17,6 +17,7 @@ let () =
     (Cudf_parser.load_from_file ?typedecl:None);
   Callback.register "lookup_package_property" Cudf.lookup_package_property;
   Callback.register "lookup_request_property" Cudf.lookup_request_property;
+  Callback.register "lookup_preamble_property" Cudf.lookup_preamble_property;
   Callback.register "universe_size" Cudf.universe_size;
   Callback.register "installed_size" Cudf.installed_size;
   Callback.register "is_consistent" Cudf_checker.is_consistent;

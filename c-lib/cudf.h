@@ -167,7 +167,7 @@ char *cudf_req_property(cudf_request req, const char *prop);
 
 /* Lookup preamble property by name. Returned string should be manually freed.
    Return NULL if the property is missing (and has no default value). */
-char *cudf_pre_property(cudf_request req, const char *prop);
+char *cudf_pre_property(cudf_preamble pre, const char *prop);
 
 
 /* Universe management */

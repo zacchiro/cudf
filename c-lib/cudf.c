@@ -309,6 +309,17 @@ char *cudf_req_property(cudf_request req, const char *prop) {
 		strdup(String_val(prop_val));
 }
 
+char *cudf_pre_property(cudf_preamble pre, const char *prop) {
+	static value *closure_f = NULL;
+	value prop_val;
+  
+	if (closure_f == NULL)
+		closure_f = caml_named_value("lookup_preamble_property");
+	prop_val = caml_callback2_exn(*closure_f, pre, caml_copy_string(prop));
+	return Is_exception_result(prop_val) ? NULL :
+		strdup(String_val(prop_val));
+}
+
 cudf_extra cudf_pkg_extra(cudf_package pkg) {
 	GHashTable *h = NULL;
 	value ml_extras, ml_prop;
