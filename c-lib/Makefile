@@ -1,5 +1,5 @@
 include ../Makefile.config
-all: libcudf.a test cudf.pc
+all: libcudf.a c-test cudf.pc
 include Makefile.variants
 
 NULL =
@@ -23,11 +23,14 @@ cudf-caml.o: ../_build/cudf.cma ../_build/cudf_c.cmo
 cudf.o: cudf.c cudf.h
 	$(CC) $(CFLAGS) $(INCLUDES) -c $<
 
-test.o: test.c
+c-test.o: c-test.c
 	$(CC) $(CFLAGS) $(INCLUDES) -c $<
 
-test: test.o libcudf.a
+c-test: c-test.o libcudf.a
 	$(CC) $(CFLAGS) -o $@ $(INCLUDES) $(CUDF_LDFLAGS) $< $(CUDF_CLIBS)
+
+test: ../tests/legacy.cudf ../tests/legacy-sol.cudf c-test
+	./c-test ../tests/legacy.cudf ../tests/legacy-sol.cudf > /dev/null
 
 cudf.pc: cudf.pc.in
 	cat $< | sed -e "s,@OCAML_LIBDIR@,$(OCAML_LIBDIR),g" \
@@ -37,7 +40,7 @@ cudf.pc: cudf.pc.in
 
 clean:
 	rm -f *.a *.o *.cmo *.cmi
-	rm -f test
+	rm -f c-test
 	rm -f cudf.pc
 
-.PHONY: all clean
+.PHONY: all clean test

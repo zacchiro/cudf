@@ -16,34 +16,38 @@ Build dependencies:
 
 To build run:
 
-- make all	# build bytecode libs and executables
-- make opt	# build native code libs and executables (if you have ocamlopt)
-- make test	# run the test suite (need oUnit)
+  $ make all	# build bytecode libs and executables
+  $ make opt	# build native code libs and executables (if you have ocamlopt)
+  $ make test	# run the test suite (need oUnit)
+
 
 C bindings
 ----------
 
 To build the C bindings to the OCaml library run:
 
-- make -C c-lib/
+  $ make -C c-lib		# build C bindings
+  $ make -C c-lib test	# run the test suite for C bindings
+
 
 To install
 ==========
 
 To install run, after compilation:
 
-- make install	# install libs and executables
+  # make install	# install libs and executables
 
 To install under a non-standard location, say "/my/dest/dir":
 
-- make install DESTDIR=/my/dest/dir
+  $ make install DESTDIR=/my/dest/dir
+
 
 To uninstall
 ============
 
-- make uninstall
+  # make uninstall
 
 or:
 
-- make uninstall DESTDIR=/my/dest/dir
+  $ make uninstall DESTDIR=/my/dest/dir
 

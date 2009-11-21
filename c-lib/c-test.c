@@ -153,13 +153,15 @@ int main(int argc, char **argv) {
 	printf("Universe consistent: %s\n",
 	       cudf_is_consistent(cudf.universe) ? "yes" : "no");
 	if (argc >= 3) {
-		g_message("Loading solution ...");
+		g_message("Loading solution %s ...", argv[2]);
 		sol = cudf_load_from_file(argv[2]);
 		printf("Is solution: %s\n",
 		       cudf_is_solution(cudf, sol.universe) ? "yes" : "no");
 	}
+	g_message("Freeing memory ...");
 	cudf_free_cudf(sol);
 	cudf_free_cudf(cudf);
+	g_message("All done.");
 
 	return(0);
 }
