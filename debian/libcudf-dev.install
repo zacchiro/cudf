@@ -1,3 +1,4 @@
 c-lib/libcudf.a		usr/lib/
 c-lib/cudf.h		usr/include/
+c-lib/cudf-variants.h	usr/include/
 c-lib/cudf.pc		usr/lib/pkgconfig/

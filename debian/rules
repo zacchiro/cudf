@@ -8,15 +8,15 @@ DESTDIR := $(CURDIR)/debian/tmp
 DOCDIR = $(CURDIR)/debian/doc/html
 OCAML_OCAMLDOC_PACKAGES = $(OCAML_LIBDEV_PACKAGES)
 
-OBFLAGS = -classic-display -no-hygiene
+OBFLAGS = -classic-display
 DEB_MAKE_BUILD_TARGET = all
 ifeq ($(OCAML_HAVE_OCAMLOPT),yes)
 DEB_MAKE_BUILD_TARGET += opt
 else
-DEB_DH_GENCONTROL_ARGS += -VF:OCamlInterpDepends="ocaml-base-nox-$(OCAML_ABI)"
 OBFLAGS += -byte-plugin
 endif
 DEB_MAKE_BUILD_TARGET += c-lib
 DEB_MAKE_BUILD_TARGET += OBFLAGS="$(OBFLAGS)"
 DEB_MAKE_INSTALL_TARGET = install DESTDIR=$(DESTDIR)
-DEB_MAKE_CHECK_TARGET = test OBFLAGS="$(OBFLAGS)"
+DEB_MAKE_CHECK_TARGET = test c-lib-test OBFLAGS="$(OBFLAGS)"
+DEB_DH_INSTALL_ARGS += -Xcudf-parse-822

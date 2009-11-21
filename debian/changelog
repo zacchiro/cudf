@@ -1,3 +1,10 @@
+cudf (0.5.92-1) UNRELEASED; urgency=low
+
+  * New upstream release
+  * Port packaging to recent dh-ocaml (w/ ABI-based dependencies)
+
+ -- Stefano Zacchiroli <zack@debian.org>  Sat, 21 Nov 2009 18:59:34 +0100
+
 cudf (0.4-1) unstable; urgency=low
 
   * First public release.

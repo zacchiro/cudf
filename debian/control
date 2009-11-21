@@ -5,7 +5,7 @@ Maintainer: Stefano Zacchiroli <zack@debian.org>
 Build-Depends:
  debhelper (>= 7),
  cdbs,
- dh-ocaml,
+ dh-ocaml (>= 0.9),
  ocaml-nox,
  ocaml-findlib,
  libextlib-ocaml-dev,
@@ -20,10 +20,11 @@ Package: libcudf-ocaml-dev
 Architecture: any
 Section: ocaml
 Depends:
- ocaml-nox-${F:OCamlABI},
  ocaml-findlib,
  libextlib-ocaml-dev,
+ ${ocaml:Depends},
  ${misc:Depends}
+Provides: ${ocaml:Provides}
 Description: OCaml library to access descriptions of package upgrade problems
  libCUDF is a library to manipulate so called CUDF documents. A CUDF
  document describe an upgrade problem, as faced by package managers in
@@ -51,6 +52,7 @@ Depends:
  libc6-dev,
  libglib2.0-dev,
  libncurses5-dev,
+ ${shlibs:Depends}
  ${misc:Depends}
 Description: C library to access descriptions of package upgrade problems
  libCUDF is a library to manipulate so called CUDF documents. A CUDF
@@ -77,7 +79,6 @@ Package: cudf-tools
 Architecture: any
 Section: devel
 Depends:
- ${F:OCamlInterpDepends},
  ${shlibs:Depends},
  ${misc:Depends}
 Description: command line tools for package upgrade problem descriptions
