@@ -12,9 +12,9 @@
 
 (** CUDF type library: parsing and pretty printing
 
-    Implement parsing and pretty printing of CUDF types {see CUDF spec. §2.2.2).
+    Implement parsing and pretty printing of CUDF types (see CUDF spec. §2.2.2).
 
-    For the actual CUDF type definition see {!Cudf_types}
+    For the actual CUDF type definition see {!module: Cudf_types}
 *)
 
 open Cudf_types
@@ -57,7 +57,7 @@ val parse_typedecl : string -> typedecl
     @return the parsed string after having resolved escaping and removed
     surrounding double quotes
 
-    @raise Cudf_types.Syntax_error
+    @raise Cudf_types.Syntax_error when the quoted string cannot be parsed
 *)
 val parse_qstring : string -> string
 
@@ -65,7 +65,8 @@ val parse_qstring : string -> string
 
     At present it can be either a typename or an enum with its values.
 
-    @raise Cudf_types.Syntax_error
+    @raise Cudf_types.Syntax_error when the given string is not a valid type
+    expression
 *)
 val parse_type : string -> typ
 
