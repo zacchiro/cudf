@@ -206,6 +206,7 @@ let lookup_package_property pkg = function
   | prop_name -> string_of_value (List.assoc prop_name pkg.pkg_extra)
 
 let lookup_request_property req = function
+  | "request" -> req.request_id
   | "install" -> string_of_vpkglist req.install
   | "remove" -> string_of_vpkglist req.remove
   | "upgrade" -> string_of_vpkglist req.upgrade
