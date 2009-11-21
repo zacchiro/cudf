@@ -4,7 +4,7 @@
 ** univ-checksum
 ** status-checksum
 ** req-checksum
-* TODO update/verify C bindings
+* TODO update/verify C bindings [60%]
 * TODO provide Java bindings (via O'Jacare)
 * TODO add detection of multiple parse errors at once
 * DONE add line position to stanzas

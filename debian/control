@@ -8,7 +8,6 @@ Build-Depends:
  dh-ocaml,
  ocaml-nox,
  ocaml-findlib,
- libpcre-ocaml-dev,
  libextlib-ocaml-dev,
  libounit-ocaml-dev,
  libglib2.0-dev
@@ -23,7 +22,6 @@ Section: ocaml
 Depends:
  ocaml-nox-${F:OCamlABI},
  ocaml-findlib,
- libpcre-ocaml-dev,
  libextlib-ocaml-dev,
  ${misc:Depends}
 Description: OCaml library to access descriptions of package upgrade problems
@@ -51,7 +49,6 @@ Architecture: any
 Section: libdevel
 Depends:
  libc6-dev,
- libpcre-ocaml-dev,
  libglib2.0-dev,
  libncurses5-dev,
  ${misc:Depends}

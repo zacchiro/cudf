@@ -35,7 +35,6 @@ test: ../tests/legacy.cudf ../tests/legacy-sol.cudf c-test
 
 cudf.pc: cudf.pc.in
 	cat $< | sed -e "s,@OCAML_LIBDIR@,$(OCAML_LIBDIR),g" \
-			-e "s,@OCAML_PCRE_LIBDIR@,$(OCAML_PCRE_LIBDIR),g" \
 			-e "s,@VERSION@,$(VERSION),g" \
 		> $@
 
