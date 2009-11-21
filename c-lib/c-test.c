@@ -71,6 +71,24 @@ void print_vpkgformula(cudf_vpkgformula fmla) {
 	}
 }
 
+void print_preamble(cudf_preamble pre) {
+	printf("  %s: %s\n", "preamble", cudf_pre_property(pre, "preamble"));
+	printf("  %s: %s\n", "property", cudf_pre_property(pre, "property"));
+	printf("  %s: %s\n", "univ-checksum",
+	       cudf_pre_property(pre, "univ-checksum"));
+	printf("  %s: %s\n", "status-checksum",
+	       cudf_pre_property(pre, "status-checksum"));
+	printf("  %s: %s\n", "req-checksum",
+	       cudf_pre_property(pre, "req-checksum"));
+}
+
+void print_request(cudf_request req) {
+	printf("  %s: %s\n", "request", cudf_req_property(req, "request"));
+	printf("  %s: %s\n", "install", cudf_req_property(req, "install"));
+	printf("  %s: %s\n", "remove", cudf_req_property(req, "remove"));
+	printf("  %s: %s\n", "upgrade", cudf_req_property(req, "upgrade"));
+}
+
 void print_keep(int keep) {
 	switch (keep) {
 	case KEEP_NONE : printf("  keep: version\n"); break;
@@ -100,7 +118,17 @@ int main(int argc, char **argv) {
 	g_message("Parsing CUDF document %s ...", argv[1]);
 	doc = cudf_parse_from_file(argv[1]);
 	printf("Has preamble: %s\n", doc.has_preamble ? "yes" : "no");
+	if (doc.has_preamble) {
+		printf("Preamble: \n");
+		print_preamble(doc.preamble);
+		printf("\n");
+	}
 	printf("Has request: %s\n", doc.has_request ? "yes" : "no");
+	if (doc.has_request) {
+		printf("Request: \n");
+		print_request(doc.request);
+		printf("\n");
+	}
 	printf("Universe:\n");
 	l = doc.packages;
 	while (l != NULL) {
