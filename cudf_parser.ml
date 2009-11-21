@@ -198,7 +198,7 @@ let parse p =
      parse_error (loc_lookuper locs (get_postmark item))
        "trailing stanzas after final request stanza"
    with End_of_file -> ());
-  (!pre, !pkgs, !req)
+  (!pre, List.rev !pkgs, !req)
   
 
 let load p =
