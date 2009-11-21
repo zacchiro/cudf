@@ -10,10 +10,10 @@ PROGS_OPT = $(addsuffix .native,$(PROGS))
 RESULTS = $(LIBS) $(PROGS_BYTE) _build/cudf_c.cmo
 RESULTS_OPT = $(LIBS_OPT) $(PROGS_OPT) _build/cudf_c.cmx
 SOURCES = $(wildcard *.ml *.mli *.mll *.mly)
-C_LIB_SOURCES = $(wildcard c-lib/*.c c-lib/*.h)
+C_LIB_DIR = c-lib
+C_LIB_SOURCES = $(wildcard $(C_LIB_DIR)/*.c $(C_LIB_DIR)/*.h)
 
 OCAMLBUILD = ocamlbuild
-# OBFLAGS = -classic-display
 OBFLAGS =
 OCAMLFIND = ocamlfind
 
@@ -39,10 +39,10 @@ $(RESULTS_OPT): $(SOURCES)
 
 .PHONY: c-lib
 c-lib:
-	make -C c-lib/
+	make -C $(C_LIB_DIR)
 
 clean:
-	make -C c-lib/ clean
+	make -C $(C_LIB_DIR) clean
 	$(OCAMLBUILD) $(OBFLAGS) -clean
 
 _build/%:
@@ -58,6 +58,8 @@ headers: header.txt .headache.conf
 
 test: _build/test.byte
 	$< -verbose
+c-lib-test:
+	make -C $(C_LIB_DIR) test
 _build/test.byte: $(SOURCES)
 
 tags: TAGS
@@ -113,7 +115,7 @@ distcheck: ./$(DIST_TARBALL)
 	$(MAKE) -C ./$(DIST_DIR) all
 	if which ocamlopt > /dev/null ; then $(MAKE) -C ./$(DIST_DIR) opt ; fi
 	$(MAKE) -C ./$(DIST_DIR) test
-	$(MAKE) -C ./$(DIST_DIR)/c-lib/ all
+	$(MAKE) -C ./$(DIST_DIR)/$(C_LIB_DIR)/ all
 	$(MAKE) -C ./$(DIST_DIR) install DESTDIR=$(CURDIR)/$(DIST_DIR)/tmp
 	rm -rf ./$(DIST_DIR)
 

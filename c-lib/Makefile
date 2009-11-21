@@ -21,10 +21,10 @@ libcudf.a: cudf-caml.o cudf.o
 cudf-caml.o: ../_build/cudf.cma ../_build/cudf_c.cmo
 	$(OCAMLC) -linkpkg -output-obj -o $@ $^
 
-cudf.o: cudf.c cudf.h
+cudf.o: cudf.c cudf.h cudf-variants.h
 	$(CC) $(CFLAGS) $(INCLUDES) -c $<
 
-c-test.o: c-test.c
+c-test.o: c-test.c cudf.o
 	$(CC) $(PROG_CFLAGS) $(INCLUDES) -c $<
 
 c-test: c-test.o libcudf.a
