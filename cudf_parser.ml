@@ -34,9 +34,14 @@ let from_in_channel ?(typedecl=Cudf_conf.stanza_typedecl) ic =
     fname = "" ;
   }
 
-let from_file ?typedecl fname =
-  { from_in_channel ?typedecl (open_in fname)
-    with fname = fname }
+let from_file ?(typedecl=Cudf_conf.stanza_typedecl) fname =
+  (* Syntax  error with OCaml 3.10.2:
+   * { from_in_channel ?typedecl (open_in fname)
+   *   with fname = fname } *)
+  { lexbuf = Lexing.from_channel (open_in fname) ;
+    typedecl = typedecl ;
+    fname = fname ;
+  }
 
 let close p = ()
 
