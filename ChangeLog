@@ -1,4 +1,9 @@
-2009-02-24  Stefano Zacchiroli  <zack@upsilon.cc>
+2009-11-25  Stefano Zacchiroli  <zack@pps.jussieu.fr>
 
-	* First public release, version 0.4
+	* ALL Porting to CUDF 2.0
+	* ALL Development release 0.5.92
+
+2009-02-24  Stefano Zacchiroli  <zack@pps.jussieu.fr>
+
+	* ALL First public release, version 0.4
 
