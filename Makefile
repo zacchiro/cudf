@@ -4,7 +4,7 @@ NAME = cudf
 
 LIBS = _build/cudf.cma
 LIBS_OPT = _build/cudf.cmxa
-PROGS = _build/cudf-check _build/cudf-parse-822
+PROGS = _build/main_cudf_check _build/main_cudf_parse_822
 PROGS_BYTE = $(addsuffix .byte,$(PROGS))
 PROGS_OPT = $(addsuffix .native,$(PROGS))
 RESULTS = $(LIBS) $(PROGS_BYTE) _build/cudf_c.cmo
@@ -77,20 +77,25 @@ install:
 	$(INSTALL) -patch-version $(VERSION) $(NAME) $(INSTALL_STUFF)
 	test -d $(BINDIR) || mkdir -p $(BINDIR)
 	for p in $(notdir $(PROGS)) ; do \
+		tgt=`echo $$p | sed -e 's/^main.//' -e 's/_/-/g'` ; \
 		if [ -f _build/$$p.native ] ; then \
-			cp _build/$$p.native $(BINDIR)/$$p ; \
+			cp _build/$$p.native $(BINDIR)/$$tgt ; \
 		else \
-			cp _build/$$p.byte $(BINDIR)/$$p ; \
+			cp _build/$$p.byte $(BINDIR)/$$tgt ; \
 		fi ; \
+		echo "Installed $(BINDIR)/$$tgt" ; \
 	done
-	@echo "Installed $(BINDIR)/cudf-check"
 
 uninstall:
 	$(UNINSTALL) $(NAME)
-	if [ -f $(BINDIR)/cudf-check ] ; then \
-		rm $(BINDIR)/cudf-check ; \
-	fi
-	@echo "Removed $(BINDIR)/cudf-check"
+	for p in $(notdir $(PROGS)) ; do \
+		tgt=`echo $$p | sed -e 's/^main.//' -e 's/_/-/g'` ; \
+		if [ -f $(BINDIR)/$$tgt ] ; then \
+			rm $(BINDIR)/$$tgt ; \
+		fi ; \
+		echo "Removed $(BINDIR)/$$tgt" ; \
+	done
+	-rmdir -p $(LIBDIR) $(BINDIR)
 
 dist: ./$(DIST_TARBALL)
 ./$(DIST_TARBALL):
