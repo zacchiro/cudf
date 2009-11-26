@@ -1,5 +1,5 @@
-libCUDF - CUDF (Common Upgradebility Description Format) library
-================================================================
+libCUDF - CUDF (Common Upgradeability Description Format) library
+=================================================================
 
 libCUDF is a library to manipulate so called CUDF documents. A CUDF
 (Common Upgradeability Description Format) document describes an
