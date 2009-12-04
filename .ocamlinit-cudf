@@ -5,9 +5,12 @@
 #load "_build/tests.cmo";;
 open ExtLib;;
 
-open Cudf_types_pp;;
-open Cudf_parser;;
+open Cudf;;
 open Cudf_checker;;
+open Cudf_parser;;
+open Cudf_printer;;
+open Cudf_types_pp;;
+
 let p = Cudf_parser.from_in_channel (open_in "tests/legacy.cudf")
 
 let (pre, pkgs, req) as cudf_doc =
