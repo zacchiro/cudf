@@ -81,20 +81,6 @@ let type_check_stanza ?locs stanza types =
 	     raise (Cudf_types.Type_error (typ, v, lookup_loc k)))
     stanza
 
-(** cast a typed stanza starting with "preamble: " to a {!Cudf.preamble} *)
-let bless_preamble stanza =
-  let p = default_preamble in	(* assumption: should be completely overrode *)
-  let rec aux p = function
-    | ("preamble", `String v) :: tl -> aux { p with preamble_id = v } tl
-    | ("property", `Typedecl v) :: tl -> aux { p with property = v } tl
-    | ("univ-checksum", `String v) :: tl -> aux { p with univ_checksum = v } tl
-    | ("status-checksum", `String v) :: tl -> aux { p with status_checksum = v } tl
-    | ("req-checksum", `String v) :: tl -> aux { p with req_checksum = v } tl
-    | [] -> p
-    | _ -> assert false
-  in
-  aux p stanza
-
 (** Cast a typed stanza starting with "package: " to a {!Cudf.package}.
     ASSUMPTION: type checking of the stanza has already happend, in particular
     all extra properties have already been checked for allowance. *)
@@ -116,6 +102,21 @@ let bless_package stanza =
   in
   let p' = aux p stanza in
   { p' with pkg_extra = List.rev p'.pkg_extra }
+
+(** Cast a typed stanza starting with "preamble: " to a {!Cudf.preamble}
+    ASSUMPTION: as per {!Cudf_parser.bless_package} above. *)
+let bless_preamble stanza =
+  let p = default_preamble in	(* assumption: should be completely overrode *)
+  let rec aux p = function
+    | ("preamble", `String v) :: tl -> aux { p with preamble_id = v } tl
+    | ("property", `Typedecl v) :: tl -> aux { p with property = v } tl
+    | ("univ-checksum", `String v) :: tl -> aux { p with univ_checksum = v } tl
+    | ("status-checksum", `String v) :: tl -> aux { p with status_checksum = v } tl
+    | ("req-checksum", `String v) :: tl -> aux { p with req_checksum = v } tl
+    | [] -> p
+    | _ -> assert false
+  in
+  aux p stanza
 
 (** Cast a typed stanza starting with "request: " to a {!Cudf.request}.
     ASSUMPTION: as per {!Cudf_parser.bless_package} above. *)

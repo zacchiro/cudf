@@ -21,8 +21,8 @@ open Cudf_types
     With this representation, optional properties have already been
     expanded to their default values (if they have one). It is not
     possible to know whether they were present or not in the CUDF
-    syntax. *)
-
+    syntax.
+*)
 type package = {
   package : pkgname ;
   version : version ;
