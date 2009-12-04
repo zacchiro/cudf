@@ -6,10 +6,10 @@
 ** univ-checksum
 ** status-checksum
 ** req-checksum
-* TODO revamp Debian package [0%]
-** TODO port to recent dh-ocaml
-** TODO general packaging update
-** TODO upload to mancoosi.debian.net and Debian itself
+* DONE revamp Debian package [100%]
+** DONE port to recent dh-ocaml
+** DONE general packaging update
+** DONE upload to mancoosi.debian.net and Debian itself
 * DONE update/verify C bindings [100%]
 ** DONE port old bindings to new types (fix all segfaults)
 ** DONE provide access to typed values
