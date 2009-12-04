@@ -14,7 +14,7 @@
 
     Implement core CUDF types (see CUDF spec. §2.2.2).
 
-    For parsing and pretty printing of CUDF types see {!Cudf_types_pp}
+    For parsing and pretty printing of CUDF types see {!Cudf_types_pp}.
 *)
 
 

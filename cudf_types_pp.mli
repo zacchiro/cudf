@@ -14,7 +14,9 @@
 
     Implement parsing and pretty printing of CUDF types (see CUDF spec. §2.2.2).
 
-    For the actual CUDF type definition see {!module: Cudf_types}
+    For the actual CUDF type definition see {!module: Cudf_types}.
+
+    For pretty printing of macro-components see {!module: Cudf_printer}.
 *)
 
 open Cudf_types
