@@ -42,7 +42,7 @@ val (=%) : package -> package -> bool
 (** Package comparison up to <name, version>.  Same rules of package equality,
     but providing a suitable replacement for [Pervasives.compare]; useful for
     sorting. *)
-val (~%) : package -> package -> int
+val (<%) : package -> package -> int
 
 type request = {
   request_id : string ;				(* default : "" *)

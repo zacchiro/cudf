@@ -271,16 +271,17 @@ let misc_parse_suite =
         let pkg1 = { default_package with installed = true } in
         let pkg2 = { default_package with installed = false } in
         assert_equal (pkg1 =% pkg2) true) ;
-      "=~" >:: (fun () ->
+      "<%" >:: (fun () ->
         let pkg1 = { default_package with installed = true } in
         let pkg2 = { default_package with installed = false } in
 	let l1 = [ pkg1 ; pkg2 ] in
 	let l2 = [ pkg2 ; pkg1 ] in
 	let rec pkgs_eq = function
 	  | [], [] -> true
-	  | p1::t1, p2::t2 -> (p1 =% p2) && pkgs_eq (t1,t2) in
+	  | p1::t1, p2::t2 -> (p1 =% p2) && pkgs_eq (t1,t2)
+	  | _ -> assert false in
         assert_equal
-	  (pkgs_eq ((List.sort ~cmp:(~%) l1), (List.sort ~cmp:(~%) l2)))
+	  (pkgs_eq ((List.sort ~cmp:(<%) l1), (List.sort ~cmp:(<%) l2)))
 	  true) ;
     ];
   ]
