@@ -68,6 +68,9 @@ let installed_size univ = univ.inst_size
 let (=%) pkg1 pkg2 =
   pkg1.package = pkg2.package && pkg1.version = pkg2.version
 
+let (~%) pkg1 pkg2 =
+  Pervasives.compare (pkg1.package, pkg1.version) (pkg2.package, pkg2.version)
+
 let default_preamble = {
   preamble_id = "" ;
   property = [] ;

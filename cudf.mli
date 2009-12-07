@@ -39,6 +39,11 @@ type package = {
     i.e. 2 packages are equal iff they have the same name and version *)
 val (=%) : package -> package -> bool
 
+(** Package comparison up to <name, version>.  Same rules of package equality,
+    but providing a suitable replacement for [Pervasives.compare]; useful for
+    sorting. *)
+val (~%) : package -> package -> int
+
 type request = {
   request_id : string ;				(* default : "" *)
   install : vpkglist ;				(* default : [] *)
