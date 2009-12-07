@@ -1,1 +1,1 @@
-<*.byte> or <*.native> : pkg_extlib, pkg_cudf
+<*.byte> or <*.native> : pkg_cudf
