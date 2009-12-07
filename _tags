@@ -2,7 +2,7 @@
 <test.byte> or <test.native> : pkg_oUnit
 
 <*.ml> or <*.mli> : pkg_extlib, pp(camlp4o)
-<*.byte> or <*.native> : pkg_extlib, pkg_str
+<*.byte> or <*.native> : pkg_extlib
 
 
 <c-lib/*>: not_hygienic
