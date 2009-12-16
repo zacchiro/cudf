@@ -18,29 +18,31 @@
 
 #include <cudf-variants.h>
 
-typedef value cudf_package;
-typedef value cudf_universe;
-typedef value cudf_request;
-typedef value cudf_preamble;
+typedef value cudf_preamble_t;
+typedef value cudf_request_t;
+typedef value cudf_universe_t;
+typedef value cudf_package_t;
 
-typedef struct cudf_doc {
+typedef GList *cudf_packages_t;	/* List of CUDF packages */
+
+typedef struct __cudf_doc {
 	int has_preamble;	/* Whether user request was provided or not */
 	int has_request;	/* Whether request was provided or not */
-	cudf_preamble preamble;	/* Preamble (iff has_preamble != 0) */
-	cudf_request request;	/* User request (iff has_request != 0) */
-	GList *packages;	/* List of packages */
-} cudf_doc;
+	cudf_preamble_t preamble;	/* Preamble (iff has_preamble != 0) */
+	cudf_request_t request;	/* User request (iff has_request != 0) */
+	cudf_packages_t packages;	/* List of packages */
+} cudf_doc_t;
 
-typedef struct cudf {
+typedef struct __cudf {
 	int has_preamble;	/* Whether user request was provided or not */
 	int has_request;	/* Whether request was provided or not */
-	cudf_preamble preamble;	/* Preamble (iff has_preamble != 0) */
-	cudf_request request;	/* User request (iff has_request != 0) */
-	cudf_universe universe; /* Abstract package universe */
-} cudf;
+	cudf_preamble_t preamble;	/* Preamble (iff has_preamble != 0) */
+	cudf_request_t request;	/* User request (iff has_request != 0) */
+	cudf_universe_t universe; /* Abstract package universe */
+} cudf_t;
 
-cudf_doc cudf_parse_from_file(char *fname);
-cudf cudf_load_from_file(char *fname);
+cudf_doc_t *cudf_parse_from_file(char *fname);
+cudf_t *cudf_load_from_file(char *fname);
 
 /* Package predicate
 
@@ -48,21 +50,21 @@ cudf cudf_load_from_file(char *fname);
    - bar	--->	{ name="bar" ; relop=0 ; version = UNSPECIFIED }
    - foo >= 2	--->	{ name="foo" ; relop=RELOP_GEQ ; version = 2 }
 */
-typedef struct cudf_vpkg {
+typedef struct __cudf_vpkg {
 	char *name;	/* Package name */
 	int relop;	/* Version constraint operator, see RELOP_* constants.
 			   0 (i.e. RELOP_NOP) means no constraint */
 	int version;	/* Version constraint value (iff constr != 0) */
-} cudf_vpkg;
+} cudf_vpkg_t;
 
-typedef GList *cudf_vpkglist;		/* List of cudf_vpkg */
+typedef GList *cudf_vpkglist_t;		/* List of cudf_vpkg */
 
 /* Hash table mapping property names (string) to typed values (cudf_value). */
-typedef GHashTable *cudf_extra;
+typedef GHashTable *cudf_extra_t;
 
 /* List of cudf_vpkg lists.
    CNF encoding: the inner lists are OR-ed, while the outer are AND-ed */
-typedef GList *cudf_vpkgformula;
+typedef GList *cudf_vpkgformula_t;
 
 /* Version comparison operators */
 #define RELOP_EQ	1	/* "=" */
@@ -92,14 +94,14 @@ typedef GList *cudf_vpkgformula;
 
 
 /* Typed CUDF value */
-typedef struct cudf_value {
+typedef struct __cudf_value {
 	int typ;	/* CUDF type, one of the TYPE_* constants */
 	union {
 		int i;
 		char *s;
-		cudf_vpkg *vpkg;
-		cudf_vpkgformula f;
-		cudf_vpkglist vpkgs;
+		cudf_vpkg_t *vpkg;
+		cudf_vpkgformula_t f;
+		cudf_vpkglist_t vpkgs;
 		/* cudf_typedecl types;	/\* currently not supported *\/ */
 	} val;	/* CUDF value
 		   depending on typ above, one of the above union field is set:
@@ -120,7 +122,7 @@ typedef struct cudf_value {
 		     TYPE_VPKGFORMULA | cudf_vpkgformula f
 		     TYPE_TYPEDECL    | cudf_typedecl types
 		*/
-} cudf_value;
+} cudf_value_t;
 
 /* Macros for accessing cudf_package values */
 
@@ -144,32 +146,32 @@ typedef struct cudf_value {
 
 /* Get "keep" property from a cudf_pkg.
    See KEEP_* macros */
-int cudf_pkg_keep(cudf_package pkg);
+int cudf_pkg_keep(cudf_package_t pkg);
 
 /* Get dependencies of a package */
-cudf_vpkgformula cudf_pkg_depends(cudf_package pkg);
+cudf_vpkgformula_t cudf_pkg_depends(cudf_package_t pkg);
 
 /* Get conflicts of a package */
-cudf_vpkglist cudf_pkg_conflicts(cudf_package pkg);
+cudf_vpkglist_t cudf_pkg_conflicts(cudf_package_t pkg);
 
 /* Get provided features of a package */
-cudf_vpkglist cudf_pkg_provides(cudf_package pkg);
+cudf_vpkglist_t cudf_pkg_provides(cudf_package_t pkg);
 
 
 /* Get extra properties of a package. */
-cudf_extra cudf_pkg_extra(cudf_package pkg);
+cudf_extra_t cudf_pkg_extra(cudf_package_t pkg);
 
 /* Lookup package property by name. Returned string should be manually freed.
    Return NULL if the property is missing (and has no default value). */
-char *cudf_pkg_property(cudf_package pkg, const char *prop);
+char *cudf_pkg_property(cudf_package_t pkg, const char *prop);
 
 /* Lookup request property by name. Returned string should be manually freed.
    Return NULL if the property is missing (and has no default value). */
-char *cudf_req_property(cudf_request req, const char *prop);
+char *cudf_req_property(cudf_request_t req, const char *prop);
 
 /* Lookup preamble property by name. Returned string should be manually freed.
    Return NULL if the property is missing (and has no default value). */
-char *cudf_pre_property(cudf_preamble pre, const char *prop);
+char *cudf_pre_property(cudf_preamble_t pre, const char *prop);
 
 
 /* Universe management */
@@ -178,24 +180,24 @@ char *cudf_pre_property(cudf_preamble pre, const char *prop);
     use the universe should be freed using cudf_free_universe.
    @param packages list of (pointers to) cudf_package-s; the packages
     member of a cudf_doc structure is a suitable value */
-void cudf_load_universe(cudf_universe *univ, GList *packages);
+void cudf_load_universe(cudf_universe_t *univ, GList *packages);
 
-int cudf_universe_size(cudf_universe univ);
-int cudf_installed_size(cudf_universe univ);
-int cudf_is_consistent(cudf_universe univ);
-int cudf_is_solution(cudf cudf, cudf_universe solution);
+int cudf_universe_size(cudf_universe_t univ);
+int cudf_installed_size(cudf_universe_t univ);
+int cudf_is_consistent(cudf_universe_t univ);
+int cudf_is_solution(cudf_t *cudf, cudf_universe_t solution);
 
 
 /* Memory management */
 
-void cudf_free_doc(cudf_doc doc);
-void cudf_free_cudf(cudf cudf);
-void cudf_free_universe(cudf_universe *univ);
-void cudf_free_vpkg(cudf_vpkg *vpkg);
-void cudf_free_vpkglist(cudf_vpkglist l);
-void cudf_free_vpkgformula(cudf_vpkgformula fmla);
-void cudf_free_value(cudf_value *val);
-void cudf_free_extra(cudf_extra extra);
+void cudf_free_doc(cudf_doc_t *doc);
+void cudf_free_cudf(cudf_t *cudf);
+void cudf_free_universe(cudf_universe_t *univ);
+void cudf_free_vpkg(cudf_vpkg_t *vpkg);
+void cudf_free_vpkglist(cudf_vpkglist_t l);
+void cudf_free_vpkgformula(cudf_vpkgformula_t fmla);
+void cudf_free_value(cudf_value_t *val);
+void cudf_free_extra(cudf_extra_t extra);
 
 
 #endif	/* end of cudf.h */

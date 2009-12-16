@@ -17,6 +17,7 @@
 
 #include <stdio.h>
 #include <caml/callback.h>
+#include <caml/memory.h>
 #include <glib.h>
 
 #include <cudf.h>
@@ -27,7 +28,7 @@ void print_relop(int relop) {
 	case RELOP_EQ : printf("=") ; break ;
 	case RELOP_NEQ : printf("!=") ; break ;
 	case RELOP_GEQ : printf(">=") ; break ;
-	case RELOP_GT	: printf(">") ; break ;
+	case RELOP_GT : printf(">") ; break ;
 	case RELOP_LEQ : printf("<=") ; break ;
 	case RELOP_LT : printf("<") ; break ;
 	case RELOP_NOP :
@@ -38,7 +39,7 @@ void print_relop(int relop) {
 }
 
 /* Print to stdout a package version predicate */
-void print_vpkg(cudf_vpkg *vpkg) {
+void print_vpkg(cudf_vpkg_t *vpkg) {
 	if (vpkg == NULL)
 		return;
 
@@ -52,8 +53,8 @@ void print_vpkg(cudf_vpkg *vpkg) {
 
 /* Print to stdout a list of package predicates, separated by a given
    separator */
-void print_vpkglist(cudf_vpkglist l, const char *sep) {
-	cudf_vpkg *vpkg;
+void print_vpkglist(cudf_vpkglist_t l, const char *sep) {
+	cudf_vpkg_t *vpkg;
 	GList *last;
 
 	last = g_list_last(l);
@@ -67,7 +68,7 @@ void print_vpkglist(cudf_vpkglist l, const char *sep) {
 }
 
 /* Print to stdout a package formula */
-void print_vpkgformula(cudf_vpkgformula fmla) {
+void print_vpkgformula(cudf_vpkgformula_t fmla) {
 	GList *last;
 
 	last = g_list_last(fmla);
@@ -80,23 +81,44 @@ void print_vpkgformula(cudf_vpkgformula fmla) {
 }
 
 /* Print to stdout a CUDF preamble */
-void print_preamble(cudf_preamble pre) {
-	printf("  %s: %s\n", "preamble", cudf_pre_property(pre, "preamble"));
-	printf("  %s: %s\n", "property", cudf_pre_property(pre, "property"));
-	printf("  %s: %s\n", "univ-checksum",
-	       cudf_pre_property(pre, "univ-checksum"));
-	printf("  %s: %s\n", "status-checksum",
-	       cudf_pre_property(pre, "status-checksum"));
-	printf("  %s: %s\n", "req-checksum",
-	       cudf_pre_property(pre, "req-checksum"));
+void print_preamble(cudf_doc_t *doc) {
+	CAMLparam0();
+	CAMLlocal1(pre);
+	char *s;
+	char *props[] = { "preamble", "property", "univ-checksum",
+			  "status-checksum", "req-checksum" };
+	int i;
+
+	if (! doc->has_preamble)
+		return;
+	pre = doc->preamble;
+
+	for (i=0 ; i<5 ; i++) {
+		s = cudf_pre_property(pre, props[i]);
+		printf("  %s: %s\n", props[i], s);
+		free(s);
+	}
+	CAMLreturn0;
 }
 
 /* Print to stdout a CUDF request */
-void print_request(cudf_request req) {
-	printf("  %s: %s\n", "request", cudf_req_property(req, "request"));
-	printf("  %s: %s\n", "install", cudf_req_property(req, "install"));
-	printf("  %s: %s\n", "remove", cudf_req_property(req, "remove"));
-	printf("  %s: %s\n", "upgrade", cudf_req_property(req, "upgrade"));
+void print_request(cudf_doc_t *doc) {
+	CAMLparam0();
+	CAMLlocal1(req);
+	char *s;
+	char *props[] = { "request", "install", "remove", "upgrade" };
+	int i;
+
+	if (! doc->has_request)
+		return;
+	req = doc->request;
+
+	for (i=0 ; i<4 ; i++) {
+		s = cudf_req_property(req, props[i]);
+		printf("  %s: %s\n", props[i], s);
+		free(s);
+	}
+	CAMLreturn0;
 }
 
 /* Print to stdout a possible value of the "keep" package property */
@@ -110,7 +132,7 @@ void print_keep(int keep) {
 	}
 }
 
-void print_value(cudf_value *v) {
+void print_value(cudf_value_t *v) {
 	int typ;
 
 	if (v == NULL)
@@ -156,9 +178,10 @@ void print_property(gpointer k, gpointer v, gpointer user_data) {
 #define print_extra(e)	(g_hash_table_foreach(e, print_property, NULL))
 
 /* Print to stdout a CUDF package */
-void print_pkg(cudf_package pkg) {
-	cudf_vpkgformula fmla;
-	cudf_vpkglist vpkglist;
+void print_pkg(cudf_package_t pkg) {
+	CAMLparam1(pkg);
+	cudf_vpkgformula_t fmla;
+	cudf_vpkglist_t vpkglist;
 
 	printf("  package: %s\n", cudf_pkg_name(pkg));
 	printf("  version: %d\n", cudf_pkg_version(pkg));
@@ -189,14 +212,17 @@ void print_pkg(cudf_package pkg) {
 
 	print_extra(cudf_pkg_extra(pkg));	/* extra properties */
 	printf("\n");
+
+	CAMLreturn0;
 }
 
 int main(int argc, char **argv) {
-	cudf_doc doc;
-	cudf cudf, sol;
-	cudf_package pkg;
-	cudf_universe univ;
-	GList *l;
+	CAMLparam0();
+	cudf_doc_t *doc = NULL;
+	cudf_t *cudf = NULL, *sol = NULL;
+	CAMLlocal1(pkg);
+	cudf_universe_t *univ = NULL;
+	GList *l = NULL;
 
 	caml_startup(argv);
 	if (argc < 2) {
@@ -206,52 +232,69 @@ int main(int argc, char **argv) {
 
 	g_message("Parsing CUDF document %s ...", argv[1]);
 	doc = cudf_parse_from_file(argv[1]);
-	printf("Has preamble: %s\n", doc.has_preamble ? "yes" : "no");
-	if (doc.has_preamble) {
+	printf("Has preamble: %s\n", doc->has_preamble ? "yes" : "no");
+	if (doc->has_preamble) {
 		printf("Preamble: \n");
-		print_preamble(doc.preamble);
+		print_preamble(doc);
 		printf("\n");
 	}
-	printf("Has request: %s\n", doc.has_request ? "yes" : "no");
-	if (doc.has_request) {
+	printf("Has request: %s\n", doc->has_request ? "yes" : "no");
+	if (doc->has_request) {
 		printf("Request: \n");
-		print_request(doc.request);
-		printf("\n");
+		print_request(doc);
+		/* 
+                 * printf("\n"); print_request(doc);
+		 * printf("\n"); print_request(doc);
+		 * printf("\n"); print_request(doc);
+		 * printf("\n"); print_request(doc);
+		 * printf("\n"); print_request(doc);
+		 * printf("\n");
+                 */
 	}
+
+	printf("\n");
+	print_request(doc); printf("\n");
+	print_request(doc); printf("\n");
+	print_request(doc); printf("\n");
+	print_request(doc); printf("\n");
+	print_request(doc); printf("\n");
+
 	printf("Universe:\n");
-	l = doc.packages;
+	l = doc->packages;
 	while (l != NULL) {
-		pkg = * (cudf_package *) g_list_nth_data(l, 0);
+		pkg = * (cudf_package_t *) g_list_nth_data(l, 0);
 		print_pkg(pkg);
 		l = g_list_next(l);
 	}
 	g_message("Try packages -> universe conversion ...");
-	cudf_load_universe(&univ, doc.packages);
+	univ = malloc(sizeof(cudf_universe_t));
+	cudf_load_universe(univ, doc->packages);
 	printf("Universe size: %d/%d (installed/total)\n",
-	       cudf_installed_size(univ), cudf_universe_size(univ));
-	printf("Universe consistent: %s\n", cudf_is_consistent(univ) ?
+	       cudf_installed_size(*univ), cudf_universe_size(*univ));
+	printf("Universe consistent: %s\n", cudf_is_consistent(*univ) ?
 	       "yes" : "no");
 
-	cudf_free_universe(&univ);
+	g_message("Freeing memory ...");
+	cudf_free_universe(univ);
 	cudf_free_doc(doc);
 
 	g_message("Try direct CUDF loading ...");
 	cudf = cudf_load_from_file(argv[1]);
 	printf("Universe size: %d/%d (installed/total)\n",
-	       cudf_installed_size(cudf.universe),
-	       cudf_universe_size(cudf.universe));
+	       cudf_installed_size(cudf->universe),
+	       cudf_universe_size(cudf->universe));
 	printf("Universe consistent: %s\n",
-	       cudf_is_consistent(cudf.universe) ? "yes" : "no");
+	       cudf_is_consistent(cudf->universe) ? "yes" : "no");
 	if (argc >= 3) {
 		g_message("Loading solution %s ...", argv[2]);
 		sol = cudf_load_from_file(argv[2]);
 		printf("Is solution: %s\n",
-		       cudf_is_solution(cudf, sol.universe) ? "yes" : "no");
+		       cudf_is_solution(cudf, sol->universe) ? "yes" : "no");
 	}
-	g_message("Freeing memory ...");
+	g_message("Freeing memory (direct loading)...");
 	cudf_free_cudf(sol);
 	cudf_free_cudf(cudf);
 	g_message("All done.");
 
-	return(0);
+	CAMLreturnT(int, 0);
 }
