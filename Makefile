@@ -44,6 +44,8 @@ c-lib:
 clean:
 	make -C $(C_LIB_DIR) clean
 	$(OCAMLBUILD) $(OBFLAGS) -clean
+	rm -rf *.dsc *.deb *.changes *.orig.tar.gz \
+		$(NAME)-*.gz $(NAME)_*.gz $(NAME)-*/
 
 _build/%:
 	$(OCAMLBUILD) $(OBFLAGS) $*
