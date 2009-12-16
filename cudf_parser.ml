@@ -135,7 +135,10 @@ let bless_request stanza =
   { r' with req_extra = List.rev r'.req_extra }
 
 let parse_item' p =
-  let locs, stanza = parse_stanza p in
+  let locs, stanza =
+    try
+      parse_stanza p
+    with Syntax_error (msg, loc) -> parse_error loc msg in
   let lookup_loc = loc_lookuper locs in
   let typed_stanza =
     match stanza with
