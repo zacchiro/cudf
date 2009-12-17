@@ -14,14 +14,19 @@
 #define _CUDF_H
 
 #include <glib.h>
-#include <caml/mlvalues.h>
 
 #include <cudf-variants.h>
 
-typedef value *cudf_preamble_t;
-typedef value *cudf_request_t;
-typedef value *cudf_universe_t;
-typedef value *cudf_package_t;
+#ifndef _CUDF_PRIVATE_H
+/* Abstract data types. You should access them only with the functions given
+   below. Really (or you will face the anger of OCaml GC).*/
+
+typedef void *cudf_preamble_t;	/* preamble of a CUDF document */
+typedef void *cudf_request_t;	/* request of a CUDF document */
+typedef void *cudf_universe_t;	/* package universe (i.e. all known packages) */
+typedef void *cudf_package_t;	/* single package from the universe */
+
+#endif
 
 typedef GList *cudf_packages_t;	/* List of CUDF packages */
 

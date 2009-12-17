@@ -23,7 +23,8 @@
 #include <caml/memory.h>
 #include <caml/mlvalues.h>
 
-#include <cudf.h>
+#include "cudf-private.h"	// instantiate OCaml-related ADTs
+#include "cudf.h"
 
 #define Val_none	Val_int(0)
 #define Some_val(v)	Field(v,0)
