@@ -37,9 +37,11 @@ opt: $(RESULTS_OPT)
 $(RESULTS): $(SOURCES)
 $(RESULTS_OPT): $(SOURCES)
 
-.PHONY: c-lib
+.PHONY: c-lib c-lib-opt
 c-lib:
-	make -C $(C_LIB_DIR)
+	make -C $(C_LIB_DIR) all
+c-lib-opt:
+	make -C $(C_LIB_DIR) opt
 
 clean:
 	make -C $(C_LIB_DIR) clean

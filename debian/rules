@@ -10,13 +10,19 @@ OCAML_OCAMLDOC_PACKAGES = $(OCAML_LIBDEV_PACKAGES)
 
 OBFLAGS = -classic-display -no-hygiene
 DEB_MAKE_BUILD_TARGET = all
+DEB_MAKE_BUILD_TARGET += c-lib
 ifeq ($(OCAML_HAVE_OCAMLOPT),yes)
 DEB_MAKE_BUILD_TARGET += opt
+DEB_MAKE_BUILD_TARGET += c-lib-opt
 else
 OBFLAGS += -byte-plugin
 endif
-DEB_MAKE_BUILD_TARGET += c-lib
 DEB_MAKE_BUILD_TARGET += OBFLAGS="$(OBFLAGS)"
 DEB_MAKE_INSTALL_TARGET = install DESTDIR=$(DESTDIR)
 DEB_MAKE_CHECK_TARGET = test c-lib-test OBFLAGS="$(OBFLAGS)"
 DEB_DH_INSTALL_ARGS += -Xcudf-parse-822
+
+ifeq ($(OCAML_HAVE_OCAMLOPT),yes)
+build/libcudf-dev::
+	cp c-lib/libcudf-opt.a c-lib/libcudf.a
+endif
