@@ -213,7 +213,7 @@ int main(int argc, char **argv) {
 	cudf_universe_t univ = NULL;
 	GList *l = NULL;
 
-	caml_startup(argv);
+	cudf_init();
 	if (argc < 2) {
 		printf("Usage: %s CUDF_FILE [ SOLUTION_FILE ]\n", argv[0]);
 		exit(2);

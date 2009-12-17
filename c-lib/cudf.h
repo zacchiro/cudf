@@ -44,8 +44,26 @@ typedef struct __cudf {
 	cudf_universe_t universe; /* Abstract package universe */
 } cudf_t;
 
+
+/* Initialization */
+
+/* Call cudf_init() before doing anything else with libCUDF, do it only once,
+ * and do that from your main(). (Or you will get a segfault, you've been
+ * warned.) */
+#define cudf_init()				\
+	do { char *fake_argv[] = {""};		\
+		caml_startup(fake_argv); }	\
+	while (0)
+#ifndef _CUDF_PRIVATE_H
+void caml_startup(char **);
+#endif
+
+
+/* Parsing */
+
 cudf_doc_t *cudf_parse_from_file(char *fname);
 cudf_t *cudf_load_from_file(char *fname);
+
 
 /* Package predicate
    Examples:
