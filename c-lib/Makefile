@@ -50,7 +50,7 @@ cudf.pc: cudf.pc.in
 
 clean:
 	rm -f *.a *.o *.cmo *.cmi
-	rm -f c-test
+	rm -f c-test c-test-opt
 	rm -f cudf.pc
 
 .PHONY: all opt clean test
