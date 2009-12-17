@@ -441,7 +441,6 @@ int cudf_installed_size(cudf_universe_t univ) {
 }
 
 int cudf_is_consistent(cudf_universe_t univ) {
-	CAMLparam0();
 	static value *closure_f = NULL;
 
 	if (closure_f == NULL)
