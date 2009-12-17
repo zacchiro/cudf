@@ -45,10 +45,9 @@ cudf_doc_t *cudf_parse_from_file(char *fname);
 cudf_t *cudf_load_from_file(char *fname);
 
 /* Package predicate
-
    Examples:
-   - bar	--->	{ name="bar" ; relop=0 ; version = UNSPECIFIED }
-   - foo >= 2	--->	{ name="foo" ; relop=RELOP_GEQ ; version = 2 }
+   - bar	--->	{ name="bar" ; relop=0 ; version=UNSPECIFIED }
+   - foo >= 2	--->	{ name="foo" ; relop=RELOP_GEQ ; version=2 }
 */
 typedef struct __cudf_vpkg {
 	char *name;	/* Package name */
@@ -59,10 +58,10 @@ typedef struct __cudf_vpkg {
 
 typedef GList *cudf_vpkglist_t;		/* List of cudf_vpkg */
 
-/* Hash table mapping property names (string) to typed values (cudf_value). */
+/* Hash table mapping property names (char *) to typed values (cudf_value_t). */
 typedef GHashTable *cudf_extra_t;
 
-/* List of cudf_vpkg lists.
+/* List of (cudf_vpkg_t *) lists.
    CNF encoding: the inner lists are OR-ed, while the outer are AND-ed */
 typedef GList *cudf_vpkgformula_t;
 
@@ -102,7 +101,7 @@ typedef struct __cudf_value {
 		cudf_vpkg_t *vpkg;
 		cudf_vpkgformula_t f;
 		cudf_vpkglist_t vpkgs;
-		/* cudf_typedecl types;	/\* currently not supported *\/ */
+		/* cudf_typedecl types; */	/* currently not supported */
 	} val;	/* CUDF value
 		   depending on typ above, one of the above union field is set:
 		            typ       | val field
@@ -115,12 +114,12 @@ typedef struct __cudf_value {
 		     TYPE_ENUM        | char *s
 		     TYPE_PKGNAME     | char *s
 		     TYPE_IDENT       | char *s
-		     TYPE_VPKG        | cudf_vpkg *pkg
-		     TYPE_VEQPKG      | cudf_vpkg *pkg
-		     TYPE_VPKGLIST    | cudf_vpkglist pkgs
-		     TYPE_VEQPKGLIST  | cudf_vpkglist pkgs
-		     TYPE_VPKGFORMULA | cudf_vpkgformula f
-		     TYPE_TYPEDECL    | cudf_typedecl types
+		     TYPE_VPKG        | cudf_vpkg_t *pkg
+		     TYPE_VEQPKG      | cudf_vpkg_t *pkg
+		     TYPE_VPKGLIST    | cudf_vpkglist_t pkgs
+		     TYPE_VEQPKGLIST  | cudf_vpkglist_t pkgs
+		     TYPE_VPKGFORMULA | cudf_vpkgformula_t f
+		     TYPE_TYPEDECL    | cudf_typedecl_t types
 		*/
 } cudf_value_t;
 
@@ -144,8 +143,7 @@ int cudf_pkg_was_installed(cudf_package_t pkg);
 #define	KEEP_PACKAGE	2	/* keep: package */
 #define	KEEP_FEATURE	3	/* keep: feature */
 
-/* Get "keep" property from a cudf_pkg.
-   See KEEP_* macros */
+/* Get "keep" property from a cudf_pkg. See KEEP_* macros */
 int cudf_pkg_keep(cudf_package_t pkg);
 
 /* Get dependencies of a package */
@@ -156,7 +154,6 @@ cudf_vpkglist_t cudf_pkg_conflicts(cudf_package_t pkg);
 
 /* Get provided features of a package */
 cudf_vpkglist_t cudf_pkg_provides(cudf_package_t pkg);
-
 
 /* Get extra properties of a package. */
 cudf_extra_t cudf_pkg_extra(cudf_package_t pkg);
@@ -182,9 +179,19 @@ char *cudf_pre_property(cudf_preamble_t pre, const char *prop);
     needed using cudf_free_universe */
 cudf_universe_t cudf_load_universe(GList *packages);
 
+/* Return the number of packages in the given universe. */
 int cudf_universe_size(cudf_universe_t univ);
+
+/* Return the number of installed packages in the given universe. */
 int cudf_installed_size(cudf_universe_t univ);
+
+/* Check whether the package status of the given universe is consistent
+ * (i.e. dependencies and conflicts or all installed packages are
+ * respected). */
 int cudf_is_consistent(cudf_universe_t univ);
+
+/* Check whether the given universe contains a proper solution for the given
+ * CUDF (i.e. its package status is consistent and satisfies user request).*/
 int cudf_is_solution(cudf_t *cudf, cudf_universe_t solution);
 
 
