@@ -17,7 +17,6 @@
 
 #include <stdio.h>
 #include <caml/callback.h>
-#include <caml/memory.h>
 #include <glib.h>
 
 #include <cudf.h>
@@ -82,8 +81,6 @@ void print_vpkgformula(cudf_vpkgformula_t fmla) {
 
 /* Print to stdout a CUDF preamble */
 void print_preamble(cudf_doc_t *doc) {
-	CAMLparam0();
-	CAMLlocal1(pre);
 	char *s;
 	char *props[] = { "preamble", "property", "univ-checksum",
 			  "status-checksum", "req-checksum" };
@@ -91,34 +88,28 @@ void print_preamble(cudf_doc_t *doc) {
 
 	if (! doc->has_preamble)
 		return;
-	pre = doc->preamble;
 
 	for (i=0 ; i<5 ; i++) {
-		s = cudf_pre_property(pre, props[i]);
+		s = cudf_pre_property(doc->preamble, props[i]);
 		printf("  %s: %s\n", props[i], s);
 		free(s);
 	}
-	CAMLreturn0;
 }
 
 /* Print to stdout a CUDF request */
 void print_request(cudf_doc_t *doc) {
-	CAMLparam0();
-	CAMLlocal1(req);
 	char *s;
 	char *props[] = { "request", "install", "remove", "upgrade" };
 	int i;
 
 	if (! doc->has_request)
 		return;
-	req = doc->request;
 
 	for (i=0 ; i<4 ; i++) {
-		s = cudf_req_property(req, props[i]);
+		s = cudf_req_property(doc->request, props[i]);
 		printf("  %s: %s\n", props[i], s);
 		free(s);
 	}
-	CAMLreturn0;
 }
 
 /* Print to stdout a possible value of the "keep" package property */
@@ -179,7 +170,6 @@ void print_property(gpointer k, gpointer v, gpointer user_data) {
 
 /* Print to stdout a CUDF package */
 void print_pkg(cudf_package_t pkg) {
-	CAMLparam1(pkg);
 	cudf_vpkgformula_t fmla;
 	cudf_vpkglist_t vpkglist;
 
@@ -212,16 +202,13 @@ void print_pkg(cudf_package_t pkg) {
 
 	print_extra(cudf_pkg_extra(pkg));	/* extra properties */
 	printf("\n");
-
-	CAMLreturn0;
 }
 
 int main(int argc, char **argv) {
-	CAMLparam0();
 	cudf_doc_t *doc = NULL;
 	cudf_t *cudf = NULL, *sol = NULL;
-	CAMLlocal1(pkg);
-	cudf_universe_t *univ = NULL;
+	cudf_package_t pkg;
+	cudf_universe_t univ = NULL;
 	GList *l = NULL;
 
 	caml_startup(argv);
@@ -242,36 +229,21 @@ int main(int argc, char **argv) {
 	if (doc->has_request) {
 		printf("Request: \n");
 		print_request(doc);
-		/* 
-                 * printf("\n"); print_request(doc);
-		 * printf("\n"); print_request(doc);
-		 * printf("\n"); print_request(doc);
-		 * printf("\n"); print_request(doc);
-		 * printf("\n"); print_request(doc);
-		 * printf("\n");
-                 */
+		printf("\n");
 	}
-
-	printf("\n");
-	print_request(doc); printf("\n");
-	print_request(doc); printf("\n");
-	print_request(doc); printf("\n");
-	print_request(doc); printf("\n");
-	print_request(doc); printf("\n");
 
 	printf("Universe:\n");
 	l = doc->packages;
 	while (l != NULL) {
-		pkg = * (cudf_package_t *) g_list_nth_data(l, 0);
+		pkg = (cudf_package_t) g_list_nth_data(l, 0);
 		print_pkg(pkg);
 		l = g_list_next(l);
 	}
 	g_message("Try packages -> universe conversion ...");
-	univ = malloc(sizeof(cudf_universe_t));
-	cudf_load_universe(univ, doc->packages);
+	univ = cudf_load_universe(doc->packages);
 	printf("Universe size: %d/%d (installed/total)\n",
-	       cudf_installed_size(*univ), cudf_universe_size(*univ));
-	printf("Universe consistent: %s\n", cudf_is_consistent(*univ) ?
+	       cudf_installed_size(univ), cudf_universe_size(univ));
+	printf("Universe consistent: %s\n", cudf_is_consistent(univ) ?
 	       "yes" : "no");
 
 	g_message("Freeing memory ...");
@@ -296,5 +268,5 @@ int main(int argc, char **argv) {
 	cudf_free_cudf(cudf);
 	g_message("All done.");
 
-	CAMLreturnT(int, 0);
+	exit(0);
 }

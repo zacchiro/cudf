@@ -18,10 +18,10 @@
 
 #include <cudf-variants.h>
 
-typedef value cudf_preamble_t;
-typedef value cudf_request_t;
-typedef value cudf_universe_t;
-typedef value cudf_package_t;
+typedef value *cudf_preamble_t;
+typedef value *cudf_request_t;
+typedef value *cudf_universe_t;
+typedef value *cudf_package_t;
 
 typedef GList *cudf_packages_t;	/* List of CUDF packages */
 
@@ -127,16 +127,16 @@ typedef struct __cudf_value {
 /* Macros for accessing cudf_package values */
 
 /* Get package name of a cudf_pkg */
-#define cudf_pkg_name(p)	(String_val(Field(p, 0)))	/* (char *) */
+char *cudf_pkg_name(cudf_package_t pkg);
 
 /* Get package version of a cudf_pkg */
-#define cudf_pkg_version(p)	(Int_val(Field(p, 1)))		/* int */
+int cudf_pkg_version(cudf_package_t pkg);
 
 /* Get (current) installation status of a cudf_pkg */
-#define cudf_pkg_installed(p)	(Int_val(Field(p, 5)))		/* int (/bool) */
+int cudf_pkg_installed(cudf_package_t pkg);
 
 /* Get (past) installation status of a cudf_pkg */
-#define cudf_pkg_was_installed(p)	(Int_val(Field(p, 6)))	/* int (/bool) */
+int cudf_pkg_was_installed(cudf_package_t pkg);
 
 /* Possible values returned by cudf_pkg_keep() */
 #define KEEP_NONE	0	/* keep: none */
@@ -176,11 +176,11 @@ char *cudf_pre_property(cudf_preamble_t pre, const char *prop);
 
 /* Universe management */
 
-/* @param univ pointer to a cudf_universe which will be filled. After
-    use the universe should be freed using cudf_free_universe.
-   @param packages list of (pointers to) cudf_package-s; the packages
-    member of a cudf_doc structure is a suitable value */
-void cudf_load_universe(cudf_universe_t *univ, GList *packages);
+/* @param packages list of (pointers to) cudf_package-s; the packages member of
+    a cudf_doc structure is a suitable value
+   @return a freshly allocated universe, which should be freed when no longer
+    needed using cudf_free_universe */
+cudf_universe_t cudf_load_universe(GList *packages);
 
 int cudf_universe_size(cudf_universe_t univ);
 int cudf_installed_size(cudf_universe_t univ);
@@ -192,7 +192,7 @@ int cudf_is_solution(cudf_t *cudf, cudf_universe_t solution);
 
 void cudf_free_doc(cudf_doc_t *doc);
 void cudf_free_cudf(cudf_t *cudf);
-void cudf_free_universe(cudf_universe_t *univ);
+void cudf_free_universe(cudf_universe_t univ);
 void cudf_free_vpkg(cudf_vpkg_t *vpkg);
 void cudf_free_vpkglist(cudf_vpkglist_t l);
 void cudf_free_vpkgformula(cudf_vpkgformula_t fmla);
