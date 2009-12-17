@@ -1,5 +1,6 @@
 include ../Makefile.config
 all: libcudf.a c-test cudf.pc
+opt: libcudf-opt.a c-test-opt cudf.pc
 include Makefile.variants
 
 NULL =
@@ -10,9 +11,13 @@ OCAML_LIBDIR := $(shell ocamlc -where)
 CUDF_LDFLAGS = -L$(OCAML_LIBDIR) -L$(CURDIR)
 CUDF_CLIBS = -lcudf -lm -ldl -lunix -lncurses -lglib-2.0
 OCAMLC = ocamlfind ocamlc -package unix,extlib
+OCAMLOPT = ocamlfind ocamlopt -package unix,extlib
 
 libcudf.a: cudf-caml.o cudf.o
 	cp $(OCAML_LIBDIR)/libcamlrun.a $@
+	ar r $@ $^
+libcudf-opt.a: cudf-caml-opt.o cudf.o
+	cp $(OCAML_LIBDIR)/libasmrun.a $@
 	ar r $@ $^
 
 ../_build/%:
@@ -20,6 +25,8 @@ libcudf.a: cudf-caml.o cudf.o
 
 cudf-caml.o: ../_build/cudf.cma ../_build/cudf_c.cmo
 	$(OCAMLC) -linkpkg -output-obj -o $@ $^
+cudf-caml-opt.o: ../_build/cudf.cmxa ../_build/cudf_c.cmx
+	$(OCAMLOPT) -linkpkg -output-obj -o $@ $^
 
 cudf.o: cudf.c cudf.h cudf-variants.h
 	$(CC) $(CFLAGS) $(INCLUDES) -c $<
@@ -29,6 +36,9 @@ c-test.o: c-test.c cudf.o
 
 c-test: c-test.o libcudf.a
 	$(CC) $(PROG_CFLAGS) -o $@ $(INCLUDES) $(CUDF_LDFLAGS) $< $(CUDF_CLIBS)
+c-test-opt: c-test.o libcudf-opt.a
+	$(CC) $(PROG_CFLAGS) -o $@ $(INCLUDES) $(CUDF_LDFLAGS) $< \
+		$(subst -lcudf,-lcudf-opt,$(CUDF_CLIBS))
 
 test: ../tests/legacy.cudf ../tests/legacy-sol.cudf c-test
 	./c-test ../tests/legacy.cudf ../tests/legacy-sol.cudf > /dev/null
@@ -43,4 +53,4 @@ clean:
 	rm -f c-test
 	rm -f cudf.pc
 
-.PHONY: all clean test
+.PHONY: all opt clean test

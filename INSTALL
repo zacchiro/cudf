@@ -26,7 +26,8 @@ C bindings
 
 To build the C bindings to the OCaml library run:
 
-  $ make -C c-lib		# build C bindings
+  $ make -C c-lib		# build C bindings (to OCaml bytecode)
+  $ make -C c-lib-opt		# build C bindings (to OCaml native code)
   $ make -C c-lib test		# run the test suite for C bindings
 
 
