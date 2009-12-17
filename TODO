@@ -11,6 +11,7 @@
   currently it is a tad annoying: Cudf_parser.load and friends return "preamble
   option", but that to obtain a real Cudf.cudf the user must resolve the option
   using default_preamble by herself
+* TODO C bindings: support install/remove Makefile targets
 * DONE revamp Debian package [100%]
 ** DONE port to recent dh-ocaml
 ** DONE general packaging update

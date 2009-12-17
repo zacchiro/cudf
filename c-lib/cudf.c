@@ -24,6 +24,7 @@
 #include <caml/mlvalues.h>
 
 #include "cudf-private.h"	// instantiate OCaml-related ADTs
+#include "cudf-variants.h"
 #include "cudf.h"
 
 #define Val_none	Val_int(0)
@@ -147,41 +148,66 @@ cudf_vpkglist_t cudf_vpkglist_val(value ml_vpkgs) {
 
 cudf_value_t *cudf_value_val(value ml_v) {
 	CAMLparam1(ml_v);
+	CAMLlocal1(ml_payload);
 	cudf_value_t *v;
 	int typ;
 
 	v = malloc(sizeof(cudf_value_t));
 	typ = Int_val(Field(ml_v, 0));
+	ml_payload = Field(ml_v, 1);
 
 	v->typ = typ;
 	switch (typ) {
 	case MLPVAR_Int :
+		v->typ = TYPE_INT;
+		v->val.i = Int_val(ml_payload);
+		break;
 	case MLPVAR_Posint :
+		v->typ = TYPE_POSINT;
+		v->val.i = Int_val(ml_payload);
+		break;
 	case MLPVAR_Nat :
-		v->val.i = Int_val(Field(ml_v, 1));
+		v->typ = TYPE_NAT;
+		v->val.i = Int_val(ml_payload);
 		break;
 	case MLPVAR_Bool :
-		v->val.i = Bool_val(Field(ml_v, 1));
+		v->typ = TYPE_BOOL;
+		v->val.i = Bool_val(ml_payload);
 		break;
 	case MLPVAR_String :
+		v->typ = TYPE_STRING;
+		v->val.s = strdup(String_val(ml_payload));
 	case MLPVAR_Pkgname :
+		v->typ = TYPE_PKGNAME;
+		v->val.s = strdup(String_val(ml_payload));
 	case MLPVAR_Ident :
-		v->val.s = strdup(String_val(Field(ml_v, 1)));
+		v->typ = TYPE_IDENT;
+		v->val.s = strdup(String_val(ml_payload));
 		break;
 	case MLPVAR_Enum :
+		v->typ = TYPE_ENUM;
 		/* Skip enum list and jump to the actual enum.  Enum list is
 		 * currently not accessible using C bindings. */
-		v->val.s = strdup(String_val(Field(Field(ml_v, 1), 1)));
+		v->val.s = strdup(String_val(Field(ml_payload, 1)));
 		break;
 	case MLPVAR_Vpkg :
+		v->typ = TYPE_VPKG;
+		v->val.vpkg = cudf_vpkg_val(ml_payload);
+		break;
 	case MLPVAR_Veqpkg :
-		v->val.vpkg = cudf_vpkg_val(Field(ml_v, 1));
+		v->typ = TYPE_VEQPKG;
+		v->val.vpkg = cudf_vpkg_val(ml_payload);
 		break;
 	case MLPVAR_Vpkglist :
+		v->typ = TYPE_VPKGLIST;
+		v->val.vpkgs = cudf_vpkglist_val(ml_payload);
+		break;
 	case MLPVAR_Veqpkglist :
-		v->val.vpkgs = cudf_vpkglist_val(Field(ml_v, 1));
+		v->typ = TYPE_VEQPKGLIST;
+		v->val.vpkgs = cudf_vpkglist_val(ml_payload);
 		break;
 	case MLPVAR_Typedecl :
+		v->typ = TYPE_TYPEDECL;
 		break;
 	default :
 		g_error("Internal error: unexpected variant for type: %d", typ);

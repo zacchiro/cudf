@@ -15,8 +15,6 @@
 
 #include <glib.h>
 
-#include <cudf-variants.h>
-
 #ifndef _CUDF_PRIVATE_H
 /* Abstract data types. You should access them only with the functions given
    below. Really (or you will face the anger of OCaml GC).*/
