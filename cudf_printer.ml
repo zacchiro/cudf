@@ -75,6 +75,10 @@ let pp_doc fmt (pre, pkgs, req) =
   List.iter (fun pkg -> Format.fprintf fmt "%a@\n" pp_package pkg) pkgs;
   pp_request fmt req
 
+let pp_solution fmt (pre, univ) =
+  Format.fprintf fmt "%a@\n%a"
+    pp_preamble pre pp_universe univ
+
 let pp_item fmt = function
   | `Package pkg -> pp_package fmt pkg
   | `Request req -> pp_request fmt req
@@ -94,6 +98,7 @@ let string_of pp arg =
 
 let string_of_cudf = string_of pp_cudf
 let string_of_doc = string_of pp_doc
+let string_of_solution = string_of pp_solution
 let string_of_item = string_of pp_item
 let string_of_package = string_of pp_package
 let string_of_packages = string_of pp_packages

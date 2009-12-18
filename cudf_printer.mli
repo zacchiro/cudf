@@ -21,6 +21,7 @@ open Cudf
 
 val pp_cudf : Format.formatter -> cudf -> unit
 val pp_doc : Format.formatter -> cudf_doc -> unit
+val pp_solution : Format.formatter -> solution -> unit
 val pp_item : Format.formatter -> cudf_item -> unit
 val pp_package : Format.formatter -> package -> unit
 val pp_preamble : Format.formatter -> preamble -> unit
@@ -34,6 +35,7 @@ val pp_universe : Format.formatter -> universe -> unit
 
 val string_of_cudf : cudf -> string
 val string_of_doc : cudf_doc -> string
+val string_of_solution : solution -> string
 val string_of_item : cudf_item -> string
 val string_of_package : package -> string
 val string_of_request : request -> string
