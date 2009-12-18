@@ -1,3 +1,10 @@
+2009-12-18  Stefano Zacchiroli  <zack@pps.jussieu.fr>
+
+	* c-lib Remove the need of OCaml devel stuff to use the C API
+	* c-lib Provide bindings to OCaml native code, if available
+	* c-lib Hide OCaml "value", it is way more safe (API change)
+	* ALL Development release 0.5.94
+
 2009-11-25  Stefano Zacchiroli  <zack@pps.jussieu.fr>
 
 	* ALL Porting to CUDF 2.0
