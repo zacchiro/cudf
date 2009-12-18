@@ -264,13 +264,13 @@ cudf_doc_t *cudf_parse_from_file(char *fname) {
 	}
 
 	ml_pkgs = Field(ml_doc, FIELD_UNIV);		/* packages */
-	while (ml_pkgs != Val_emptylist) {	// TODO use prepend + reverse
+	while (ml_pkgs != Val_emptylist) {
 		NEW_MLVAL(pkg);
 		*pkg = Field(ml_pkgs, 0);
-		l = g_list_append(l, pkg);
+		l = g_list_prepend(l, pkg);
 		ml_pkgs = Field(ml_pkgs, 1);
 	}
-	doc->packages = l;
+	doc->packages = g_list_reverse(l);
 
 	CAMLreturnT(cudf_doc_t *, doc);
 }
