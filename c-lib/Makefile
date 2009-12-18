@@ -13,6 +13,8 @@ CUDF_CLIBS = -lcudf -lm -ldl -lunix -lncurses -lglib-2.0
 OCAMLC = ocamlfind ocamlc -package unix,extlib
 OCAMLOPT = ocamlfind ocamlopt -package unix,extlib
 
+INSTALL_STUFF = libcudf.a cudf.h cudf.pc
+
 libcudf.a: cudf-caml.o cudf.o
 	cp $(OCAML_LIBDIR)/libcamlrun.a $@
 	ar r $@ $^
@@ -53,4 +55,23 @@ clean:
 	rm -f c-test c-test-opt
 	rm -f cudf.pc
 
-.PHONY: all opt clean test
+install:
+	test -d $(CLIBDIR) || mkdir -p $(CLIBDIR)
+	test -d $(CINCDIR) || mkdir -p $(CINCDIR)
+	test -d $(PCDIR) || mkdir -p $(PCDIR)
+	if [ -f libcudf-opt.a ] ; then \
+		cp libcudf-opt.a $(CLIBDIR)/libcudf.a ; \
+	else \
+		cp libcudf.a $(CLIBDIR)/libcudf.a ; \
+	fi
+	cp libcudf.a $(CLIBDIR)
+	cp cudf.h $(CINCDIR)
+	cp cudf.pc $(PCDIR)
+
+uninstall:
+	rm $(CLIBDIR)/libcudf.a
+	rm $(CINCDIR)/cudf.h
+	rm $(PCDIR)/cudf.pc
+	-rmdir -p $(CLIBDIR) $(CINCDIR) $(PCDIR)
+
+.PHONY: all opt clean test install uninstall

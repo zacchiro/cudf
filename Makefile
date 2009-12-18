@@ -17,9 +17,6 @@ OCAMLBUILD = ocamlbuild
 OBFLAGS =
 OCAMLFIND = ocamlfind
 
-DESTDIR =
-LIBDIR = $(DESTDIR)/$(shell ocamlc -where)
-BINDIR = $(DESTDIR)/usr/bin
 ifeq ($(DESTDIR),)
 INSTALL = $(OCAMLFIND) install
 UNINSTALL = $(OCAMLFIND) remove
@@ -89,6 +86,8 @@ install:
 		fi ; \
 		echo "Installed $(BINDIR)/$$tgt" ; \
 	done
+	test -f $(C_LIB_DIR)/cudf.o && \
+		$(MAKE) -C c-lib/ install DESTDIR=$(DESTDIR)
 
 uninstall:
 	$(UNINSTALL) $(NAME)
@@ -131,4 +130,7 @@ distcheck: ./$(DIST_TARBALL)
 doc:
 	$(OCAMLBUILD) $(OBFLAGS) cudf.docdir/index.html
 
-.PHONY: all opt clean top-level headers test tags install uninstall dist doc
+world: all opt c-lib c-lib-opt doc
+
+.PHONY: all opt world clean top-level headers test tags install uninstall
+.PHONY: c-lib c-lib-opt dist doc
