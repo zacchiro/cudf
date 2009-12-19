@@ -117,6 +117,8 @@ deb: ./$(DEB_TARBALL)
 	tar xvzf $<
 	svn export debian/ $(DIST_DIR)/debian
 	cd $(DIST_DIR) && dpkg-buildpackage -rfakeroot
+rpm: ./$(DIST_TARBALL)
+	rpmbuild --nodeps -ta $<
 
 distcheck: ./$(DIST_TARBALL)
 	tar xzf $<
@@ -133,4 +135,4 @@ doc:
 world: all opt c-lib c-lib-opt doc
 
 .PHONY: all opt world clean top-level headers test tags install uninstall
-.PHONY: c-lib c-lib-opt dist doc
+.PHONY: dep rpm c-lib c-lib-opt dist doc
