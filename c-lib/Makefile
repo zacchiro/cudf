@@ -6,7 +6,7 @@ include Makefile.variants
 NULL =
 CFLAGS = -Wall -DG_LOG_DOMAIN=\"libCUDF\"
 PROG_CFLAGS = -Wall
-INCLUDES = -I . $(shell pkg-config --cflags glib-2.0)
+INCLUDES = -I . -I $(OCAML_LIBDIR) $(shell pkg-config --cflags glib-2.0)
 OCAML_LIBDIR := $(shell ocamlc -where)
 CUDF_LDFLAGS = -L$(OCAML_LIBDIR) -L$(CURDIR)
 CUDF_CLIBS = -lcudf -lm -ldl -lunix -lncurses -lglib-2.0
@@ -31,7 +31,6 @@ cudf-caml-opt.o: ../_build/cudf.cmxa ../_build/cudf_c.cmx
 	$(OCAMLOPT) -linkpkg -output-obj -o $@ $^
 
 cudf.o: cudf.c cudf.h cudf-variants.h
-	$(CC) $(CFLAGS) $(INCLUDES) -c $<
 
 c-test.o: c-test.c cudf.o
 	$(CC) $(PROG_CFLAGS) $(INCLUDES) -c $<
@@ -49,6 +48,9 @@ cudf.pc: cudf.pc.in
 	cat $< | sed -e "s,@OCAML_LIBDIR@,$(OCAML_LIBDIR),g" \
 			-e "s,@VERSION@,$(VERSION),g" \
 		> $@
+
+%.o: %.c
+	$(CC) $(CFLAGS) $(INCLUDES) -c $<
 
 clean:
 	rm -f *.a *.o *.cmo *.cmi
