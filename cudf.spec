@@ -18,7 +18,7 @@ describe an upgrade problem, as faced by package managers in popular
 package-based GNU/Linux distributions.
 
 %package devel
-Summary: CUDF (Common Upgradeability Description Format) development tools.
+Summary: CUDF (Common Upgradeability Description Format) C development stuff.
 
 %description devel
 CUDF (for Common Upgradeability Description Format) is a format for describing
@@ -28,7 +28,21 @@ libCUDF is a library to manipulate so called CUDF documents. A CUDF document
 describe an upgrade problem, as faced by package managers in popular
 package-based GNU/Linux distributions.
 
-This package contains the development stuff needed to use libCUDF in your
+This package contains the development stuff needed to use libCUDF in your C
+programs.
+
+%package ocaml-devel
+Summary: CUDF (Common Upgradeability Description Format) OCaml development stuff.
+
+%description ocaml-devel
+CUDF (for Common Upgradeability Description Format) is a format for describing
+upgrade scenarios in package-based Free and Open Source Software distribution.
+
+libCUDF is a library to manipulate so called CUDF documents. A CUDF document
+describe an upgrade problem, as faced by package managers in popular
+package-based GNU/Linux distributions.
+
+This package contains the development stuff needed to use libCUDF in your OCaml
 programs.
 
 %prep
@@ -51,8 +65,7 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root)
 %{_bindir}/cudf-check
-%{_bindir}/cudf-parse-822
-%{_libdir}/ocaml/cudf
+# %{_bindir}/cudf-parse-822
 
 %files devel
 %defattr(-,root,root)
@@ -60,9 +73,13 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/*.a
 %{_libdir}/pkgconfig/cudf.pc
 
+%files ocaml-devel
+%defattr(-,root,root)
+%{_libdir}/ocaml/cudf
+
 %changelog
 * Sat Dec 19 2009 Stefano Zacchiroli <zack@pps.jussieu.fr>
-- various adjustments (deps, description, ...)
+- various adjustments (deps, description, native code, ...)
 
 * Fri Dec 18 2009 Jeff Johnson <jbj@rpm5.org>
 - create.
