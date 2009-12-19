@@ -62,8 +62,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/pkgconfig/cudf.pc
 
 %changelog
-* Fri Dec 18 2009 Jeff Johnson <jbj@rpm5.org>
-- create.
-
 * Sat Dec 19 2009 Stefano Zacchiroli <zack@pps.jussieu.fr>
 - various adjustments (deps, description, ...)
+
+* Fri Dec 18 2009 Jeff Johnson <jbj@rpm5.org>
+- create.
