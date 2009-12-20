@@ -213,7 +213,6 @@ cudf_value_t *cudf_value_val(value ml_v) {
 		g_error("Internal error: unexpected variant for type: %d", typ);
 	}
 
-	return v;
 	CAMLreturnT(cudf_value_t *, v);
 }
 
