@@ -174,6 +174,7 @@ void print_property(gpointer k, gpointer v, gpointer user_data) {
 void print_pkg(cudf_package_t pkg) {
 	cudf_vpkgformula_t fmla;
 	cudf_vpkglist_t vpkglist;
+	cudf_extra_t extra;
 
 	printf("  package: %s\n", cudf_pkg_name(pkg));
 	printf("  version: %d\n", cudf_pkg_version(pkg));
@@ -202,8 +203,10 @@ void print_pkg(cudf_package_t pkg) {
 
 	print_keep(cudf_pkg_keep(pkg));		/* keep */
 
-	print_extra(cudf_pkg_extra(pkg));	/* extra properties */
+	extra = cudf_pkg_extra(pkg);		/* extra properties */
+	print_extra(extra);
 	printf("\n");
+	cudf_free_extra(extra);
 }
 
 int main(int argc, char **argv) {
