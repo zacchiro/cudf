@@ -58,22 +58,22 @@ clean:
 	rm -f cudf.pc
 
 install:
-	test -d $(CLIBDIR) || mkdir -p $(CLIBDIR)
-	test -d $(CINCDIR) || mkdir -p $(CINCDIR)
+	test -d $(LIBDIR) || mkdir -p $(LIBDIR)
+	test -d $(INCDIR) || mkdir -p $(INCDIR)
 	test -d $(PCDIR) || mkdir -p $(PCDIR)
 	if [ -f libcudf-opt.a ] ; then \
-		cp libcudf-opt.a $(CLIBDIR)/libcudf.a ; \
+		cp libcudf-opt.a $(LIBDIR)/libcudf.a ; \
 	else \
-		cp libcudf.a $(CLIBDIR)/libcudf.a ; \
+		cp libcudf.a $(LIBDIR)/libcudf.a ; \
 	fi
-	cp libcudf.a $(CLIBDIR)
-	cp cudf.h $(CINCDIR)
+	cp libcudf.a $(LIBDIR)
+	cp cudf.h $(INCDIR)
 	cp cudf.pc $(PCDIR)
 
 uninstall:
-	rm $(CLIBDIR)/libcudf.a
-	rm $(CINCDIR)/cudf.h
+	rm $(LIBDIR)/libcudf.a
+	rm $(INCDIR)/cudf.h
 	rm $(PCDIR)/cudf.pc
-	-rmdir -p $(CLIBDIR) $(CINCDIR) $(PCDIR)
+	-rmdir -p $(LIBDIR) $(INCDIR) $(PCDIR)
 
 .PHONY: all opt clean test install uninstall

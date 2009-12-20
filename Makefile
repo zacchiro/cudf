@@ -21,8 +21,8 @@ ifeq ($(DESTDIR),)
 INSTALL = $(OCAMLFIND) install
 UNINSTALL = $(OCAMLFIND) remove
 else
-INSTALL = $(OCAMLFIND) install -destdir $(LIBDIR)
-UNINSTALL = $(OCAMLFIND) remove -destdir $(LIBDIR)
+INSTALL = $(OCAMLFIND) install -destdir $(OCAMLLIBDIR)
+UNINSTALL = $(OCAMLFIND) remove -destdir $(OCAMLLIBDIR)
 endif
 
 DIST_DIR = $(NAME)-$(VERSION)
@@ -74,7 +74,7 @@ INSTALL_STUFF += $(wildcard _build/cudf_*.cmx _build/cudf_*.o _build/cudf_*.a)
 INSTALL_STUFF += $(wildcard _build/cudf.o _build/cudf.cmx _build/cudf.cmi)
 
 install:
-	test -d $(LIBDIR) || mkdir -p $(LIBDIR)
+	test -d $(OCAMLLIBDIR) || mkdir -p $(OCAMLLIBDIR)
 	$(INSTALL) -patch-version $(VERSION) $(NAME) $(INSTALL_STUFF)
 	test -d $(BINDIR) || mkdir -p $(BINDIR)
 	for p in $(notdir $(PROGS)) ; do \
@@ -86,8 +86,9 @@ install:
 		fi ; \
 		echo "Installed $(BINDIR)/$$tgt" ; \
 	done
-	test -f $(C_LIB_DIR)/cudf.o && \
-		$(MAKE) -C c-lib/ install DESTDIR=$(DESTDIR)
+	if [ -f $(C_LIB_DIR)/cudf.o ] ; then \
+		$(MAKE) -C c-lib/ -e install ; \
+	fi
 
 uninstall:
 	$(UNINSTALL) $(NAME)
@@ -98,7 +99,7 @@ uninstall:
 		fi ; \
 		echo "Removed $(BINDIR)/$$tgt" ; \
 	done
-	-rmdir -p $(LIBDIR) $(BINDIR)
+	-rmdir -p $(OCAMLLIBDIR) $(BINDIR)
 
 dist: ./$(DIST_TARBALL)
 ./$(DIST_TARBALL):
