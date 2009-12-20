@@ -65,7 +65,7 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root)
 %{_bindir}/cudf-check
-# %{_bindir}/cudf-parse-822
+%{_bindir}/cudf-parse-822
 
 %files devel
 %defattr(-,root,root)
