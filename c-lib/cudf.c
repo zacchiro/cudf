@@ -581,26 +581,26 @@ void cudf_free_value(cudf_value_t *v) {
 
 	typ = v->typ;
 	switch (typ) {
-	case MLPVAR_Int :
-	case MLPVAR_Posint :
-	case MLPVAR_Nat :
-	case MLPVAR_Bool :
+	case TYPE_INT :
+	case TYPE_POSINT :
+	case TYPE_NAT :
+	case TYPE_BOOL :
 		break;	/* integers don't require any freeing */
-	case MLPVAR_String :
-	case MLPVAR_Pkgname :
-	case MLPVAR_Ident :
-	case MLPVAR_Enum :
+	case TYPE_STRING :
+	case TYPE_PKGNAME :
+	case TYPE_IDENT :
+	case TYPE_ENUM :
 		free(v->val.s);
 		break;
-	case MLPVAR_Vpkg :
-	case MLPVAR_Veqpkg :
+	case TYPE_VPKG :
+	case TYPE_VEQPKG :
 		cudf_free_vpkg(v->val.vpkg);
 		break;
-	case MLPVAR_Vpkglist :
-	case MLPVAR_Veqpkglist :
+	case TYPE_VPKGLIST :
+	case TYPE_VEQPKGLIST :
 		cudf_free_vpkglist(v->val.vpkgs);
 		break;
-	case MLPVAR_Typedecl :
+	case TYPE_TYPEDECL :
 		break;
 	default :
 		g_error("Internal error: unexpected variant for type: %d", typ);
