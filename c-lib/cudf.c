@@ -218,9 +218,8 @@ cudf_value_t *cudf_value_val(value ml_v) {
 
 /** libCUDF binding public interface */
 
-#if 0	// segfaults badly
 void cudf_init() {
-	char *fake_argv[] = {""};
+	char *fake_argv[] = {"", NULL};
 	static int cudf_initialized = 0;
 
 	if (cudf_initialized)
@@ -229,7 +228,6 @@ void cudf_init() {
 	caml_startup(fake_argv);
 	cudf_initialized = 1;
 }
-#endif
 
 cudf_doc_t *cudf_parse_from_file(char *fname) {
 	CAMLparam0();
