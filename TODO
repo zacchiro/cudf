@@ -3,7 +3,6 @@
 * TODO add detection of multiple parse errors at once
 * TODO provide Java bindings (via O'Jacare)
 * TODO add support for computing checksums
-
 ** univ-checksum
 ** status-checksum
 ** req-checksum
@@ -11,6 +10,8 @@
   currently it is a tad annoying: Cudf_parser.load and friends return "preamble
   option", but that to obtain a real Cudf.cudf the user must resolve the option
   using default_preamble by herself
+* TODO use autoconf (and ocaml-autoconf)
+** then factorize version numbers in various places
 * DONE C bindings: support install/remove Makefile targets
 * DONE revamp Debian package [100%]
 ** DONE port to recent dh-ocaml
