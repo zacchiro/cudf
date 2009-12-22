@@ -1,4 +1,4 @@
-Summary: CUDF (Common Upgradeability Description Format) tools.
+Summary: CUDF (Common Upgradeability Description Format) tools and libraries
 Name: cudf
 Version: 0.5.94
 Release: 1
@@ -18,7 +18,7 @@ describe an upgrade problem, as faced by package managers in popular
 package-based GNU/Linux distributions.
 
 %package tools
-Summary: CUDF (Common Upgradeability Description Format) command-line tools.
+Summary: CUDF (Common Upgradeability Description Format) command-line tools
 
 %description tools
 CUDF (for Common Upgradeability Description Format) is a format for describing
@@ -34,7 +34,7 @@ document properties such as installation consistency and matching of problems
 with their solutions.
 
 %package devel
-Summary: CUDF (Common Upgradeability Description Format) C development stuff.
+Summary: CUDF (Common Upgradeability Description Format) C development stuff
 
 %description devel
 CUDF (for Common Upgradeability Description Format) is a format for describing
@@ -48,7 +48,7 @@ This package contains the development stuff needed to use libCUDF in your C
 programs.
 
 %package ocaml-devel
-Summary: CUDF (Common Upgradeability Description Format) OCaml development stuff.
+Summary: CUDF (Common Upgradeability Description Format) OCaml development stuff
 
 %description ocaml-devel
 CUDF (for Common Upgradeability Description Format) is a format for describing
