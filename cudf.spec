@@ -17,6 +17,22 @@ libCUDF is a library to manipulate so called CUDF documents. A CUDF document
 describe an upgrade problem, as faced by package managers in popular
 package-based GNU/Linux distributions.
 
+%package tools
+Summary: CUDF (Common Upgradeability Description Format) command-line tools.
+
+%description tools
+CUDF (for Common Upgradeability Description Format) is a format for describing
+upgrade scenarios in package-based Free and Open Source Software distribution.
+
+libCUDF is a library to manipulate so called CUDF documents. A CUDF document
+describe an upgrade problem, as faced by package managers in popular
+package-based GNU/Linux distributions.
+
+This package contains command line tools to manipulate CUDF and related
+documents. In particular it contains cudf-check, which enables checking of
+document properties such as installation consistency and matching of problems
+with their solutions.
+
 %package devel
 Summary: CUDF (Common Upgradeability Description Format) C development stuff.
 
@@ -53,7 +69,7 @@ make all c-lib
 which /usr/bin/ocamlopt > /dev/null && make opt c-lib-opt
 
 %install
-rm -rf $RPM_BUILD_ROOT
+rm -rf "$RPM_BUILD_ROOT"
 make install				\
     DESTDIR="$RPM_BUILD_ROOT"		\
     LIBDIR="%{_libdir}"			\
@@ -63,9 +79,9 @@ make install				\
 make test
 
 %clean
-rm -rf $RPM_BUILD_ROOT
+rm -rf "$RPM_BUILD_ROOT"
 
-%files
+%files tools
 %defattr(-,root,root)
 %{_bindir}/cudf-check
 %{_bindir}/cudf-parse-822
