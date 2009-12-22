@@ -54,7 +54,10 @@ which /usr/bin/ocamlopt > /dev/null && make opt c-lib-opt
 
 %install
 rm -rf $RPM_BUILD_ROOT
-make DESTDIR="$RPM_BUILD_ROOT" install
+make install				\
+    DESTDIR="$RPM_BUILD_ROOT"		\
+    LIBDIR="%{_libdir}"			\
+    OCAMLLIBDIR="%{_libdir}/ocaml"
 
 %check
 make test
@@ -78,6 +81,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/ocaml/cudf
 
 %changelog
+* Tue Dec 22 2009 Stefano Zacchiroli <zack@pps.jussieu.fr>
+- use default rpm installation paths (in particular, /usr/lib64 on x86_64)
+
 * Sat Dec 19 2009 Stefano Zacchiroli <zack@pps.jussieu.fr>
 - various adjustments (deps, description, native code, ...)
 

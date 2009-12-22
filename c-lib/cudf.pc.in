@@ -1,10 +1,8 @@
-prefix=/usr
-exec_prefix=${prefix}
-libdir=${exec_prefix}/lib
-includedir=${prefix}/include
-datarootdir=${prefix}/share
+libdir=@LIBDIR@
+includedir=@INCDIR@
+datarootdir=/usr/share
 datadir=${datarootdir}
-ocaml_libdir=@OCAML_LIBDIR@
+ocaml_libdir=@OCAMLLIBDIR@
 
 Name: CUDF
 Description: access descriptions of package upgrade problems

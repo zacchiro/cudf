@@ -1,13 +1,13 @@
 include ../Makefile.config
-all: libcudf.a c-test cudf.pc
-opt: libcudf-opt.a c-test-opt cudf.pc
+all: libcudf.a c-test
+opt: libcudf-opt.a c-test-opt
 include Makefile.variants
 
 NULL =
 CFLAGS = -Wall -DG_LOG_DOMAIN=\"libCUDF\"
 PROG_CFLAGS = -Wall
-INCLUDES = -I . -I $(OCAML_LIBDIR) $(shell pkg-config --cflags glib-2.0)
 OCAML_LIBDIR := $(shell ocamlc -where)
+INCLUDES = -I . -I $(OCAML_LIBDIR) $(shell pkg-config --cflags glib-2.0)
 CUDF_LDFLAGS = -L$(OCAML_LIBDIR) -L$(CURDIR)
 CUDF_CLIBS = -lcudf -lm -ldl -lunix -lncurses -lglib-2.0
 OCAMLC = ocamlfind ocamlc -package unix,extlib
@@ -45,8 +45,10 @@ test: ../tests/legacy.cudf ../tests/legacy-sol.cudf c-test
 	./c-test ../tests/legacy.cudf ../tests/legacy-sol.cudf > /dev/null
 
 cudf.pc: cudf.pc.in
-	cat $< | sed -e "s,@OCAML_LIBDIR@,$(OCAML_LIBDIR),g" \
+	cat $< | sed -e "s,@OCAMLLIBDIR@,$(OCAMLLIBDIR),g" \
 			-e "s,@VERSION@,$(VERSION),g" \
+			-e "s,@LIBDIR@,$(LIBDIR),g" \
+			-e "s,@INCDIR@,$(INCDIR),g" \
 		> $@
 
 %.o: %.c
@@ -57,23 +59,23 @@ clean:
 	rm -f c-test c-test-opt
 	rm -f cudf.pc
 
-install:
-	test -d $(LIBDIR) || mkdir -p $(LIBDIR)
-	test -d $(INCDIR) || mkdir -p $(INCDIR)
-	test -d $(PCDIR) || mkdir -p $(PCDIR)
+install: cudf.pc
+	test -d $(DESTDIR)/$(LIBDIR) || mkdir -p $(DESTDIR)/$(LIBDIR)
+	test -d $(DESTDIR)/$(INCDIR) || mkdir -p $(DESTDIR)/$(INCDIR)
+	test -d $(DESTDIR)/$(PCDIR) || mkdir -p $(DESTDIR)/$(PCDIR)
 	if [ -f libcudf-opt.a ] ; then \
-		cp libcudf-opt.a $(LIBDIR)/libcudf.a ; \
+		cp libcudf-opt.a $(DESTDIR)/$(LIBDIR)/libcudf.a ; \
 	else \
-		cp libcudf.a $(LIBDIR)/libcudf.a ; \
+		cp libcudf.a $(DESTDIR)/$(LIBDIR)/libcudf.a ; \
 	fi
-	cp libcudf.a $(LIBDIR)
-	cp cudf.h $(INCDIR)
-	cp cudf.pc $(PCDIR)
+	cp libcudf.a $(DESTDIR)/$(LIBDIR)
+	cp cudf.h $(DESTDIR)/$(INCDIR)
+	cp cudf.pc $(DESTDIR)/$(PCDIR)
 
 uninstall:
-	rm $(LIBDIR)/libcudf.a
-	rm $(INCDIR)/cudf.h
-	rm $(PCDIR)/cudf.pc
-	-rmdir -p $(LIBDIR) $(INCDIR) $(PCDIR)
+	rm $(DESTDIR)/$(LIBDIR)/libcudf.a
+	rm $(DESTDIR)/$(INCDIR)/cudf.h
+	rm $(DESTDIR)/$(PCDIR)/cudf.pc
+	-rmdir -p $(DESTDIR)/$(LIBDIR) $(DESTDIR)/$(INCDIR) $(DESTDIR)/$(PCDIR)
 
 .PHONY: all opt clean test install uninstall

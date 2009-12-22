@@ -21,8 +21,8 @@ ifeq ($(DESTDIR),)
 INSTALL = $(OCAMLFIND) install
 UNINSTALL = $(OCAMLFIND) remove
 else
-INSTALL = $(OCAMLFIND) install -destdir $(OCAMLLIBDIR)
-UNINSTALL = $(OCAMLFIND) remove -destdir $(OCAMLLIBDIR)
+INSTALL = $(OCAMLFIND) install -destdir $(DESTDIR)/$(OCAMLLIBDIR)
+UNINSTALL = $(OCAMLFIND) remove -destdir $(DESTDIR)/$(OCAMLLIBDIR)
 endif
 
 DIST_DIR = $(NAME)-$(VERSION)
@@ -74,17 +74,17 @@ INSTALL_STUFF += $(wildcard _build/cudf_*.cmx _build/cudf_*.o _build/cudf_*.a)
 INSTALL_STUFF += $(wildcard _build/cudf.o _build/cudf.cmx _build/cudf.cmi)
 
 install:
-	test -d $(OCAMLLIBDIR) || mkdir -p $(OCAMLLIBDIR)
+	test -d $(DESTDIR)/$(OCAMLLIBDIR) || mkdir -p $(DESTDIR)/$(OCAMLLIBDIR)
 	$(INSTALL) -patch-version $(VERSION) $(NAME) $(INSTALL_STUFF)
-	test -d $(BINDIR) || mkdir -p $(BINDIR)
+	test -d $(DESTDIR)/$(BINDIR) || mkdir -p $(DESTDIR)/$(BINDIR)
 	for p in $(notdir $(PROGS)) ; do \
 		tgt=`echo $$p | sed -e 's/^main.//' -e 's/_/-/g'` ; \
 		if [ -f _build/$$p.native ] ; then \
-			cp _build/$$p.native $(BINDIR)/$$tgt ; \
+			cp _build/$$p.native $(DESTDIR)/$(BINDIR)/$$tgt ; \
 		else \
-			cp _build/$$p.byte $(BINDIR)/$$tgt ; \
+			cp _build/$$p.byte $(DESTDIR)/$(BINDIR)/$$tgt ; \
 		fi ; \
-		echo "Installed $(BINDIR)/$$tgt" ; \
+		echo "Installed $(DESTDIR)/$(BINDIR)/$$tgt" ; \
 	done
 	if [ -f $(C_LIB_DIR)/cudf.o ] ; then \
 		$(MAKE) -C c-lib/ -e install ; \
@@ -94,12 +94,12 @@ uninstall:
 	$(UNINSTALL) $(NAME)
 	for p in $(notdir $(PROGS)) ; do \
 		tgt=`echo $$p | sed -e 's/^main.//' -e 's/_/-/g'` ; \
-		if [ -f $(BINDIR)/$$tgt ] ; then \
-			rm $(BINDIR)/$$tgt ; \
+		if [ -f $(DESTDIR)/$(BINDIR)/$$tgt ] ; then \
+			rm $(DESTDIR)/$(BINDIR)/$$tgt ; \
 		fi ; \
-		echo "Removed $(BINDIR)/$$tgt" ; \
+		echo "Removed $(DESTDIR)/$(BINDIR)/$$tgt" ; \
 	done
-	-rmdir -p $(OCAMLLIBDIR) $(BINDIR)
+	-rmdir -p $(DESTDIR)/$(OCAMLLIBDIR) $(DESTDIR)/$(BINDIR)
 
 dist: ./$(DIST_TARBALL)
 ./$(DIST_TARBALL):
