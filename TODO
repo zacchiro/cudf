@@ -1,5 +1,14 @@
 #    -*- mode: org -*-
 
+* TODO BUG when solution is correct and the solution is inconsistent,
+  it is reported as is_solution:true
+
+  e.g.:
+  > installation status inconsistent '(reason:' Unresolved conflicts                                       
+  > openoffice.org-core '>=' 3 of package openoffice.org-l10n-en-us                                        
+  > '(version' '1))' is_solution: true                                                                     
+  >                                                                                                        
+  > is_solution dovrebbe essere false ...                                                                  
 * TODO add detection of multiple parse errors at once
 * TODO provide Java bindings (via O'Jacare)
 * TODO add support for computing checksums
