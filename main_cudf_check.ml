@@ -131,9 +131,9 @@ let main () =
 	print_inst_info univ;
 	print_cudf (pre,univ,req)
     | Some (pre,univ,req), None, Some sol ->
-	let sol = load_universe (List.map (fill_package univ) sol) in
+	let sol' = load_universe (List.map (fill_package univ) sol) in
 	print_inst_info univ;
-	print_sol_info (univ,req) sol;
+	print_sol_info (univ,req) sol';
 	print_cudf (pre,univ,req)
     | None, Some univ, None ->
 	print_inst_info univ;

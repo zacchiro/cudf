@@ -160,9 +160,9 @@ val installed_size : universe -> int
 val status : universe -> universe
 
 (** Fill a package with metdata coming from a universe, using <name, version>
-    as its identifier.  All properties in the given stanza other than "package"
-    and "version" are thrown away and replaced with those of the matching
-    package.
+    as its identifier.  All properties in the given stanza other than
+    "package", "version", and "installed" are thrown away and replaced with
+    those of the matching package.
 
     @raise Not_found if the given package identifier has no matching package in
     the universe
