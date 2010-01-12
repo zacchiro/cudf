@@ -77,10 +77,8 @@ let pp_loc (start_pos, end_pos) =
 let main () =
   let load_univ p = 
     let pre,univ,req = Cudf_parser.load p in
-    univ in
-  let parse_univ p =
-    let pre,univ,req = Cudf_parser.parse p in
-    univ in
+    univ
+  in
   let fail_parse source msg loc =
     eprintf "Error while parsing %s: %s\n" source msg ;
     eprintf "Location: %s\n%!" (pp_loc loc) ;
