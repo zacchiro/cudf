@@ -45,9 +45,9 @@ let die_usage () = Arg.usage arg_spec usage_msg ; exit (-2)
 
 let print_inst_info inst =
   match is_consistent inst with
-    | true, _ -> printf "installation status consistent\n%!"
+    | true, _ -> printf "original installation status consistent\n%!"
     | false, Some r ->
-	printf "installation status inconsistent (reason: %s)\n%!"
+	printf "original installation status inconsistent (reason: %s)\n%!"
 	  (explain_reason (r :> bad_solution_reason))
     | _ -> assert false
 
