@@ -284,13 +284,6 @@ let misc_parse_suite =
 	  (pkgs_eq ((List.sort ~cmp:(<%) l1), (List.sort ~cmp:(<%) l2)))
 	  true) ;
     ];
-    "fill_package" >::: [
-      "fill" >:: (fun () ->
-	let _, univ, _ = load_cudf_test "legacy" in
-	let pkg_orig = lookup_package univ ("car", 1) in
-	let pkg = { default_package with package = "car" ; version = 1 } in
-	assert_equal pkg_orig (fill_package univ pkg)) ;
-    ];
   ]
 
 let or_dep =

@@ -213,6 +213,14 @@ let load p =
   let pre, pkgs, req = parse p in
   (pre, load_universe pkgs, req)
 
+let load_solution p (_, univ, _) =
+  let pre, sol_pkgs, _ = parse p in
+  let expand_package pkg =
+    { lookup_package univ (pkg.package, pkg.version)
+      with installed = pkg.installed } in
+  let sol_univ = load_universe (List.map expand_package sol_pkgs) in
+  pre, sol_univ
+
 let parser_wrapper ?typedecl fname f =
   let ic = open_in fname in
   let p = from_in_channel ?typedecl ic in

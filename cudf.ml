@@ -222,7 +222,3 @@ let lookup_preamble_property pre = function
   | "status-checksum" -> pre.status_checksum
   | "req-checksum" -> pre.req_checksum
   | _ -> raise Not_found
-
-let fill_package univ pkg =
-  let pkg' = lookup_package univ (pkg.package, pkg.version) in
-  { pkg' with installed = pkg.installed }

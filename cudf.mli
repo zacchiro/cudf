@@ -159,15 +159,6 @@ val installed_size : universe -> int
     Inefficient (involves Hashtbl.t cloning), use with care. *)
 val status : universe -> universe
 
-(** Fill a package with metdata coming from a universe, using <name, version>
-    as its identifier.  All properties in the given stanza other than
-    "package", "version", and "installed" are thrown away and replaced with
-    those of the matching package.
-
-    @raise Not_found if the given package identifier has no matching package in
-    the universe
-*)
-val fill_package : universe -> package -> package
 
 (** {5 Low-level stanza manipulation} *)
 

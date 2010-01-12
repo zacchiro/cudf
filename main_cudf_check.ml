@@ -114,27 +114,27 @@ let main () =
             !univ_arg (Printexc.to_string exn);
           exit (-1)
   end;
-  if !sol_arg <> "" then begin
-    try
-      let p = Cudf_parser.from_in_channel (open_in !sol_arg) in
-      eprintf "loading solution ...\n%!";
-      sol := Some (parse_univ p)
-    with
-      | Cudf_parser.Parse_error (msg, loc) -> fail_parse "solution" msg loc
-      | Cudf.Constraint_violation _ as exn ->
-          eprintf "Error while loading solution from %s: %s\n%!"
-            !sol_arg (Printexc.to_string exn);
-          exit (-1)
-  end;
+  if !sol_arg <> "" then
+    (* postpone solution parsing, we need the input CUDF for that *)
+    sol := Some (Cudf_parser.from_in_channel (open_in !sol_arg));
   match !cudf, !univ, !sol with
     | Some (pre,univ,req), None, None ->
 	print_inst_info univ;
 	print_cudf (pre,univ,req)
-    | Some (pre,univ,req), None, Some sol ->
-	let sol' = load_universe (List.map (fill_package univ) sol) in
-	print_inst_info univ;
-	print_sol_info (univ,req) sol';
-	print_cudf (pre,univ,req)
+    | Some (pre,univ,req), None, Some sol_parser ->
+	(try
+	   let pre' = Option.default default_preamble pre in
+	   eprintf "loading solution ...\n%!";
+	   let _, sol = Cudf_parser.load_solution sol_parser (pre', univ, req) in
+	   print_inst_info univ;
+	   print_sol_info (univ,req) sol;
+	   print_cudf (pre,univ,req)
+	 with
+	   | Cudf_parser.Parse_error (msg, loc) -> fail_parse "solution" msg loc
+	   | Cudf.Constraint_violation _ as exn ->
+               eprintf "Error while loading solution from %s: %s\n%!"
+		 !sol_arg (Printexc.to_string exn);
+               exit (-1))
     | None, Some univ, None ->
 	print_inst_info univ;
 	print_univ univ
