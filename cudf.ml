@@ -27,7 +27,7 @@ type package = {
   installed : bool ;
   was_installed : bool ;
   keep : enum_keep ;
-  pkg_extra : (string * typed_value) list
+  pkg_extra : typed_value stanza ;
 }
 
 type request = {
@@ -35,7 +35,7 @@ type request = {
   install : vpkglist ;
   remove : vpkglist ;
   upgrade : vpkglist ;
-  req_extra : (string * typed_value) list
+  req_extra : typed_value stanza ;
 }
 type preamble = {
   preamble_id : string ;
@@ -223,3 +223,11 @@ let lookup_preamble_property pre = function
   | "req-checksum" -> pre.req_checksum
   | _ -> raise Not_found
 
+let expand_package_stanza univ stanza =
+  let id =
+    try
+      (List.assoc "package" stanza,
+       int_of_string (List.assoc "version" stanza))
+    with Not_found | Failure _ ->
+      raise (Invalid_argument "Cudf.expand_package_stanza") in
+  Hashtbl.find univ.id2pkg id

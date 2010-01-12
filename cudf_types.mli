@@ -118,6 +118,20 @@ val type_of_value : typed_value -> typ
 val cast: typ -> typed_value -> typed_value
 
 
+(** {6 CUDF syntactic types}
+
+    Types used in parsing, before values are injected into the CUDF type
+    system. *)
+
+(** RFC-822-like stanza, i.e. an associative list mapping property names to
+    property values.
+
+    Values are typed according to the type variable ['ty]. Usually, libCUDF
+    uses either [string stanza] (for untyped stanzas) or
+    [Cudf_types.typed_value stanza] (for typed stanzas). *)
+type 'ty stanza = (string * 'ty) list
+
+
 (**/**)
 
 (** {5 Parsing helpers}

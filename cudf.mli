@@ -32,7 +32,7 @@ type package = {
   installed : bool ;				(* default : false *)
   was_installed : bool ;			(* default : false *)
   keep :  enum_keep ;				(* default : `Keep_none *)
-  pkg_extra : (string * typed_value) list ;	(* extra properties *)
+  pkg_extra : typed_value stanza ;		(* extra properties *)
 }
 
 (** package equality up to <name, version>
@@ -49,7 +49,7 @@ type request = {
   install : vpkglist ;				(* default : [] *)
   remove : vpkglist ;				(* default : [] *)
   upgrade : vpkglist ;				(* default : [] *)
-  req_extra : (string * typed_value) list ;	(* default : [] *)
+  req_extra : typed_value stanza ;		(* default : [] *)
 }
 
 type preamble = {
@@ -101,7 +101,7 @@ val load_universe : package list -> universe
 
 (** {5 CUDF manipulation} *)
 
-(** lookup a specific package via a <name, version> key
+(** Lookup a specific package via a <name, version> key
 
     @raise Not_found if the requested package cannot be found *)
 val lookup_package : universe -> pkgname * version -> package
@@ -158,6 +158,18 @@ val installed_size : universe -> int
 
     Inefficient (involves Hashtbl.t cloning), use with care. *)
 val status : universe -> universe
+
+(** Expand a stanza containing a package identifier (<name, version>) to the
+    corresponding package, looking it up in a given universe.  All properties
+    in the given stanza other than "package" and "version" are thrown away and
+    replaced with those of the found package.
+
+    @raise Not_found if the given package identifier has no matching package in
+    the universe 
+    @raise Invalid_argument if the given stanza does not contain the "package"
+    and "version" properties
+*)
+val expand_package_stanza : universe -> string stanza -> package
 
 (** {5 Low-level stanza manipulation} *)
 

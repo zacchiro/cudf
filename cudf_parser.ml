@@ -22,7 +22,6 @@ type cudf_parser = {
   mutable typedecl: Cudf_conf.stanza_typedecl ;
 }
 
-type 'ty stanza = (string * 'ty) list
 type loc_map = (string * loc) list
 
 exception Parse_error of string * loc

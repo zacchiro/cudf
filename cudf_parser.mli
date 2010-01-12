@@ -18,14 +18,6 @@ open Cudf_types
 (** a CUDF parser opened on some input source *)
 type cudf_parser
 
-(** RFC-822-like stanza, i.e. an associative list mapping property names to
-    property values.
-
-    Values are typed according to the type variable ['ty]. Usually, libCUDF
-    uses either [string stanza] (for untyped stanzas) or
-    [Cudf_types.typed_value stanza] (for typed stanzas). *)
-type 'ty stanza = (string * 'ty) list
-
 (** Error during parsing (syntax error, type error, ...). Arguments are error
     message and error location. *)
 exception Parse_error of string * loc

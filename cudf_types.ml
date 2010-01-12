@@ -47,6 +47,8 @@ type typed_value =
     | `Veqpkg of veqpkg | `Veqpkglist of veqpkglist
     | `Typedecl of typedecl ]
 
+type 'ty stanza = (string * 'ty) list
+
 type loc = Lexing.position * Lexing.position
 let dummy_loc: loc = Lexing.dummy_pos, Lexing.dummy_pos
 let extend_loc (r1_start, _r1_end) (_r2_start, r2_end) = (r1_start, r2_end)
