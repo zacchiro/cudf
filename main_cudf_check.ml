@@ -78,6 +78,9 @@ let main () =
   let load_univ p = 
     let pre,univ,req = Cudf_parser.load p in
     univ in
+  let parse_univ p =
+    let pre,univ,req = Cudf_parser.parse p in
+    univ in
   let fail_parse source msg loc =
     eprintf "Error while parsing %s: %s\n" source msg ;
     eprintf "Location: %s\n%!" (pp_loc loc) ;
@@ -115,7 +118,7 @@ let main () =
     try
       let p = Cudf_parser.from_in_channel (open_in !sol_arg) in
       eprintf "loading solution ...\n%!";
-      sol := Some (load_univ p)
+      sol := Some (parse_univ p)
     with
       | Cudf_parser.Parse_error (msg, loc) -> fail_parse "solution" msg loc
       | Cudf.Constraint_violation _ as exn ->
@@ -124,17 +127,18 @@ let main () =
           exit (-1)
   end;
   match !cudf, !univ, !sol with
-  | Some (pre,univ,req), None, None ->
-      print_inst_info univ;
-      print_cudf (pre,univ,req)
-  | Some (pre,univ,req), None, Some sol ->
-      print_inst_info univ;
-      print_sol_info (univ,req) sol;
-      print_cudf (pre,univ,req)
-  | None, Some univ, None ->
-      print_inst_info univ;
-      print_univ univ
-  | _ -> die_usage ()
+    | Some (pre,univ,req), None, None ->
+	print_inst_info univ;
+	print_cudf (pre,univ,req)
+    | Some (pre,univ,req), None, Some sol ->
+	let sol = load_universe (List.map (fill_package univ) sol) in
+	print_inst_info univ;
+	print_sol_info (univ,req) sol;
+	print_cudf (pre,univ,req)
+    | None, Some univ, None ->
+	print_inst_info univ;
+	print_univ univ
+    | _ -> die_usage ()
 
 let _ = 
   Arg.parse arg_spec ignore usage_msg;

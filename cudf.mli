@@ -159,17 +159,15 @@ val installed_size : universe -> int
     Inefficient (involves Hashtbl.t cloning), use with care. *)
 val status : universe -> universe
 
-(** Expand a stanza containing a package identifier (<name, version>) to the
-    corresponding package, looking it up in a given universe.  All properties
-    in the given stanza other than "package" and "version" are thrown away and
-    replaced with those of the found package.
+(** Fill a package with metdata coming from a universe, using <name, version>
+    as its identifier.  All properties in the given stanza other than "package"
+    and "version" are thrown away and replaced with those of the matching
+    package.
 
     @raise Not_found if the given package identifier has no matching package in
-    the universe 
-    @raise Invalid_argument if the given stanza does not contain the "package"
-    and "version" properties
+    the universe
 *)
-val expand_package_stanza : universe -> string stanza -> package
+val fill_package : universe -> package -> package
 
 (** {5 Low-level stanza manipulation} *)
 
