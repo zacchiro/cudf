@@ -401,6 +401,18 @@ char *cudf_req_property(cudf_request_t req, const char *prop) {
 		    strdup(String_val(prop_val)));
 }
 
+cudf_vpkglist_t cudf_req_install(cudf_request_t req) {
+	return cudf_vpkglist_val(Field(*req, FIELD_REQINST));
+}
+
+cudf_vpkglist_t cudf_req_remove(cudf_request_t req) {
+	return cudf_vpkglist_val(Field(*req, FIELD_REQREM));
+}
+
+cudf_vpkglist_t cudf_req_upgrade(cudf_request_t req) {
+	return cudf_vpkglist_val(Field(*req, FIELD_REQUP));
+}
+
 char *cudf_pre_property(cudf_preamble_t pre, const char *prop) {
 	CAMLparam0();
 	CAMLlocal1(prop_val);

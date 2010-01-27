@@ -99,17 +99,25 @@ void print_preamble(cudf_doc_t *doc) {
 /* Print to stdout a CUDF request */
 void print_request(cudf_doc_t *doc) {
 	char *s;
-	char *props[] = { "request", "install", "remove", "upgrade" };
-	int i;
 
 	if (! doc->has_request)
 		return;
 
-	for (i=0 ; i<4 ; i++) {
-		s = cudf_req_property(doc->request, props[i]);
-		printf("  %s: %s\n", props[i], s);
-		free(s);
-	}
+	s = cudf_req_property(doc->request, "request");
+	printf("  request: %s\n", s);
+	free(s);
+
+	printf("  install: ");
+	print_vpkglist(cudf_req_install(doc->request), ", ");
+	printf("\n");
+
+	printf("  upgrade: ");
+	print_vpkglist(cudf_req_upgrade(doc->request), ", ");
+	printf("\n");
+
+	printf("  remove: ");
+	print_vpkglist(cudf_req_remove(doc->request), ", ");
+	printf("\n");
 }
 
 /* Print to stdout a possible value of the "keep" package property */

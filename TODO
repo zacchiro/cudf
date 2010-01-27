@@ -21,7 +21,7 @@
   using default_preamble by herself
 * TODO use autoconf (and ocaml-autoconf)
 ** then factorize version numbers in various places
-* TODO C bindings: more structured access to request
+* DONE C bindings: more structured access to request
 * DONE C bindings: support install/remove Makefile targets
 * DONE revamp Debian package [100%]
 ** DONE port to recent dh-ocaml

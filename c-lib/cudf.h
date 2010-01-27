@@ -180,6 +180,15 @@ char *cudf_pkg_property(cudf_package_t pkg, const char *prop);
    Return NULL if the property is missing (and has no default value). */
 char *cudf_req_property(cudf_request_t req, const char *prop);
 
+/* Get install section of the request. */
+cudf_vpkglist_t cudf_req_install(cudf_request_t req) ;
+
+/* Get upgrade section of the request. */
+cudf_vpkglist_t cudf_req_upgrade(cudf_request_t req) ;
+
+/* Get remove section of the request. */
+cudf_vpkglist_t cudf_req_remove(cudf_request_t req) ;
+
 /* Lookup preamble property by name. Returned string should be manually freed.
    Return NULL if the property is missing (and has no default value). */
 char *cudf_pre_property(cudf_preamble_t pre, const char *prop);
