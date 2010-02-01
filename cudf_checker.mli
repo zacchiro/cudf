@@ -57,7 +57,14 @@ val disjoint :
     [false, Some r] otherwise, where r is the inconsistency reason *)
 val is_consistent : universe -> bool * inconsistency_reason option
 
-(** check whether a given solution fulfill the request of a given CUDF
+(** [is_solution (status, req) sol] checks whether [sol] fulfills the CUDF
+    upgrade scenario described by [(status, req)]
+
+    {b Note}: the [sol] package universe must contain all relevant package
+    metadata (e.g. Depends, Conflicts, etc.), copied from [status], a compact
+    universe only containing package names and versions won't be enough. To
+    load compact universes see {!Cudf_parser.load_solution}.
+
     @return [true, []] if this is the case, [false, l]
     otherwise, where r explains why the solution is bad *)
 val is_solution : (universe * request) -> universe -> bool * bad_solution_reason list

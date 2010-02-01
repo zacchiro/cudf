@@ -69,6 +69,11 @@ val parse : cudf_parser -> preamble option * package list * request option
 (** same as {!Cudf_parser.parse}, but additionally loads the package
     list as an abstract {!Cudf.universe}.
 
+    {b Note}: to load compact universes (i.e. only containing package names,
+    versions, and installed status) that will be tested as solutions you should
+    use {!Cudf_parser.load_solution} instead: the present function does not
+    expand missing metadata with respect to the initial status.
+
     @raise Parse_error as {!Cudf_parser.parse} does
     @raise Cudf.Constraint_violation as {!Cudf.load_universe} does
 *)
