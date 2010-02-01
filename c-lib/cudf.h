@@ -54,8 +54,24 @@ void cudf_init();
 
 /* Parsing */
 
+/* Parse a CUDF document from file, without doing any further processing. */
 cudf_doc_t *cudf_parse_from_file(char *fname);
+
+/* Load a CUDF document from file, i.e. parse it and then store the contained
+ * packages as an universe structure.
+ * 
+ * Note: to load solutions you should prefer cudf_load_solution_from_file,
+ * which can be invoked after CUDF document loading. */
 cudf_t *cudf_load_from_file(char *fname);
+
+/* Load from file a CUDF universe representing a solution to an upgrade
+ * scenario. Solution format is as per Appendix B of CUDF 2.0 spec
+ * (i.e. package/version pairs, together with installation status).
+ *
+ * @param ref_univ is the reference universe to be used to expand package
+ *   information, usually it is the universe of the original CUDF
+ */
+cudf_t *cudf_load_solution_from_file(char *fname, cudf_universe_t ref_univ);
 
 
 /* Package predicate
@@ -214,7 +230,15 @@ int cudf_installed_size(cudf_universe_t univ);
 int cudf_is_consistent(cudf_universe_t univ);
 
 /* Check whether the given universe contains a proper solution for the given
- * CUDF (i.e. its package status is consistent and satisfies user request).*/
+ * CUDF (i.e. its package status is consistent and satisfies user request).
+ *
+ * Solution should normally be obtained via cudf_load_solution_from_file(), and
+ * passing cudf->universe to it, e.g.:
+ *
+ *   cudf = cudf_load_from_file(...);
+ *   sol = cudf_load_solution_from_file(..., cudf->universe);
+ *   ok = is_solution(cudf, sol);
+ */
 int cudf_is_solution(cudf_t *cudf, cudf_universe_t solution);
 
 

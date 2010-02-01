@@ -272,7 +272,7 @@ int main(int argc, char **argv) {
 	       cudf_is_consistent(cudf->universe) ? "yes" : "no");
 	if (argc >= 3) {
 		g_message("Loading solution %s ...", argv[2]);
-		sol = cudf_load_from_file(argv[2]);
+		sol = cudf_load_solution_from_file(argv[2], cudf->universe);
 		printf("Is solution: %s\n",
 		       cudf_is_solution(cudf, sol->universe) ? "yes" : "no");
 	}

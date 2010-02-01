@@ -12,7 +12,6 @@
 
 // TODO should check / handle exceptions for all invoked caml_callback-s
 // TODO better management of g_error() (not all should be fatal)
-// TODO property-by-property access for request (as per packages)
 // TODO property-by-property access for preamble (as per packages)
 
 #include <stdio.h>
@@ -30,11 +29,11 @@
 #define Val_none	Val_int(0)
 #define Some_val(v)	Field(v,0)
 
-/* field indexes in the return type of {!Cudf_parser.parse_from_file} and
- * {!Cudf_parser.load_from_file} */
+/* field indexes in the return type of {!Cudf_parser.parse_from_file},
+ * {!Cudf_parser.load_from_file}, and {!Cudf_parser.load_solution_from_file} */
 #define FIELD_PRE	0
 #define FIELD_UNIV	1	// universe for load_*, package list for parse_*
-#define FIELD_REQ	2
+#define FIELD_REQ	2	// unused for load_solution_from_file
 
 /* field indexes in {!Cudf.package} */
 #define FIELD_PKG	0
@@ -300,6 +299,37 @@ cudf_t *cudf_load_from_file(char *fname) {
 		cudf->has_request = 0;
 		*(cudf->request) = Val_none;
 	}
+
+	NEW_MLVAL(cudf->universe);			/* universe */
+	*(cudf->universe) = Field(ml_cudf, FIELD_UNIV);
+
+	CAMLreturnT(cudf_t *, cudf);
+}
+
+cudf_t *cudf_load_solution_from_file(char *fname, cudf_universe_t ref_univ) {
+	CAMLparam0();
+	CAMLlocal1(ml_cudf);
+	static value *closure_f = NULL;
+	cudf_t *cudf;
+  
+	cudf = malloc(sizeof(cudf_t));
+	if (closure_f == NULL)
+		closure_f = caml_named_value("load_solution_from_file");
+	ml_cudf = caml_callback2(*closure_f, caml_copy_string(fname),
+				 *ref_univ);
+
+	NEW_MLVAL(cudf->preamble);			/* preamble */
+	if (Field(ml_cudf, FIELD_PRE) != Val_none) {
+		cudf->has_preamble = 1;
+		*(cudf->preamble) = Some_val(Field(ml_cudf, FIELD_PRE));
+	} else {
+		cudf->has_preamble = 0;
+		*(cudf->preamble) = Val_none;
+	}
+
+	NEW_MLVAL(cudf->request);			/* request */
+	cudf->has_request = 0;		/* solutions have no request */
+	*(cudf->request) = Val_none;
 
 	NEW_MLVAL(cudf->universe);			/* universe */
 	*(cudf->universe) = Field(ml_cudf, FIELD_UNIV);
