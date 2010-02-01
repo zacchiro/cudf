@@ -121,9 +121,8 @@ let main () =
 	print_cudf (pre,univ,req)
     | Some (pre,univ,req), None, Some sol_parser ->
 	(try
-	   let pre' = Option.default default_preamble pre in
 	   eprintf "loading solution ...\n%!";
-	   let _, sol = Cudf_parser.load_solution sol_parser (pre', univ, req) in
+	   let _pre', sol = Cudf_parser.load_solution sol_parser univ in
 	   print_inst_info univ;
 	   print_sol_info (univ,req) sol;
 	   print_cudf (pre,univ,req)

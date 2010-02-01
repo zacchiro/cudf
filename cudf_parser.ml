@@ -213,7 +213,7 @@ let load p =
   let pre, pkgs, req = parse p in
   (pre, load_universe pkgs, req)
 
-let load_solution p (_, univ, _) =
+let load_solution p univ =
   let pre, sol_pkgs, _ = parse p in
   let expand_package pkg =
     { lookup_package univ (pkg.package, pkg.version)
@@ -226,5 +226,7 @@ let parser_wrapper ?typedecl fname f =
   let p = from_in_channel ?typedecl ic in
   finally (fun () -> close_in ic ; close p) f p
 
-let parse_from_file ?typedecl fname = parser_wrapper fname parse
-let load_from_file ?typedecl fname = parser_wrapper fname load
+let parse_from_file ?typedecl fname = parser_wrapper ?typedecl fname parse
+let load_from_file ?typedecl fname = parser_wrapper ?typedecl fname load
+let load_solution_from_file fname univ =
+  parser_wrapper fname (fun p -> load_solution p univ)

@@ -79,9 +79,10 @@ val parse : cudf_parser -> preamble option * package list * request option
 *)
 val load : cudf_parser -> preamble option * universe * request option
 
-(** Load a solution for a given CUDF document.
+(** Load a solution wrt to a given CUDF document, whose universe is given.
+
     Solution format is as per Appendix B of CUDF 2.0 spec *)
-val load_solution : cudf_parser -> cudf -> preamble option * universe
+val load_solution : cudf_parser -> universe -> preamble option * universe
 
 (** Shorthand: parse a file given its name *)
 val parse_from_file : ?typedecl:Cudf_conf.stanza_typedecl ->
@@ -90,6 +91,9 @@ val parse_from_file : ?typedecl:Cudf_conf.stanza_typedecl ->
 (** Shorthand: load from a file given its name *)
 val load_from_file : ?typedecl:Cudf_conf.stanza_typedecl ->
   string -> preamble option * universe * request option
+
+(** Shorthand: load a solution from a file given its name *)
+val load_solution_from_file : string -> universe -> preamble option * universe
 
 
 (** {6 Item-by-item CUDF parsing} *)
