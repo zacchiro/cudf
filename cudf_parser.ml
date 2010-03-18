@@ -216,8 +216,8 @@ let load p =
 let load_solution p univ =
   let pre, sol_pkgs, _ = parse p in
   let expand_package pkg =
-    { lookup_package univ (pkg.package, pkg.version)
-      with installed = pkg.installed } in
+    let old_pkg = lookup_package univ (pkg.package, pkg.version) in
+    { old_pkg with installed = pkg.installed } in
   let sol_univ = load_universe (List.map expand_package sol_pkgs) in
   pre, sol_univ
 
