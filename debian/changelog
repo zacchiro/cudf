@@ -1,8 +1,8 @@
 cudf (0.5.95~pre-1) UNRELEASED; urgency=low
 
-  * UNRELEASED
+  * debian/control: update Vcs-* fields to reflect upstream SVN change
 
- -- Stefano Zacchiroli <zack@debian.org>  Fri, 18 Dec 2009 15:21:19 +0100
+ -- Stefano Zacchiroli <zack@debian.org>  Fri, 09 Apr 2010 14:34:12 +0200
 
 cudf (0.5.94-1) unstable; urgency=low
 
