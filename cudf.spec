@@ -1,8 +1,8 @@
 Summary: CUDF (Common Upgradeability Description Format) tools and libraries
 Name: cudf
-Version: 0.5.94
+Version: 0.5.96
 Release: 1
-Source: http://gforge.info.ucl.ac.be/frs/download.php/156/cudf-0.5.94.tar.gz
+Source: http://gforge.info.ucl.ac.be/frs/download.php/156/cudf-0.5.96.tar.gz
 URL: http://www.mancoosi.org/cudf/
 License: LGPL
 Group: Development/Libraries

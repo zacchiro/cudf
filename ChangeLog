@@ -1,8 +1,14 @@
-2010-01-27  Stefano Zacchiroli  <zack@pps.jussieu.fr>
+2010-06-01  Stefano Zacchiroli  <zack@pps.jussieu.fr>
 
 	* c-lib add structured accessors to request fields
 	  (patch by Gustavo Gutierrez, thanks!)
-	* ALL UNRELEASED
+	* doc better explain the role of load_solution
+	* ALL simpler API for solutions: cudf_load_solution_from_file
+	* ALL bug fix: avoid losing ?typedecl in convenience functions
+	* c-lib add bindings for cudf_load_solution_from_file
+	* backward-compatibility enabling compilation with OCaml 3.10.2
+	* ALL bug fix: support heading '+' when parsing posint
+	* ALL Development release 0.5.98
 
 2009-12-18  Stefano Zacchiroli  <zack@pps.jussieu.fr>
 
