@@ -8,7 +8,7 @@
 	* c-lib add bindings for cudf_load_solution_from_file
 	* backward-compatibility enabling compilation with OCaml 3.10.2
 	* ALL bug fix: support heading '+' when parsing posint
-	* ALL Development release 0.5.98
+	* ALL Development release 0.5.96
 
 2009-12-18  Stefano Zacchiroli  <zack@pps.jussieu.fr>
 
