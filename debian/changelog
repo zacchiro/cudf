@@ -1,3 +1,9 @@
+cudf (0.5.97~dev-1) UNRELEASED; urgency=low
+
+  * UNRELEASED
+
+ -- Stefano Zacchiroli <zack@debian.org>  Wed, 02 Jun 2010 18:17:41 +0200
+
 cudf (0.5.96-1) unstable; urgency=low
 
   * New upstream release

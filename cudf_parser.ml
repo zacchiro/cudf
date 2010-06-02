@@ -64,21 +64,38 @@ let type_check_stanza ?locs stanza types =
   let lookup_loc =
     match locs with
       | None -> (fun p -> dummy_loc)
-      | Some locs -> loc_lookuper locs
+      | Some locs -> loc_lookuper locs in
+  let typed_stanza =
+    List.map
+      (fun (k, v) ->
+	try
+	  let decl = List.assoc k types in
+	  let typed_v = Cudf_types_pp.parse_value (type_of_typedecl decl) v in
+	  k, typed_v
+	with
+	  | Not_found ->
+	    parse_error (lookup_loc k)
+	      (sprintf "unexpected property \"%s\" in this stanza" k)
+	  | Cudf_types_pp.Type_error (typ, v) ->	(* localize type errors *)
+	    raise (Cudf_types.Type_error (typ, v, lookup_loc k)))
+      stanza in
+  let defaults, missing = (* deal with missing properties *)
+    List.fold_left
+      (fun (defaults, missing) (name, ty1) ->
+	match value_of_typedecl ty1, List.mem_assoc name typed_stanza with
+	  | None, true -> defaults, missing             (* mandatory, present *)
+	  | None, false -> defaults, (name :: missing)  (* mandatory, missing *)
+	  | Some v, true -> defaults, missing           (* optional,  present *)
+	  | Some v, false ->                            (* optional,  missing *)
+	    (name, v) :: defaults, missing)
+      ([], []) types
   in
-  List.map
-    (fun (k, v) ->
-       try
-	 let decl = List.assoc k types in
-	 let typed_v = Cudf_types_pp.parse_value (type_of_typedecl decl) v in
-	 k, typed_v
-       with
-	 | Not_found ->
-	     parse_error (lookup_loc k)
-	       (sprintf "unexpected property \"%s\" in this stanza" k)
-	 | Cudf_types_pp.Type_error (typ, v) ->	(* localize type errors *)
-	     raise (Cudf_types.Type_error (typ, v, lookup_loc k)))
-    stanza
+  if missing <> [] then begin
+    let loc = match stanza with [] -> dummy_loc | (k,_) :: _ -> lookup_loc k in
+    parse_error loc (sprintf "missing mandatory properties: %s"
+		       (String.concat ", " missing))
+  end;
+  typed_stanza @ defaults
 
 (** Cast a typed stanza starting with "package: " to a {!Cudf.package}.
     ASSUMPTION: type checking of the stanza has already happend, in particular

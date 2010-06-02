@@ -23,6 +23,7 @@ let good_cudfs = [	(* CUDF whose parsing must suceed *)
 ]
 let bad_cudfs = [	(* CUDF whose parsing must fail (@ location) *)
   "line-111", (111, 111) ;
+  "miss-mandatory-prop", (9, 9) ;
 ]
 let consistent_univs = [	(* CUDF whose status is expected to be consistent *)
   "assert-true" ;
@@ -375,6 +376,16 @@ let univ_sizes =
 	(fun () -> assert_equal (installed_size (Lazy.force univ)) 6);
     ]
 
+let default_value =
+  let univ = lazy (let _, univ, _ = load_cudf_test "legacy" in univ) in
+    "default value of opt prop" >::: [
+      "bugs" >::
+	(fun () ->
+	  let car = lookup_package (Lazy.force univ) ("car", 1) in
+	  let bugs = List.assoc "bugs" car.pkg_extra in
+	  assert_equal bugs (`Int 0))
+    ]
+
 let good_solution_suite = "good solutions" >:::
   List.map (fun (prob, sol) -> good_solution prob sol) good_prob_sol
 
@@ -405,6 +416,7 @@ let feature_suite =
     self_conflicts ;
     consistency ;
     univ_sizes ;
+    default_value ;
   ]
 
 (*
