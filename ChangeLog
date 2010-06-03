@@ -2,6 +2,7 @@
 
 	* ALL bug fix: optional/mandatory extra property management
 	* c-lib bug fix: add handling of vpkgformula extra properties
+	* ALL bug fix: allow empty vpkglist as default values
 
 2010-06-01  Stefano Zacchiroli  <zack@pps.jussieu.fr>
 

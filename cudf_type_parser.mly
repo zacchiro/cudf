@@ -182,6 +182,7 @@ enums:
 ;
 
 typed_value:
+  |			{ `Vpkglist [] }
   | ident		{ `Ident $1 }
   | int			{ `Int $1 }
   | qstring		{ `String $1 }

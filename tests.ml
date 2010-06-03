@@ -20,6 +20,7 @@ open Cudf
 let cudf_test_path name = sprintf "./tests/%s.cudf" name
 
 let good_cudfs = [	(* CUDF whose parsing must suceed *)
+  "empty-vpkglist-default" ;
 ]
 let bad_cudfs = [	(* CUDF whose parsing must fail (@ location) *)
   "line-111", (111, 111) ;
