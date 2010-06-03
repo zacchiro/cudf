@@ -25,6 +25,7 @@ let good_cudfs = [	(* CUDF whose parsing must suceed *)
 let bad_cudfs = [	(* CUDF whose parsing must fail (@ location) *)
   "line-111", (111, 111) ;
   "miss-mandatory-prop", (9, 9) ;
+  "default-type-check-error", (2, 2) ;
 ]
 let consistent_univs = [	(* CUDF whose status is expected to be consistent *)
   "assert-true" ;

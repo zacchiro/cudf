@@ -159,6 +159,9 @@ let rec cast typ v =
     | (`Vpkg | `Veqpkg | `Vpkglist | `Veqpkglist), `Ident i ->
 	cast typ (`Vpkgformula [[i, None]])
     | `Vpkg, `Vpkgformula [[vpkg]] -> `Vpkg vpkg
+    | (`Vpkglist | `Veqpkglist),
+      (`Vpkgformula [] (* "true!" *) | `Vpkgformula [ [] ] (* "false!" *)) ->
+        type_error ()
     | `Vpkglist, `Vpkgformula f ->
 	if List.exists (function _ :: _ :: _ -> true | _ -> false) f then
 	  type_error ()	(* there are OR-ed deps *)
