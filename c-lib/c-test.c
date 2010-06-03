@@ -161,6 +161,9 @@ void print_value(cudf_value_t *v) {
 	case TYPE_VEQPKGLIST :
 		print_vpkglist(v->val.vpkgs, ", ");
 		break;
+	case TYPE_VPKGFORMULA :
+		print_vpkgformula(v->val.f);
+		break;
 	case TYPE_TYPEDECL :
 		break;
 	default :

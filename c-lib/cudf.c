@@ -145,6 +145,31 @@ cudf_vpkglist_t cudf_vpkglist_val(value ml_vpkgs) {
 	CAMLreturnT(cudf_vpkglist_t, l);
 }
 
+cudf_vpkgformula_t cudf_vpkgformula_val(value ml_fmla) {
+	CAMLparam1(ml_fmla);
+	CAMLlocal2(ml_and, ml_or);
+	GList *and_l = NULL;	/* top-level formula (CNF) */
+	GList *or_l;		/* OR-ed deps */
+	/* ml_and: iterates over OR-ed deps (which are AND-ed together) */
+	/* ml_or: iterates over vpkg-s (which are OR-ed together) */
+	cudf_vpkg_t *vpkg;
+
+	ml_and = ml_fmla;
+	while (ml_and != Val_emptylist) {
+		ml_or = Field(ml_and, 0);
+		or_l = NULL;
+		while (ml_or != Val_emptylist) {
+			vpkg = cudf_vpkg_val(Field(ml_or, 0));
+			or_l = g_list_append(or_l, vpkg);
+			ml_or = Field(ml_or, 1);
+		}
+		and_l = g_list_append(and_l, or_l);
+		ml_and = Field(ml_and, 1);
+	}
+
+	CAMLreturnT(cudf_vpkgformula_t, and_l);
+}
+
 cudf_value_t *cudf_value_val(value ml_v) {
 	CAMLparam1(ml_v);
 	CAMLlocal1(ml_payload);
@@ -204,6 +229,10 @@ cudf_value_t *cudf_value_val(value ml_v) {
 	case MLPVAR_Veqpkglist :
 		v->typ = TYPE_VEQPKGLIST;
 		v->val.vpkgs = cudf_vpkglist_val(ml_payload);
+		break;
+	case MLPVAR_Vpkgformula :
+		v->typ = TYPE_VPKGFORMULA;
+		v->val.f = cudf_vpkgformula_val(ml_payload);
 		break;
 	case MLPVAR_Typedecl :
 		v->typ = TYPE_TYPEDECL;
@@ -373,28 +402,7 @@ int cudf_pkg_keep(cudf_package_t pkg) {
 }
 
 cudf_vpkgformula_t cudf_pkg_depends(cudf_package_t pkg) {
-	CAMLparam0();
-	CAMLlocal2(ml_and, ml_or);
-	GList *and_l = NULL;	/* top-level formula (CNF) */
-	GList *or_l;		/* OR-ed deps */
-	/* ml_and: iterates over OR-ed deps (which are AND-ed together) */
-	/* ml_or: iterates over vpkg-s (which are OR-ed together) */
-	cudf_vpkg_t *vpkg;
-
-	ml_and = Field(*pkg, FIELD_DEPS);
-	while (ml_and != Val_emptylist) {
-		ml_or = Field(ml_and, 0);
-		or_l = NULL;
-		while (ml_or != Val_emptylist) {
-			vpkg = cudf_vpkg_val(Field(ml_or, 0));
-			or_l = g_list_append(or_l, vpkg);
-			ml_or = Field(ml_or, 1);
-		}
-		and_l = g_list_append(and_l, or_l);
-		ml_and = Field(ml_and, 1);
-	}
-
-	CAMLreturnT(cudf_vpkgformula_t, and_l);
+	return cudf_vpkgformula_val(Field(*pkg, FIELD_DEPS));
 }
 
 cudf_vpkglist_t cudf_pkg_conflicts(cudf_package_t pkg) {
@@ -638,6 +646,9 @@ void cudf_free_value(cudf_value_t *v) {
 	case TYPE_VPKGLIST :
 	case TYPE_VEQPKGLIST :
 		cudf_free_vpkglist(v->val.vpkgs);
+		break;
+	case TYPE_VPKGFORMULA :
+		cudf_free_vpkgformula(v->val.f);
 		break;
 	case TYPE_TYPEDECL :
 		break;

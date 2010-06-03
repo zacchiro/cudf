@@ -1,6 +1,7 @@
-2010-06-02  Stefano Zacchiroli  <zack@pps.jussieu.fr>
+2010-06-03  Stefano Zacchiroli  <zack@pps.jussieu.fr>
 
 	* ALL bug fix: optional/mandatory extra property management
+	* c-lib bug fix: add handling of vpkgformula extra properties
 
 2010-06-01  Stefano Zacchiroli  <zack@pps.jussieu.fr>
 
