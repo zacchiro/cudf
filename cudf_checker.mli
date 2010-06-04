@@ -47,7 +47,7 @@ val satisfy_formula : universe -> vpkgformula -> bool * vpkgformula
 (** check whether a package list is not satisfied by a given package
     status
 
-    @return [true, []] if the list is disjoin; [false, l]
+    @return [true, []] if the list is disjoint; [false, l]
     otherwise, where l is a list of packages satisfied by the universe
     (ideally, the reason of the non-disjointness) *)
 val disjoint :

@@ -99,7 +99,7 @@ let is_consistent univ =
       true, !msg
     with Exit -> false, !msg
 
-(* for reference, see CUDF §2.3.4, "semantics of requets" *)
+(* for reference, see CUDF §2.3.4, "semantics of requests" *)
 let is_solution (univ, req) sol =
   let _ =
     if universe_size sol <> installed_size sol then
