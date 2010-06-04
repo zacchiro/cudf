@@ -49,13 +49,13 @@ let explain_reason = function
       "Unmet upgrade request, missing packages: " ^
 	PP.string_of_vpkglist vpkgs
   | `Unremoved vpkgs ->
-      "Unment remove request, still present packages: " ^
+      "Unmet remove request, still present packages: " ^
 	PP.string_of_vpkglist vpkgs
   | `Downgrade vpkgs ->
-      "Unment upgrade request, not-upgraded: " ^
+      "Unmet upgrade request, not-upgraded: " ^
 	PP.string_of_vpkglist vpkgs
   | `Multi_upgrade pkgs ->
-      "Unment upgrade request, not-unique: " ^ String.concat ", " pkgs
+      "Unmet upgrade request, not-unique: " ^ String.concat ", " pkgs
   | `Not_kept (name, ver, keep) ->
       sprintf "Unmet \"Keep\" request %s of package %s (version %d)"
 	(PP.string_of_keep keep) name ver
