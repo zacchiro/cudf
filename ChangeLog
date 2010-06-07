@@ -2,6 +2,8 @@
 
 	* ALL bug fix: do not enforce Keep on uninstalled packages
 	  Thanks Ralf Treinen for the patch! (Closes: #266)
+	* ALL bug fix: nicer error message for unknown packages found in
+	  solution (Closes: #267)
 
 2010-06-03  Stefano Zacchiroli  <zack@pps.jussieu.fr>
 

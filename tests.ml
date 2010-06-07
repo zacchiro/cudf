@@ -57,6 +57,7 @@ let bad_prob_sol = [	(* pairs cudf/sol, with sol being a bad solution *)
   "virt-upgrade", "virt-upgrade-sol-bad";
   "virt-upgrade", "virt-upgrade-sol-bad2";
   "virt-upgrade", "virt-upgrade-sol-bad3";
+  "unknown-pkg", "unknown-pkg.sol";
 ]
 
 (** {5 Helpers} *)

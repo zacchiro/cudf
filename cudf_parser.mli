@@ -81,7 +81,9 @@ val load : cudf_parser -> preamble option * universe * request option
 
 (** Load a solution wrt to a given CUDF document, whose universe is given.
 
-    Solution format is as per Appendix B of CUDF 2.0 spec *)
+    Solution format is as per Appendix B of CUDF 2.0 spec
+
+    @raise Parse_error as {!Cudf_parser.parse} does *)
 val load_solution : cudf_parser -> universe -> preamble option * universe
 
 (** Shorthand: parse a file given its name *)

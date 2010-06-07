@@ -233,7 +233,14 @@ let load p =
 let load_solution p univ =
   let pre, sol_pkgs, _ = parse p in
   let expand_package pkg =
-    let old_pkg = lookup_package univ (pkg.package, pkg.version) in
+    let old_pkg =
+      try
+	lookup_package univ (pkg.package, pkg.version)
+      with Not_found ->
+	parse_error dummy_loc
+	  (sprintf "unknown package (%s,%d) found in solution"
+	     pkg.package pkg.version)
+    in
     { old_pkg with installed = pkg.installed } in
   let sol_univ = load_universe (List.map expand_package sol_pkgs) in
   pre, sol_univ
