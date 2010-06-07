@@ -46,6 +46,7 @@ let good_prob_sol = [	(* pairs cudf/sol, with sol being a good solution *)
   "upgrade-singleton", "upgrade-singleton-sol-good" ;
   "keep", "keep-sol-good";
   "virt-upgrade", "virt-upgrade-sol-good";
+  "keep-uninst", "keep-uninst-good";
 ]
 let bad_prob_sol = [	(* pairs cudf/sol, with sol being a bad solution *)
   "fresher", "fresher-sol-bad" ;

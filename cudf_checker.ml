@@ -166,7 +166,8 @@ let is_solution (univ, req) sol =
   in
   let keep_ok () =	(* check "Keep" property semantics *)
     let to_be_kept =
-      get_packages ~filter:(fun pkg -> pkg.keep <> `Keep_none) univ in
+      get_packages
+	~filter:(fun pkg -> pkg.installed && pkg.keep <> `Keep_none) univ in
     List.fold_left
       (fun (ok, reasons) pkg ->
 	 let pkg_ok =

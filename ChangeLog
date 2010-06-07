@@ -1,3 +1,8 @@
+2010-06-07  Stefano Zacchiroli  <zack@pps.jussieu.fr>
+
+	* ALL bug fix: do not enforce Keep on uninstalled packages
+	  Thanks Ralf Treinen for the patch! (Closes: #266)
+
 2010-06-03  Stefano Zacchiroli  <zack@pps.jussieu.fr>
 
 	* ALL bug fix: optional/mandatory extra property management
