@@ -12,7 +12,7 @@ Build-Depends:
  libextlib-ocaml-dev,
  libounit-ocaml-dev,
  libglib2.0-dev
-Standards-Version: 3.8.3
+Standards-Version: 3.8.4
 Vcs-Svn: https://gforge.info.ucl.ac.be/svn/mancoosi/trunk/dose3/libcudf
 Vcs-Browser: http://gforge.info.ucl.ac.be/plugins/scmsvn/viewcvs.php/trunk/dose3/libcudf/?root=mancoosi
 Homepage: http://www.mancoosi.org/cudf/
