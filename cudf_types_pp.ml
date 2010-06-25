@@ -10,6 +10,8 @@
 (*  library, see the COPYING file for more information.                      *)
 (*****************************************************************************)
 
+open Printf
+
 open Cudf_types
 
 (* note: Type_error <> Cudf_types.Type_error, this one is not located *)
@@ -151,6 +153,9 @@ let pp_vpkglist fmt = pp_list fmt ~pp_item:pp_vpkg ~sep:" , "
 let rec pp_vpkgformula fmt = function
   | [] -> Format.fprintf fmt "true!"
   | [ [] ] -> Format.fprintf fmt "false!"
+  | [] :: _ ->
+      eprintf "malformed vpkgformula: `[] :: _' ; aborting\n%!";
+      assert false
   | fmla ->
       let pp_or fmt = pp_list fmt ~pp_item:pp_vpkg ~sep:" | " in
       let pp_and fmt = pp_list fmt ~pp_item:pp_or ~sep:" , " in

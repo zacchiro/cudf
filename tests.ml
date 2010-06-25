@@ -257,6 +257,13 @@ let value_parse_suite =
     ] ;
   ]
 
+let value_pp_suite =
+  "value pretty printing" >::: [
+    "bad vpkgformula" >:: (fun () ->
+      assert_exn (fun () -> (* should "assert false" *)
+	Cudf_types_pp.string_of_vpkgformula [ []; [] ]))
+  ]
+
 let misc_parse_suite =
   "misc parsing" >::: [
     "qstring" >::: [
@@ -451,6 +458,7 @@ let encoding_suite =
 let all =
   "all tests" >::: [
     value_parse_suite ;
+    value_pp_suite ;
     misc_parse_suite ;
     good_cudf_parse_suite ;
     bad_cudf_parse_suite ;
