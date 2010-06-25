@@ -7,6 +7,7 @@ Build-Depends:
  cdbs,
  dh-ocaml (>= 0.9),
  ocaml-nox,
+ camlp4,
  ocaml-findlib,
  libextlib-ocaml-dev,
  libounit-ocaml-dev,
