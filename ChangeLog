@@ -8,6 +8,7 @@
 	  (Closes: #272)
 	* ALL bug fix: check for duplicate property in 822 stanzas
 	  (Closes: #269)
+	* ALL add several test cases to the test suite
 
 2010-06-03  Stefano Zacchiroli  <zack@pps.jussieu.fr>
 

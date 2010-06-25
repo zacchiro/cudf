@@ -28,6 +28,8 @@ let bad_cudfs = [	(* CUDF whose parsing must fail (@ location) *)
   "miss-mandatory-prop", (9, 9) ;
   "default-type-check-error", (2, 2) ;
   "dup-property", (5, 6) ;
+  "missing-stanza-sep-1", (5, 6) ;
+  "missing-stanza-sep-2", (3, 3) ;
 ]
 let consistent_univs = [	(* CUDF whose status is expected to be consistent *)
   "assert-true" ;
