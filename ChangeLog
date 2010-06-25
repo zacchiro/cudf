@@ -10,6 +10,8 @@
 	  (Closes: #269)
 	* ALL bug fix: comments no longer split stanzas in two
 	  (Closes: #250)
+	* ALL bug fix: perform string escape when pretty printing type
+	  declarations (Closes: #271)
 	* ALL add several test cases to the test suite
 
 2010-06-03  Stefano Zacchiroli  <zack@pps.jussieu.fr>

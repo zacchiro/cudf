@@ -263,7 +263,21 @@ let value_parse_suite =
   ]
 
 let value_pp_suite =
+  let value_pp_ok (desc, v, s) = desc >: TestCase (fun _ ->
+    assert_equal (Cudf_types_pp.string_of_value v) s) in
+  let decl_pp_ok (desc, v, s) = desc >: TestCase (fun _ ->
+    assert_equal (Cudf_types_pp.string_of_typedecl v) s) in
   "value pretty printing" >::: [
+    "good value" >::: List.map value_pp_ok [
+    ] ;
+    "good decl" >::: List.map decl_pp_ok [
+      "default string",
+        ["source", `String (Some "")],
+        "source: string = [\"\"]" ;
+      "default string escape",
+        ["source", `String (Some "\"")],
+        "source: string = [\"\\\"\"]" ;
+    ] ;
     "bad vpkgformula" >:: (fun () ->
       assert_exn (fun () -> (* should "assert false" *)
 	Cudf_types_pp.string_of_vpkgformula [ []; [] ]))

@@ -10,6 +10,7 @@
 (*  library, see the COPYING file for more information.                      *)
 (*****************************************************************************)
 
+open ExtLib
 open Printf
 
 open Cudf_types
@@ -181,10 +182,16 @@ let pp_type fmt = function
   | `Typedecl -> Format.fprintf fmt "typedecl"
 
 let rec pp_typedecl' fmt (name, decl1) =
+  let string_escape =
+    String.replace_chars
+      (function '"' -> "\\\"" | '\\' -> "\\\\" | c -> String.of_char c) in
   match value_of_typedecl decl1 with
     | None -> Format.fprintf fmt "%s: %a" name pp_type (type_of_typedecl decl1)
+    | Some (`String s) ->
+        Format.fprintf fmt "%s: %a = [\"%s\"]"
+	  name pp_type `String (string_escape s)
     | Some v ->
-	Format.fprintf fmt "%s: %a = [%a]"
+        Format.fprintf fmt "%s: %a = [%a]"
 	  name pp_type (type_of_typedecl decl1) pp_value v
 
 and pp_value fmt (v: typed_value) = match v with
