@@ -40,7 +40,7 @@ rule token_822 = parse
   | (ident as field) ':' ' '
     ([^'\n']* as rest)		{ FIELD(field, (get_range lexbuf, rest)) }
   | ' ' ([^'\n']* as rest)	{ CONT(get_range lexbuf, rest) }
-  | '#' [^'\n']*		{ token_822 lexbuf }
+  | '#' [^'\n']* '\n'		{ token_822 lexbuf }
   | blank* '\n'			{ lexing_new_line lexbuf;
 				  EOL }
   | eof				{ EOF }

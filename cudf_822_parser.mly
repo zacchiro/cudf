@@ -13,7 +13,7 @@
 /* RFC822-like parser: surface parser for CUDF stanzas
 
   This parser handle the surface syntax of CUDF documents: it recognizes
-  RFC82 stanzas, folds together line continuations, and throws away comments
+  RFC822 stanzas, folds together line continuations, and throws away comments
   and empty lines
 */
 
