@@ -1,8 +1,9 @@
-cudf (0.5.98-1~pre) UNRELEASED; urgency=low
+cudf (0.5.98-1) experimental; urgency=low
 
-  * UNRELEASED
+  * New upstream release
+  * First upload to the Debian archive
 
- -- Stefano Zacchiroli <zack@debian.org>  Mon, 07 Jun 2010 16:11:30 +0200
+ -- Stefano Zacchiroli <zack@debian.org>  Fri, 25 Jun 2010 16:13:02 +0200
 
 cudf (0.5.97-1) unstable; urgency=low
 

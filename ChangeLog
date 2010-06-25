@@ -13,6 +13,7 @@
 	* ALL bug fix: perform string escape when pretty printing type
 	  declarations (Closes: #271)
 	* ALL add several test cases to the test suite
+	* ALL Development release 0.5.98
 
 2010-06-03  Stefano Zacchiroli  <zack@pps.jussieu.fr>
 
