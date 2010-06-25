@@ -19,6 +19,10 @@
 
 %{
 
+open ExtLib
+
+exception Dup_stanza
+
 let join (r1, v) (r2, cont) = Cudf_types.extend_loc r1 r2, v ^ cont
 
 %}
@@ -56,7 +60,13 @@ stanzas:
 ;
 
 stanza:
-  | fields	{ $1 }
+  | fields	{ let keys = List.map fst $1 in
+		  (* check for re-defined keys *)
+		  if List.length (List.unique keys) < List.length keys then
+		    raise Dup_stanza
+		  else
+		    $1
+		}
 ;
 
 fields:
@@ -81,10 +91,15 @@ let error_wrapper f =
   fun lexer lexbuf ->
     try
       f lexer lexbuf
-    with Parsing.Parse_error ->
-      raise (Cudf_types.Parse_error_822
-	       ("RFC 822 (stanza structure) parse error",
-		Cudf_types.loc_of_lexbuf lexbuf))
+    with 
+      | Parsing.Parse_error ->
+	  raise (Cudf_types.Parse_error_822
+		   ("RFC 822 (stanza structure) parse error",
+		    Cudf_types.loc_of_lexbuf lexbuf))
+      | Dup_stanza ->
+	  raise (Cudf_types.Parse_error_822
+		   ("duplicate keys in stanza",
+		    Cudf_types.loc_of_lexbuf lexbuf))
 
 let doc_822 = error_wrapper doc_822
 let stanza_822 = error_wrapper stanza_822
