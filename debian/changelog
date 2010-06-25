@@ -5,6 +5,7 @@ cudf (0.5.98-1) experimental; urgency=low
   * debian/control
     - add missing build-dep on camlp4
     - bump Standards-Version (no changes needed)
+  * debian/cudf-check.1: provide sensible whatis information
 
  -- Stefano Zacchiroli <zack@debian.org>  Fri, 25 Jun 2010 16:30:34 +0200
 
