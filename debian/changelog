@@ -6,8 +6,9 @@ cudf (0.5.98-1) experimental; urgency=low
     - add missing build-dep on camlp4
     - bump Standards-Version (no changes needed)
   * debian/cudf-check.1: provide sensible whatis information
+  * debian/copyright: bump copyright year to include 2010
 
- -- Stefano Zacchiroli <zack@debian.org>  Fri, 25 Jun 2010 16:30:34 +0200
+ -- Stefano Zacchiroli <zack@debian.org>  Fri, 25 Jun 2010 16:51:27 +0200
 
 cudf (0.5.97-1) unstable; urgency=low
 

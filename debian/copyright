@@ -4,7 +4,7 @@ Thu, 08 Jan 2009 16:08:00 +0100.
 It was downloaded from <http://gforge.info.ucl.ac.be/projects/mancoosi/>
 
 Files: *
-Copyright: © 2009 Stefano Zacchiroli <zack@pps.jussieu.fr>
+Copyright: © 2009-2010 Stefano Zacchiroli <zack@pps.jussieu.fr>
 License: LGPL-3+ | other
  As a special exception to the GNU Lesser General Public License, you
  may link, statically or dynamically, a "work that uses the Library"
@@ -27,11 +27,3 @@ License, or (at your option) any later version.
 
 The full text of the license can be found in
 `/usr/share/common-licenses/LGPL-3'.
-
-Files: debian/*
-Copyright: © 2009 Stefano Zacchiroli <zack@debian.org>
-License: GPL-3+
-
-  The Debian packaging is copyright Stefano Zacchiroli, and licensed
-  under the GNU General Public License, see
-  `/usr/share/common-licenses/GPL-3' for the full text.
