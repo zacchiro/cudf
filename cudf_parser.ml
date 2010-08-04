@@ -33,6 +33,13 @@ let from_in_channel ?(typedecl=Cudf_conf.stanza_typedecl) ic =
     fname = "" ;
   }
 
+let from_IO_in_channel ?(typedecl=Cudf_conf.stanza_typedecl) ic =
+  let f s n = try IO.input ic s 0 n with IO.No_more_input -> 0 in
+  { lexbuf = Lexing.from_function f;
+    typedecl = typedecl ;
+    fname = "" ;
+  }
+
 let from_file ?(typedecl=Cudf_conf.stanza_typedecl) fname =
   (* Syntax  error with OCaml 3.10.2:
    * { from_in_channel ?typedecl (open_in fname)

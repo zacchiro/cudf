@@ -30,6 +30,14 @@ exception Parse_error of string * loc
 val from_in_channel : ?typedecl:Cudf_conf.stanza_typedecl ->
   in_channel -> cudf_parser
 
+(** create a CUDF parser reading data from an Extlib input channel
+
+    @param typedecl (initial) per-stanza and per-property type declarations to
+    be used while parsing. Default: {!Cudf_conf.stanza_typedecl}
+*)
+val from_IO_in_channel : ?typedecl:Cudf_conf.stanza_typedecl ->
+  IO.input -> cudf_parser
+
 (** create a CUDF parser reading data from a file
 
     @param typedecl as per {!Cudf_parser.from_in_channel}
