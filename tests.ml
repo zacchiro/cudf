@@ -362,6 +362,17 @@ let mem_installed =
       "'engine' satisfied w/o features" @? not (mem' ("engine", None));
   )
 
+let mem_package =
+  "Cudf.mem_package" >:: (fun () ->
+    let _, univ, _ = load_cudf_test "legacy" in
+    let mem = mem_package univ in
+      "<car,1> available" @? mem ("car", 1);
+      "<car,2> unavailable" @? not (mem ("car", 2));
+      "<bicycle,7> available" @? mem ("bicycle", 7);
+      "<bicycle,8> unavailable" @? not (mem ("bicycle", 8));
+      "<zuff,1> unavailable" @? not (mem ("zuff", 1));
+  )
+
 let satisfy_formula =
   "check formula satisfaction" >:: (fun () ->
     let _, univ, _ = load_cudf_test "legacy" in
@@ -442,6 +453,7 @@ let feature_suite =
     status_filtering ;
     inst_version_lookup ;
     mem_installed ;
+    mem_package ;
     satisfy_formula ;
     disjoint ;
     self_conflicts ;

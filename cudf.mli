@@ -106,6 +106,10 @@ val load_universe : package list -> universe
     @raise Not_found if the requested package cannot be found *)
 val lookup_package : universe -> pkgname * version -> package
 
+(** Check existence of a specific package in the universe via a <name, version>
+    key *)
+val mem_package : universe -> pkgname * version -> bool
+
 (** check wheather a given package constraint is satisfied in a given
     package status (i.e., the universe subset of [installed] packages)
 

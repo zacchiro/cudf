@@ -135,6 +135,7 @@ let load_universe pkgs =
     univ
 
 let lookup_package univ = Hashtbl.find univ.id2pkg
+let mem_package univ = Hashtbl.mem univ.id2pkg
 let iter_packages f univ = Hashtbl.iter (fun _id pkg -> f pkg) univ.id2pkg
 let fold_packages f init univ =
   Hashtbl.fold (fun _id pkg acc -> f acc pkg) univ.id2pkg init
