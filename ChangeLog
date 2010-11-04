@@ -1,6 +1,7 @@
 2010-11-04  Stefano Zacchiroli  <zack@pps.jussieu.fr>
 
 	* ALL parser: add support for ExtLib IO channels
+	  Thanks Pietro Abate for the patch. (Closes: #299)
 
 2010-06-25  Stefano Zacchiroli  <zack@pps.jussieu.fr>
 
