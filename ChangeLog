@@ -3,6 +3,7 @@
 	* ALL parser: add support for ExtLib IO channels
 	  Thanks Pietro Abate for the patch. (Closes: #299)
 	* ALL add Cudf.mem_package (Closes: #307)
+	* ALL Development release 0.5.99
 
 2010-06-25  Stefano Zacchiroli  <zack@pps.jussieu.fr>
 
