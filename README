@@ -27,6 +27,16 @@ as found by a package manager.
 libCUDF enables manipulation of CUDF and related documents.
 
 
+Bugs
+----
+
+Please report bugs to the gforge bug tracker available at:
+
+  http://gforge.info.ucl.ac.be/tracker/?group_id=35
+
+when reporting bug, please select the "libcudf" component.
+
+
 Reference
 ---------
 
