@@ -1,6 +1,6 @@
 (*****************************************************************************)
 (*  libCUDF - CUDF (Common Upgrade Description Format) manipulation library  *)
-(*  Copyright (C) 2009-2010  Stefano Zacchiroli <zack@pps.jussieu.fr>        *)
+(*  Copyright (C) 2009-2011  Stefano Zacchiroli <zack@pps.jussieu.fr>        *)
 (*                                                                           *)
 (*  This library is free software: you can redistribute it and/or modify     *)
 (*  it under the terms of the GNU Lesser General Public License as           *)
@@ -54,12 +54,12 @@ let print_inst_info inst =
 let print_cudf (pre, univ, req) =
   if !dump_arg then begin
     let pre' = Option.default Cudf.default_preamble pre in
-    print_endline (Cudf_printer.string_of_cudf (pre', univ, req))
+    Cudf_printer.pp_cudf Format.std_formatter (pre', univ, req)
   end
 
 let print_univ univ =
   if !dump_arg then
-    print_endline (Cudf_printer.string_of_universe univ)
+    Cudf_printer.pp_universe Format.std_formatter univ
 
 let print_sol_info inst sol =
   match is_solution inst sol with
