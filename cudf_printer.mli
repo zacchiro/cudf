@@ -31,7 +31,11 @@ val pp_universe : Format.formatter -> universe -> unit
 
 (** {6 Pretty print to string}
 
-    Shorthand functions. *)
+    Shorthand functions.
+
+    Note: although easier to use (because there is no need to pass an explicit
+    ormatter), the functions below are significantly slower than the pretty
+    printer functions above (of the pp_* family). Choose with care. *)
 
 val string_of_cudf : cudf -> string
 val string_of_doc : cudf_doc -> string
