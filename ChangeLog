@@ -1,5 +1,8 @@
-2011-11-05  Stefano Zacchiroli  <zack@pps.jussieu.fr>
+2011-05-26  Stefano Zacchiroli  <zack@pps.jussieu.fr>
 	* ALL cudf-check: faster (~ 2x) -dump
+	* ALL Cudf_printer/Cudf_types_pp: speed improvement (~ 3.5x)
+          get rid of Format, output only on strings (_types_pp) or on
+          out_channel (_printer)
 
 2010-11-04  Stefano Zacchiroli  <zack@pps.jussieu.fr>
 

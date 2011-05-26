@@ -54,12 +54,12 @@ let print_inst_info inst =
 let print_cudf (pre, univ, req) =
   if !dump_arg then begin
     let pre' = Option.default Cudf.default_preamble pre in
-    Cudf_printer.pp_cudf Format.std_formatter (pre', univ, req)
+    Cudf_printer.pp_cudf stdout (pre', univ, req)
   end
 
 let print_univ univ =
   if !dump_arg then
-    Cudf_printer.pp_universe Format.std_formatter univ
+    Cudf_printer.pp_universe stdout univ
 
 let print_sol_info inst sol =
   match is_solution inst sol with

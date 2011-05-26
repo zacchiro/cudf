@@ -17,32 +17,15 @@
 
 open Cudf
 
-(** {6 Pretty print to abstract formatters} *)
+(** {6 Pretty print to output channels} *)
 
-val pp_cudf : Format.formatter -> cudf -> unit
-val pp_doc : Format.formatter -> cudf_doc -> unit
-val pp_solution : Format.formatter -> solution -> unit
-val pp_item : Format.formatter -> cudf_item -> unit
-val pp_package : Format.formatter -> package -> unit
-val pp_preamble : Format.formatter -> preamble -> unit
-val pp_request : Format.formatter -> request -> unit
-val pp_packages : Format.formatter -> package list -> unit
-val pp_universe : Format.formatter -> universe -> unit
+val pp_cudf : out_channel -> cudf -> unit
+val pp_doc : out_channel -> cudf_doc -> unit
+val pp_solution : out_channel -> solution -> unit
+val pp_item : out_channel -> cudf_item -> unit
+val pp_package : out_channel -> package -> unit
+val pp_preamble : out_channel -> preamble -> unit
+val pp_request : out_channel -> request -> unit
+val pp_packages : out_channel -> package list -> unit
+val pp_universe : out_channel -> universe -> unit
 
-(** {6 Pretty print to string}
-
-    Shorthand functions.
-
-    Note: although easier to use (because there is no need to pass an explicit
-    ormatter), the functions below are significantly slower than the pretty
-    printer functions above (of the pp_* family). Choose with care. *)
-
-val string_of_cudf : cudf -> string
-val string_of_doc : cudf_doc -> string
-val string_of_solution : solution -> string
-val string_of_item : cudf_item -> string
-val string_of_package : package -> string
-val string_of_request : request -> string
-val string_of_preamble : preamble -> string
-val string_of_packages : package list -> string
-val string_of_universe : universe -> string

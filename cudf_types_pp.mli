@@ -83,30 +83,7 @@ val parse_value : typ -> string -> typed_value
 
 (** {5 Pretty printers} *)
 
-(** {6 Pretty print to abstract formatters} *)
-
-val pp_int : Format.formatter -> int -> unit
-val pp_posint : Format.formatter -> int -> unit
-val pp_nat : Format.formatter -> int -> unit
-val pp_bool : Format.formatter -> bool -> unit
-val pp_string : Format.formatter -> string -> unit
-val pp_keep : Format.formatter -> enum_keep -> unit
-val pp_pkgname : Format.formatter -> pkgname -> unit
-val pp_version : Format.formatter -> version -> unit
-val pp_vpkg : Format.formatter -> vpkg -> unit
-val pp_vpkglist : Format.formatter -> vpkglist -> unit
-val pp_vpkgformula : Format.formatter -> vpkgformula -> unit
-val pp_veqpkg : Format.formatter -> veqpkg -> unit
-val pp_veqpkglist : Format.formatter -> veqpkglist -> unit
-val pp_typedecl : Format.formatter -> typedecl -> unit
-
-val pp_type : Format.formatter -> typ -> unit
-val pp_value : Format.formatter -> typed_value -> unit
-
-
-(** {6 Pretty print to string}
-
-    Shorthand functions. *)
+(** {6 Pretty print to string} *)
 
 val string_of_int : int -> string
 val string_of_posint : int -> string

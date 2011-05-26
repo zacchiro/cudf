@@ -101,24 +101,19 @@ let parse_value ty s =
 
 (** Pretty printers *)
 
-let pp_int fmt i =  Format.fprintf fmt "%d" i
-let pp_posint = pp_int
-let pp_nat = pp_int
+let string_of_int = Pervasives.string_of_int
+let string_of_posint = string_of_int
+let string_of_nat = string_of_int
+let string_of_bool = Pervasives.string_of_bool
 
-let pp_bool fmt = function
-    true -> Format.fprintf fmt "true"
-  | false -> Format.fprintf fmt "false"
+let string_of_keep = function
+    `Keep_version -> "version"
+  | `Keep_package -> "package"
+  | `Keep_feature -> "feature"
+  | `Keep_none -> "none"
 
-let pp_string fmt = Format.fprintf fmt "%s"
-
-let pp_keep fmt = function
-    `Keep_version -> Format.fprintf fmt "version"
-  | `Keep_package -> Format.fprintf fmt "package"
-  | `Keep_feature -> Format.fprintf fmt "feature"
-  | `Keep_none -> Format.fprintf fmt "none"
-
-let pp_pkgname fmt name = Format.fprintf fmt "%s" name
-let pp_version fmt ver = Format.fprintf fmt "%d" ver
+let string_of_pkgname pkgname = pkgname
+let string_of_version = string_of_int
 
 let string_of_relop = function
     `Eq -> "="
@@ -128,112 +123,83 @@ let string_of_relop = function
   | `Leq -> "<="
   | `Lt -> "<"
 
-let pp_vpkg fmt = function
-    (name, None) -> pp_pkgname fmt name
-  | (name, Some (relop, v)) ->
-      Format.fprintf fmt "%a %s %a"
-	pp_pkgname name (string_of_relop relop) pp_version v
+let string_of_vpkg = function
+    (name, None) -> name
+  | (name, Some (relop, v)) -> sprintf "%s %s %d" name (string_of_relop relop) v
 
-let pp_list fmt ~pp_item ~sep l =
-  let rec aux fmt = function
+let string_of_list string_of_item sep l =
+  let buf = Buffer.create 1023 in
+  let rec aux = function
     | [] -> assert false
     | [last] -> (* last item, no trailing sep *)
-        Format.fprintf fmt "@,%a" pp_item last
-    | vpkg :: tl -> (* at least one package in tl *)
-        Format.fprintf fmt "@,%a%s" pp_item vpkg sep ; 
-        aux fmt tl
-  in
-  match l with
-  | [] -> ()
-  | [sole] -> pp_item fmt sole
-  | _ -> Format.fprintf fmt "@[<hv>%a@]" aux l
+        Buffer.add_string buf (string_of_item last)
+    | item :: tl -> (* at least one item in tl *)
+        Buffer.add_string buf (string_of_item item);
+        Buffer.add_string buf sep;
+        aux tl in
+  let _ = 
+    match l with
+      | [] -> ()
+      | [sole] -> Buffer.add_string buf (string_of_item sole)
+      | _ -> aux l in
+  Buffer.contents buf
 
-let pp_vpkglist fmt = pp_list fmt ~pp_item:pp_vpkg ~sep:" , "
+let string_of_vpkglist = string_of_list string_of_vpkg " , "
 
 (** ASSUMPTION: formula is in CNF *)
-let rec pp_vpkgformula fmt = function
-  | [] -> Format.fprintf fmt "true!"
-  | [ [] ] -> Format.fprintf fmt "false!"
+let rec string_of_vpkgformula = function
+  | [] -> "true!"
+  | [ [] ] -> "false!"
   | [] :: _ ->
       eprintf "malformed vpkgformula: `[] :: _' ; aborting\n%!";
       assert false
   | fmla ->
-      let pp_or fmt = pp_list fmt ~pp_item:pp_vpkg ~sep:" | " in
-      let pp_and fmt = pp_list fmt ~pp_item:pp_or ~sep:" , " in
-      pp_and fmt fmla
+      let string_of_OR = string_of_list string_of_vpkg " | " in
+      let string_of_AND = string_of_list string_of_OR " , " in
+      string_of_AND fmla
 
-let pp_veqpkglist = pp_vpkglist
-let pp_veqpkg = pp_vpkg
+let string_of_veqpkglist l = string_of_vpkglist (l :> vpkglist)
+let string_of_veqpkg = string_of_vpkg
 
-let pp_type fmt = function
-  | `Int -> Format.fprintf fmt "int"
-  | `Posint -> Format.fprintf fmt "posint"
-  | `Nat -> Format.fprintf fmt "nat"
-  | `Bool -> Format.fprintf fmt "bool"
-  | `String -> Format.fprintf fmt "string"
-  | `Enum enums -> Format.fprintf fmt "enum(%s)" (String.concat "," enums)
-  | `Pkgname -> Format.fprintf fmt "pkgname"
-  | `Ident -> Format.fprintf fmt "ident"
-  | `Vpkg -> Format.fprintf fmt "vpkg"
-  | `Vpkgformula -> Format.fprintf fmt "vpkgformula"
-  | `Vpkglist -> Format.fprintf fmt "vpkglist"
-  | `Veqpkg -> Format.fprintf fmt "veqpkg"
-  | `Veqpkglist -> Format.fprintf fmt "veqpkglist"
-  | `Typedecl -> Format.fprintf fmt "typedecl"
+let string_of_type = function
+  | `Int -> "int"
+  | `Posint -> "posint"
+  | `Nat -> "nat"
+  | `Bool -> "bool"
+  | `String -> "string"
+  | `Enum enums -> sprintf "enum(%s)" (String.concat "," enums)
+  | `Pkgname -> "pkgname"
+  | `Ident -> "ident"
+  | `Vpkg -> "vpkg"
+  | `Vpkgformula -> "vpkgformula"
+  | `Vpkglist -> "vpkglist"
+  | `Veqpkg -> "veqpkg"
+  | `Veqpkglist -> "veqpkglist"
+  | `Typedecl -> "typedecl"
 
-let rec pp_typedecl' fmt (name, decl1) =
+let rec string_of_typedecl' (name, decl1) =
   let string_escape =
     String.replace_chars
       (function '"' -> "\\\"" | '\\' -> "\\\\" | c -> String.of_char c) in
   match value_of_typedecl decl1 with
-    | None -> Format.fprintf fmt "%s: %a" name pp_type (type_of_typedecl decl1)
-    | Some (`String s) ->
-        Format.fprintf fmt "%s: %a = [\"%s\"]"
-	  name pp_type `String (string_escape s)
+    | None -> sprintf "%s: %s" name (string_of_type (type_of_typedecl decl1))
+    | Some (`String s) -> sprintf "%s: string = [\"%s\"]" name (string_escape s)
     | Some v ->
-        Format.fprintf fmt "%s: %a = [%a]"
-	  name pp_type (type_of_typedecl decl1) pp_value v
+        sprintf "%s: %s = [%s]"
+	  name (string_of_type (type_of_typedecl decl1)) (string_of_value v)
 
-and pp_value fmt (v: typed_value) = match v with
-  | (`Int i | `Posint i | `Nat i) -> pp_int fmt i
-  | `Bool b -> pp_bool fmt b
-  | (`String s | `Pkgname s | `Ident s | `Enum (_, s)) -> pp_string fmt s
-  | `Vpkg p -> pp_vpkg fmt p
-  | `Veqpkg p -> pp_vpkg fmt p
-  | `Vpkglist l -> pp_vpkglist fmt l
-  | `Veqpkglist l -> pp_vpkglist fmt l
-  | `Vpkgformula f -> pp_vpkgformula fmt f
-  | `Typedecl d -> pp_typedecl fmt d
+and string_of_value (v: typed_value) = match v with
+  | (`Int i | `Posint i | `Nat i) -> string_of_int i
+  | `Bool b -> string_of_bool b
+  | (`String s | `Pkgname s | `Ident s | `Enum (_, s)) -> s
+  | `Vpkg p -> string_of_vpkg p
+  | `Veqpkg p -> string_of_vpkg p
+  | `Vpkglist l -> string_of_vpkglist l
+  | `Veqpkglist l -> string_of_veqpkglist l
+  | `Vpkgformula f -> string_of_vpkgformula f
+  | `Typedecl d -> string_of_typedecl d
 
-and pp_typedecl fmt = pp_list fmt ~pp_item:pp_typedecl' ~sep:", "
-
-let buf = Buffer.create 1024
-let buf_formatter =
-  let fmt = Format.formatter_of_buffer buf in
-    Format.pp_set_margin fmt max_int;
-    fmt
-
-let string_of pp arg =
-  Buffer.clear buf;
-  ignore(pp buf_formatter arg);
-  Format.pp_print_flush buf_formatter ();
-  Buffer.contents buf
-
-let string_of_int = string_of pp_int
-let string_of_posint = string_of pp_int
-let string_of_nat = string_of pp_int
-let string_of_bool = string_of pp_bool
-let string_of_keep = string_of pp_keep
-let string_of_pkgname = string_of pp_pkgname
-let string_of_version = string_of pp_version
-let string_of_vpkg = string_of pp_vpkg
-let string_of_vpkglist = string_of pp_vpkglist
-let string_of_vpkgformula = string_of pp_vpkgformula
-let string_of_veqpkg = string_of pp_veqpkg
-let string_of_veqpkglist = string_of pp_veqpkglist
-let string_of_type = string_of pp_type
-let string_of_value = string_of pp_value
-let string_of_typedecl = string_of pp_typedecl
+and string_of_typedecl decl = string_of_list string_of_typedecl' ", " decl
 
 (*
 let encode s =

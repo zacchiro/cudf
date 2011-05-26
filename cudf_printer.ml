@@ -11,16 +11,17 @@
 (*****************************************************************************)
 
 open ExtLib
+open Printf
 
 open Cudf
 open Cudf_types
 open Cudf_types_pp
 
 
-let pp_property fmt (n, s) = Format.fprintf fmt "%s: %s@\n" n s
+let pp_property out (n, s) = fprintf out "%s: %s\n" n s
 
-let pp_package fmt pkg =
-  let pp = pp_property fmt in
+let pp_package out pkg =
+  let pp = pp_property out in
   pp ("package", string_of_pkgname pkg.package);
   pp ("version", string_of_version pkg.version);
   if pkg.depends <> default_package.depends then
@@ -37,8 +38,8 @@ let pp_package fmt pkg =
     pp ("keep", string_of_keep pkg.keep);
   List.iter (fun (k, v) -> pp (k, string_of_value v)) pkg.pkg_extra
 
-let pp_request fmt req =
-  let pp = pp_property fmt in
+let pp_request out req =
+  let pp = pp_property out in
   pp ("request", req.request_id);
   if req.install <> default_request.install then
     pp ("install", string_of_vpkglist req.install);
@@ -48,8 +49,8 @@ let pp_request fmt req =
     pp ("upgrade", string_of_vpkglist req.upgrade);
   List.iter (fun (k, v) -> pp (k, string_of_value v)) req.req_extra
 
-let pp_preamble fmt pre =
-  let pp = pp_property fmt in
+let pp_preamble out pre =
+  let pp = pp_property out in
   pp ("preamble", pre.preamble_id);
   if pre.property <> default_preamble.property then
     pp ("property", string_of_typedecl pre.property);
@@ -60,48 +61,26 @@ let pp_preamble fmt pre =
   if pre.req_checksum <> default_preamble.req_checksum then
     pp ("req-checksum", pre.req_checksum)
 
-let pp_universe fmt =
-  iter_packages (fun pkg -> Format.fprintf fmt "%a@\n" pp_package pkg)
+let pp_universe out =
+  iter_packages (fun pkg -> fprintf out "%a\n" pp_package pkg)
 
-let pp_packages fmt =
-  List.iter (fun pkg -> Format.fprintf fmt "%a@\n" pp_package pkg)
+let pp_packages out =
+  List.iter (fun pkg -> fprintf out "%a\n" pp_package pkg)
 
-let pp_cudf fmt (pre, univ, req) =
-  Format.fprintf fmt "%a@\n%a@\n%a"
+let pp_cudf out (pre, univ, req) =
+  fprintf out "%a\n%a\n%a"
     pp_preamble pre pp_universe univ pp_request req
 
-let pp_doc fmt (pre, pkgs, req) =
-  Option.may (fun pre -> Format.fprintf fmt "%a@\n" pp_preamble pre) pre;
-  List.iter (fun pkg -> Format.fprintf fmt "%a@\n" pp_package pkg) pkgs;
-  pp_request fmt req
+let pp_doc out (pre, pkgs, req) =
+  Option.may (fun pre -> fprintf out "%a\n" pp_preamble pre) pre;
+  List.iter (fun pkg -> fprintf out "%a\n" pp_package pkg) pkgs;
+  pp_request out req
 
-let pp_solution fmt (pre, univ) =
-  Format.fprintf fmt "%a@\n%a"
+let pp_solution out (pre, univ) =
+  fprintf out "%a\n%a"
     pp_preamble pre pp_universe univ
 
-let pp_item fmt = function
-  | `Package pkg -> pp_package fmt pkg
-  | `Request req -> pp_request fmt req
-  | `Preamble pre -> pp_preamble fmt pre
-
-let buf = Buffer.create 1024
-let buf_formatter =
-  let fmt = Format.formatter_of_buffer buf in
-    Format.pp_set_margin fmt max_int;
-    fmt
-      
-let string_of pp arg =
-  Buffer.clear buf;
-  pp buf_formatter arg;
-  Format.pp_print_flush buf_formatter ();
-  Buffer.contents buf
-
-let string_of_cudf = string_of pp_cudf
-let string_of_doc = string_of pp_doc
-let string_of_solution = string_of pp_solution
-let string_of_item = string_of pp_item
-let string_of_package = string_of pp_package
-let string_of_packages = string_of pp_packages
-let string_of_preamble = string_of pp_preamble
-let string_of_request = string_of pp_request
-let string_of_universe = string_of pp_universe
+let pp_item out = function
+  | `Package pkg -> pp_package out pkg
+  | `Request req -> pp_request out req
+  | `Preamble pre -> pp_preamble out pre
