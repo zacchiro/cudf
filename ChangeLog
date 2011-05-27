@@ -3,6 +3,7 @@
 	* ALL Cudf_printer/Cudf_types_pp: speed improvement (~ 3.5x)
           get rid of Format, output only on strings (_types_pp) or on
           out_channel (_printer)
+	* c-lib: link caml_hash_variant with -ldl
 
 2010-11-04  Stefano Zacchiroli  <zack@pps.jussieu.fr>
 
