@@ -1,6 +1,6 @@
 #    -*- mode: org -*-
 
-* TODO BUG when solution is correct and the solution is inconsistent,
+* DONE BUG when solution is correct and the solution is inconsistent,
   it is reported as is_solution:true
 
   e.g.:

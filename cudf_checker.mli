@@ -65,6 +65,12 @@ val is_consistent : universe -> bool * inconsistency_reason option
     universe only containing package names and versions won't be enough. To
     load compact universes see {!Cudf_parser.load_solution}.
 
+    {b Note}: in accordance with CUDF semantics, for a solution to be valid,
+    the solution shall correspond to a consistent universe. A solution that
+    does satisfy user request, but at the same time proposes an inconsistent
+    universe (as per {!Cudf_checker.is_consistent}) will be reported by
+    [is_solution] as not being a valid solution.
+
     @return [true, []] if this is the case, [false, l]
     otherwise, where r explains why the solution is bad *)
 val is_solution : (universe * request) -> universe -> bool * bad_solution_reason list
