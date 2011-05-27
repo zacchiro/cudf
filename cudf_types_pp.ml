@@ -201,31 +201,3 @@ and string_of_value (v: typed_value) = match v with
 
 and string_of_typedecl decl = string_of_list string_of_typedecl' ", " decl
 
-(*
-let encode s =
-  let escape_string s =
-    let make_hex chr = Printf.sprintf "%%%x" (Char.code chr) in
-    let allowed_RE = Pcre.regexp pkgname_STR in
-    let n = String.length s in
-    let b = Buffer.create n in
-    for i = 0 to n-1 do
-      let s' = String.of_char s.[i] in
-      if not(Pcre.pmatch ~rex:allowed_RE s') then
-        Buffer.add_string b (make_hex s.[i])
-      else
-        Buffer.add_string b s'
-    done;
-    Buffer.contents b
-  in
-  if Pcre.pmatch ~rex:pkgname_RE s then s
-  else escape_string s
-
-let rec decode s =
-  let hex_re = Pcre.regexp "%[0-9a-f][0-9a-f]" in
-  let un s =
-    let hex = String.sub s 1 2 in
-    let n = int_of_string ("0x" ^ hex) in
-    String.make 1 (Char.chr n)
-  in
-  Pcre.substitute ~rex:hex_re ~subst:un s
-*)

@@ -102,10 +102,3 @@ val string_of_typedecl : typedecl -> string
 val string_of_type : typ -> string
 val string_of_value : typed_value -> string
 
-
-(**/**)
-
-(*
-val encode : string -> string
-val decode : string -> string
-*)
