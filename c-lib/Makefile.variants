@@ -65,7 +65,7 @@ cudf-variants.h: caml_hash_variant Makefile.variants
 caml_hash_variant: caml_hash_variant.o
 	> dummy.ml
 	ocamlc -o dummy.o -output-obj dummy.ml
-	$(CC) $(CFLAGS) -o $@ $< dummy.o -L$(OCAML_LIBDIR) -lcamlrun -lm -lcurses
+	$(CC) $(CFLAGS) -o $@ $< dummy.o -L$(OCAML_LIBDIR) -lcamlrun -lm -lcurses -ldl
 	@rm -f dummy.*
 
 clean: clean-variants
