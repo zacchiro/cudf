@@ -5,6 +5,7 @@
 	* ALL Cudf_printer/Cudf_types_pp: speed improvement (~ 3.5x)
           get rid of Format, output only on strings (_types_pp) or on
           out_channel (_printer).                      [ API change ]
+	* ALL Cudf_types_pp: fix pretty printing of "enum[...]" type
 	* doc: clarify is_solution meaning wrt inconsistent universes
 	* c-lib: link caml_hash_variant with -ldl
 

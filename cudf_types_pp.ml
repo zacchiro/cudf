@@ -167,7 +167,7 @@ let string_of_type = function
   | `Nat -> "nat"
   | `Bool -> "bool"
   | `String -> "string"
-  | `Enum enums -> sprintf "enum(%s)" (String.concat "," enums)
+  | `Enum enums -> sprintf "enum[%s]" (String.concat "," enums)
   | `Pkgname -> "pkgname"
   | `Ident -> "ident"
   | `Vpkg -> "vpkg"
