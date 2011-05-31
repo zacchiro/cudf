@@ -17,7 +17,7 @@
 
 open Cudf
 
-(** {6 Pretty print to output channels} *)
+(** {6 Pretty print to standard output channels} *)
 
 val pp_cudf : out_channel -> cudf -> unit
 val pp_doc : out_channel -> cudf_doc -> unit
@@ -28,4 +28,23 @@ val pp_preamble : out_channel -> preamble -> unit
 val pp_request : out_channel -> request -> unit
 val pp_packages : out_channel -> package list -> unit
 val pp_universe : out_channel -> universe -> unit
+
+
+(** {6 Pretty print to abstract output channels}
+    
+    Note: you can write to string using these methods using the following
+    pattern:
+
+    [let o = IO.output_string () in ... Cudf_printer.pp_* o ...; IO.close_out o]
+*)
+
+val pp_io_cudf : 'a IO.output -> cudf -> unit
+val pp_io_doc : 'a IO.output -> cudf_doc -> unit
+val pp_io_solution : 'a IO.output -> solution -> unit
+val pp_io_item : 'a IO.output -> cudf_item -> unit
+val pp_io_package : 'a IO.output -> package -> unit
+val pp_io_preamble : 'a IO.output -> preamble -> unit
+val pp_io_request : 'a IO.output -> request -> unit
+val pp_io_packages : 'a IO.output -> package list -> unit
+val pp_io_universe : 'a IO.output -> universe -> unit
 

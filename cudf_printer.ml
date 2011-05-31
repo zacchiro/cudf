@@ -19,8 +19,12 @@ open Cudf_types_pp
 
 
 let pp_property out (n, s) = fprintf out "%s: %s\n" n s
+let pp_io_property out (n, s) = IO.printf out "%s: %s\n" n s
 
-let pp_package out pkg =
+let pp_sep out = output_char out '\n'
+let pp_io_sep out = IO.write out '\n'
+
+let pp_package_gen ~pp_property out pkg =
   let pp = pp_property out in
   pp ("package", string_of_pkgname pkg.package);
   pp ("version", string_of_version pkg.version);
@@ -38,7 +42,8 @@ let pp_package out pkg =
     pp ("keep", string_of_keep pkg.keep);
   List.iter (fun (k, v) -> pp (k, string_of_value v)) pkg.pkg_extra
 
-let pp_request out req =
+
+let pp_request_gen ~pp_property out req =
   let pp = pp_property out in
   pp ("request", req.request_id);
   if req.install <> default_request.install then
@@ -49,7 +54,8 @@ let pp_request out req =
     pp ("upgrade", string_of_vpkglist req.upgrade);
   List.iter (fun (k, v) -> pp (k, string_of_value v)) req.req_extra
 
-let pp_preamble out pre =
+
+let pp_preamble_gen ~pp_property out pre =
   let pp = pp_property out in
   pp ("preamble", pre.preamble_id);
   if pre.property <> default_preamble.property then
@@ -61,29 +67,71 @@ let pp_preamble out pre =
   if pre.req_checksum <> default_preamble.req_checksum then
     pp ("req-checksum", pre.req_checksum)
 
-let pp_universe out univ =
-  iter_packages (fun pkg -> fprintf out "%a\n" pp_package pkg) univ
+let pp_universe_gen ~pp_package ~pp_sep out univ =
+  iter_packages (fun pkg -> pp_package out pkg; pp_sep out) univ
 
-let pp_packages out pkgs =
-  List.iter (fun pkg -> fprintf out "%a\n" pp_package pkg) pkgs
+let pp_packages_gen ~pp_package ~pp_sep out pkgs =
+  List.iter (fun pkg -> pp_package out pkg; pp_sep out) pkgs
 
-let pp_cudf out (pre, univ, req) =
-  fprintf out "%a\n%a%a"
-    pp_preamble pre
-    pp_universe univ
-    pp_request req
+let pp_cudf_gen ~pp_preamble ~pp_universe ~pp_request ~pp_sep out
+    (pre, univ, req) =
+  pp_preamble out pre;
+  pp_sep out;
+  pp_universe out univ;
+  pp_request out req
 
-let pp_doc out (pre, pkgs, req) =
-  Option.may (fun pre -> fprintf out "%a\n" pp_preamble pre) pre;
-  fprintf out "%a%a"
-    pp_packages pkgs
-    pp_request req
+let pp_doc_gen ~pp_preamble ~pp_packages ~pp_request ~pp_sep out (pre, pkgs, req) =
+  Option.may (fun pre -> pp_preamble out pre; pp_sep out) pre;
+  pp_packages out pkgs;
+  pp_request out req
 
-let pp_solution out (pre, univ) =
-  fprintf out "%a\n%a"
-    pp_preamble pre pp_universe univ
+let pp_solution_gen ~pp_preamble ~pp_universe ~pp_sep out (pre, univ) =
+  pp_preamble out pre;
+  pp_sep out;
+  pp_universe out univ
 
-let pp_item out = function
+let pp_item_gen ~pp_package ~pp_request ~pp_preamble out = function
   | `Package pkg -> pp_package out pkg
   | `Request req -> pp_request out req
   | `Preamble pre -> pp_preamble out pre
+
+
+(** {6 Pretty print to standard output channels} *)
+
+let pp_package out p = pp_package_gen ~pp_property out p
+let pp_request out r = pp_request_gen ~pp_property out r
+let pp_preamble out p = pp_preamble_gen ~pp_property out p
+let pp_universe out u = pp_universe_gen ~pp_package ~pp_sep out u
+let pp_packages out p = pp_packages_gen ~pp_package ~pp_sep out p
+let pp_cudf out c =
+  pp_cudf_gen ~pp_preamble ~pp_universe ~pp_request ~pp_sep out c
+let pp_doc out d =
+  pp_doc_gen ~pp_preamble ~pp_packages ~pp_request ~pp_sep out d
+let pp_solution out s = pp_solution_gen ~pp_preamble ~pp_universe ~pp_sep out s
+let pp_item out i = pp_item_gen ~pp_package ~pp_request ~pp_preamble out i
+
+(** {6 Pretty print to abstract output channels} *)
+
+let pp_io_package out p = pp_package_gen ~pp_property:pp_io_property out p
+let pp_io_request out r = pp_request_gen ~pp_property:pp_io_property out r
+let pp_io_preamble out p = pp_preamble_gen ~pp_property:pp_io_property out p
+let pp_io_universe out u =
+  pp_universe_gen ~pp_package:pp_io_package ~pp_sep:pp_io_sep out u
+let pp_io_packages out p =
+  pp_packages_gen ~pp_package:pp_io_package ~pp_sep:pp_io_sep out p
+let pp_io_cudf out c =
+  pp_cudf_gen ~pp_preamble:pp_io_preamble
+    ~pp_universe:pp_io_universe ~pp_request:pp_io_request ~pp_sep:pp_io_sep
+    out c
+let pp_io_doc out d =
+  pp_doc_gen ~pp_preamble:pp_io_preamble ~pp_packages:pp_io_packages
+    ~pp_request:pp_io_request ~pp_sep:pp_io_sep
+    out d
+let pp_io_solution out s =
+  pp_solution_gen ~pp_preamble:pp_io_preamble ~pp_universe:pp_io_universe
+    ~pp_sep:pp_io_sep out s
+let pp_io_item out i =
+  pp_item_gen ~pp_package:pp_io_package ~pp_request:pp_io_request
+    ~pp_preamble:pp_io_preamble
+    out i
+
