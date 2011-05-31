@@ -283,6 +283,52 @@ let value_pp_suite =
 	Cudf_types_pp.string_of_vpkgformula [ []; [] ]))
   ]
 
+let cudf_pp_suite =
+  (** check that the pretty printing roundtrip (parse -> pp -> parse) returns
+      the same document than plain parsing *)
+  let cudf_pp_roundtrip name =
+    name >: TestCase (fun _ ->
+      let (pre, univ, req) as doc = parse_cudf_test name in
+      let fname, oc = Filename.open_temp_file "libcudf-test." ".cudf" in
+      finally
+	(fun () -> Sys.remove fname)
+	(fun () ->
+	  Cudf_printer.pp_doc oc doc;
+	  close_out oc;
+	  let doc' = Cudf_parser.parse_from_file fname in
+	  let doc = pre, univ, Some req in
+	  assert_equal doc doc')
+	())
+  in
+  (** check that pretty printing of a document returns some canonical pretty
+      printed document (hence, this test is more fragile than
+      [cudf_pp_roundtrip] above) *)
+  let cudf_pp_canonical name =
+    name >: TestCase (fun _ ->
+      let (pre, univ, req) as doc = parse_cudf_test name in
+      let fname, oc = Filename.open_temp_file "libcudf-test." ".cudf" in
+      finally
+	(fun () -> Sys.remove fname)
+	(fun () ->
+	  let expected_pp_file = cudf_test_path (sprintf "%s.pp" name) in
+	  let expected_pp = input_file expected_pp_file in
+	  Cudf_printer.pp_doc oc doc;
+	  close_out oc;
+	  let actual_pp = input_file fname in
+	  if expected_pp != actual_pp then
+	    ignore (Sys.command (sprintf "diff %s %s" expected_pp_file fname));
+	  assert_equal expected_pp actual_pp)
+	())
+  in
+  "cudf pretty printing" >::: [
+    "roundtrip" >::: List.map cudf_pp_roundtrip [
+      "legacy"
+    ];
+    "canonical" >::: List.map cudf_pp_canonical [
+      "legacy"
+    ];
+  ]
+
 let misc_parse_suite =
   "misc parsing" >::: [
     "qstring" >::: [
@@ -490,6 +536,7 @@ let all =
   "all tests" >::: [
     value_parse_suite ;
     value_pp_suite ;
+    cudf_pp_suite ;
     misc_parse_suite ;
     good_cudf_parse_suite ;
     bad_cudf_parse_suite ;
