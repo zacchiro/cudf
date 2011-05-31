@@ -6,6 +6,7 @@
           get rid of Format, output only on strings (_types_pp) or on
           out_channel (_printer).                      [ API change ]
 	* ALL Cudf_types_pp: fix pretty printing of "enum[...]" type
+	* ALL Cudf_printer.pp_cudf: avoid extra blank line before request
 	* doc: clarify is_solution meaning wrt inconsistent universes
 	* c-lib: link caml_hash_variant with -ldl
 

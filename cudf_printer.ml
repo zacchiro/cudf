@@ -61,20 +61,23 @@ let pp_preamble out pre =
   if pre.req_checksum <> default_preamble.req_checksum then
     pp ("req-checksum", pre.req_checksum)
 
-let pp_universe out =
-  iter_packages (fun pkg -> fprintf out "%a\n" pp_package pkg)
+let pp_universe out univ =
+  iter_packages (fun pkg -> fprintf out "%a\n" pp_package pkg) univ
 
-let pp_packages out =
-  List.iter (fun pkg -> fprintf out "%a\n" pp_package pkg)
+let pp_packages out pkgs =
+  List.iter (fun pkg -> fprintf out "%a\n" pp_package pkg) pkgs
 
 let pp_cudf out (pre, univ, req) =
-  fprintf out "%a\n%a\n%a"
-    pp_preamble pre pp_universe univ pp_request req
+  fprintf out "%a\n%a%a"
+    pp_preamble pre
+    pp_universe univ
+    pp_request req
 
 let pp_doc out (pre, pkgs, req) =
   Option.may (fun pre -> fprintf out "%a\n" pp_preamble pre) pre;
-  List.iter (fun pkg -> fprintf out "%a\n" pp_package pkg) pkgs;
-  pp_request out req
+  fprintf out "%a%a"
+    pp_packages pkgs
+    pp_request req
 
 let pp_solution out (pre, univ) =
   fprintf out "%a\n%a"
