@@ -1,5 +1,4 @@
-2011-05-26  Stefano Zacchiroli  <zack@pps.jussieu.fr>
-	UNRELEASED
+2011-06-01  Stefano Zacchiroli  <zack@pps.jussieu.fr>
 	* ALL release 0.6
 	* ALL cudf-check: faster (~ 2x) -dump
 	* ALL Cudf_printer/Cudf_types_pp: speed improvement (~ 3.5x)
