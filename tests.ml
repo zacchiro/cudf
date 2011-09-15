@@ -24,6 +24,7 @@ let good_cudfs = [	(* CUDF whose parsing must suceed *)
   "empty-vpkglist-explicit" ;
   "comment-within-stanza" ;
   "comment-at-eof" ;
+  "only-request" ;
 ]
 let bad_cudfs = [	(* CUDF whose parsing must fail (@ location) *)
   "line-111", (111, 111) ;
@@ -42,6 +43,7 @@ let inconsistent_univs = [	(* CUDF whose status has some broken dep *)
 let good_pkgs = [	(* universes whose parsing must suceed *)
   "conflict-comma-sep" ;
   "plus-in-pkgname" ;
+  "empty" ;
 ]
 let bad_pkgs = [	(* universes whose parsing must fail (@ location) *)
   "multiline-error", (93, 95) ;

@@ -215,7 +215,7 @@ let parse p =
 	     pkgs := [pkg] ;
 	     (try aux_pkg () with End_of_file -> ())
 	 | `Request req' -> req := Some req')
-    with End_of_file -> parse_error (loc_of_lexbuf p.lexbuf) "empty CUDF"
+    with End_of_file -> ()
   in
   (try
      parse () ;

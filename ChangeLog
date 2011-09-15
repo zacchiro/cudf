@@ -1,3 +1,8 @@
+2011-09-15  Stefano Zacchiroli  <zack@pps.jussieu.fr>
+	* ALL release 0.6.1
+	* ALL Cudf_parser: allow parsing of empty universes as well as
+	  parsing of documents containing only a (possibly empty) request
+
 2011-06-01  Stefano Zacchiroli  <zack@pps.jussieu.fr>
 	* ALL release 0.6
 	* ALL cudf-check: faster (~ 2x) -dump
