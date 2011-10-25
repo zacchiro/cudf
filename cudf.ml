@@ -50,7 +50,9 @@ type cudf_item =
 type universe = {
   id2pkg: ((string * int), package) Hashtbl.t;	(** <name, ver> -> pkg *)
   name2pkgs: (string, package) Hashtbl.t; (** name -> pkg (multi-bindings) *)
-  inst_features: (string, (package * version option)) Hashtbl.t;
+  int2pkgs: (int, package) Hashtbl.t;
+  pkgs2int: ((pkgname * version), int) Hashtbl.t;
+  features: (string, (package * version option)) Hashtbl.t;
   (** feature -> avail feature versions (multi-bindings) among
       installed packages only. Each available feature is reported as a
       pair <owner, provided version>, where owner is the package
@@ -101,15 +103,16 @@ let default_request = {
 
 let empty_universe () =
   { id2pkg = Hashtbl.create 1023 ;
+    int2pkgs = Hashtbl.create 1023;
+    pkgs2int = Hashtbl.create 1023;
     name2pkgs = Hashtbl.create 1023 ;
-    inst_features = Hashtbl.create 1023 ;
+    features = Hashtbl.create 1023 ;
     univ_size = 0 ; inst_size = 0 ;
   }
 
 (** process all features (i.e., Provides) provided by a given package
     and fill with them a given feature table *)
 let expand_features pkg features =
-  if pkg.installed then
     List.iter
       (function
         | name, None -> Hashtbl.add features name (pkg, None)
@@ -118,25 +121,36 @@ let expand_features pkg features =
 
 let load_universe pkgs =
   let univ = empty_universe () in
+  let pkgid = ref 0 in
     List.iter
       (fun pkg ->
 	 let id = pkg.package, pkg.version in
+         Hashtbl.add univ.int2pkgs !pkgid pkg;
+         Hashtbl.add univ.pkgs2int id !pkgid;
+         incr pkgid;
 	   if Hashtbl.mem univ.id2pkg id then
 	     raise (Constraint_violation
 		      (sprintf "duplicate package: <%s, %d>"
 			 pkg.package pkg.version));
 	   Hashtbl.add univ.id2pkg id pkg;
 	   Hashtbl.add univ.name2pkgs pkg.package pkg;
-	   expand_features pkg univ.inst_features;
+	   expand_features pkg univ.features;
 	   univ.univ_size <- univ.univ_size + 1;
 	   if pkg.installed then
 	     univ.inst_size <- univ.inst_size + 1)
       pkgs;
     univ
 
+let package_by_id univ = Hashtbl.find univ.int2pkgs
+let id_by_package univ pkg =
+  Hashtbl.find univ.pkgs2int (pkg.package, pkg.version)
+
 let lookup_package univ = Hashtbl.find univ.id2pkg
 let mem_package univ = Hashtbl.mem univ.id2pkg
-let iter_packages f univ = Hashtbl.iter (fun _id pkg -> f pkg) univ.id2pkg
+
+let iter_packages f univ = Hashtbl.iter (fun _id pkg -> f pkg) univ.int2pkgs
+let iteri_packages f univ = Hashtbl.iter (fun _id pkg -> f _id pkg) univ.int2pkgs
+
 let fold_packages f init univ =
   Hashtbl.fold (fun _id pkg acc -> f acc pkg) univ.id2pkg init
 
@@ -166,7 +180,7 @@ let status univ =
       | { installed = true } ->
           Hashtbl.add univ'.id2pkg id pkg;
 	        Hashtbl.add univ'.name2pkgs pkg.package pkg;
-	        expand_features pkg univ'.inst_features
+	        expand_features pkg univ'.features
 	    | _ -> ())
       univ.id2pkg;
     univ'
@@ -184,20 +198,25 @@ let mem_installed ?(include_features = true) ?(ignore = fun _ -> false)
     univ (name, constr) =
   let pkg_filter = fun pkg -> not (ignore pkg) in
   let mem_feature constr =
-    let feats = Hashtbl.find_all univ.inst_features name in
+    let feats = Hashtbl.find_all univ.features name in
       List.exists
 	(function
-	     owner_pkg, None -> pkg_filter owner_pkg
+           | owner_pkg, _ when owner_pkg.installed = false -> false
+	   | owner_pkg, None -> pkg_filter owner_pkg
 	   | owner_pkg, Some v -> pkg_filter owner_pkg && v |= constr)
 	feats in
   let pkgs = List.filter pkg_filter (get_installed univ name) in
     List.exists (fun pkg -> pkg.version |= constr) pkgs
     || (include_features && mem_feature constr)
 
-let who_provides univ (pkg, constr) =
+let who_provides ?(installed=true) univ (pkgname, constr) =
   List.filter
-    (function _, None -> true | _, Some v -> v |= constr)
-    (Hashtbl.find_all univ.inst_features pkg)
+    (function 
+      |pkg , _ when pkg.installed = false && installed = true -> false
+      |_, None -> true 
+      | _, Some v -> v |= constr
+    )
+    (Hashtbl.find_all univ.features pkgname)
 
 let lookup_package_property pkg = function
   | "package" -> string_of_pkgname pkg.package

@@ -130,7 +130,7 @@ val mem_installed :
     given package provides all possible version of the feature; it if
     is Some v, the given package only provides version [v] of the
     feature. *)
-val who_provides : universe -> vpkg -> (package * version option) list
+val who_provides : ?installed:bool -> universe -> vpkg -> (package * version option) list
 
 (** lookup all available versions of a given package name
 
@@ -142,7 +142,11 @@ val lookup_packages : ?filter:constr -> universe -> pkgname -> package list
     Shorthand for [lookup_packages] composed with filtering on installed=true *)
 val get_installed : universe -> pkgname -> package list
 
+val package_by_id : universe -> int -> package
+val id_by_package : universe -> package -> int
+
 val iter_packages : (package -> unit) -> universe -> unit
+val iteri_packages : (int -> package -> unit) -> universe -> unit
 val fold_packages : ('a -> package -> 'a) -> 'a -> universe -> 'a
 
 (** conversion from universe to plain package list
