@@ -123,7 +123,7 @@ val mem_installed :
   universe -> vpkg -> bool
 
 (** Ask who provides a given feature (predicate).
-    Note: only installed=true packages are considered by this function.
+    @param installed : consider only installed packages (default)
 
     @return a list of packages providing the requested feature. Each
     package is paired with an optional version; if it is None, the
@@ -142,8 +142,8 @@ val lookup_packages : ?filter:constr -> universe -> pkgname -> package list
     Shorthand for [lookup_packages] composed with filtering on installed=true *)
 val get_installed : universe -> pkgname -> package list
 
-val package_by_id : universe -> int -> package
-val id_by_package : universe -> package -> int
+val package_by_uid : universe -> int -> package
+val uid_by_package : universe -> package -> int
 
 val iter_packages : (package -> unit) -> universe -> unit
 val iteri_packages : (int -> package -> unit) -> universe -> unit
