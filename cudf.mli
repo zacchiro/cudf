@@ -142,12 +142,26 @@ val lookup_packages : ?filter:constr -> universe -> pkgname -> package list
     Shorthand for [lookup_packages] composed with filtering on installed=true *)
 val get_installed : universe -> pkgname -> package list
 
-val package_by_uid : universe -> int -> package
+(** return a unique integer identifier for the given package in the universe
+
+    @raise Not_found if the given package cannot be found in the universe *)
 val uid_by_package : universe -> package -> int
 
+(** return the package corresponding to the given unique identifier
+
+    @raise Not_found if no package in the universe corresponds to the given
+    unique identifier *)
+val package_by_uid : universe -> int -> package
+
+(** iter over all packages in the universe *)
 val iter_packages : (package -> unit) -> universe -> unit
-val iteri_packages : (int -> package -> unit) -> universe -> unit
+
+(** fold over all packages in the universe *)
 val fold_packages : ('a -> package -> 'a) -> 'a -> universe -> 'a
+
+(** iter on all packages in the universe, passing to the iteration function
+    both the package and its unique identifier *)
+val iteri_packages : (int -> package -> unit) -> universe -> unit
 
 (** conversion from universe to plain package list
 
