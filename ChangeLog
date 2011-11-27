@@ -1,3 +1,11 @@
+2011-11-27  Stefano Zacchiroli  <zack@pps.jussieu.fr>
+	* ALL UNRELEASED
+	* ALL Cudf: add a new mapping between packages and unique integer
+	  identifiers, useful to avoid external uid maps (patch by Pietro
+	  Abate)
+	* ALL Cudf: who_provides is now more general and can query both
+	  installed and available packages (patch by Pietro Abate)
+
 2011-09-15  Stefano Zacchiroli  <zack@pps.jussieu.fr>
 	* ALL release 0.6.1
 	* ALL Cudf_parser: allow parsing of empty universes as well as
