@@ -1,4 +1,4 @@
-2011-11-27  Stefano Zacchiroli  <zack@pps.jussieu.fr>
+2011-11-27  Stefano Zacchiroli  <zack@upsilon.cc>
 	* ALL release 0.6.2
 	* ALL Cudf: add a new mapping between packages and unique integer
 	  identifiers, useful to avoid external uid maps (patch by Pietro
@@ -7,12 +7,12 @@
 	  installed and available packages (patch by Pietro Abate)
 	* ALL Cudf_printer: expose generic higher order printers
 
-2011-09-15  Stefano Zacchiroli  <zack@pps.jussieu.fr>
+2011-09-15  Stefano Zacchiroli  <zack@upsilon.cc>
 	* ALL release 0.6.1
 	* ALL Cudf_parser: allow parsing of empty universes as well as
 	  parsing of documents containing only a (possibly empty) request
 
-2011-06-01  Stefano Zacchiroli  <zack@pps.jussieu.fr>
+2011-06-01  Stefano Zacchiroli  <zack@upsilon.cc>
 	* ALL release 0.6
 	* ALL cudf-check: faster (~ 2x) -dump
 	* ALL Cudf_printer/Cudf_types_pp: speed improvement (~ 3.5x)
@@ -24,14 +24,14 @@
 	* doc: clarify is_solution meaning wrt inconsistent universes
 	* c-lib: link caml_hash_variant with -ldl
 
-2010-11-04  Stefano Zacchiroli  <zack@pps.jussieu.fr>
+2010-11-04  Stefano Zacchiroli  <zack@upsilon.cc>
 
 	* ALL parser: add support for ExtLib IO channels
 	  Thanks Pietro Abate for the patch. (Closes: #299)
 	* ALL add Cudf.mem_package (Closes: #307)
 	* ALL Development release 0.5.99
 
-2010-06-25  Stefano Zacchiroli  <zack@pps.jussieu.fr>
+2010-06-25  Stefano Zacchiroli  <zack@upsilon.cc>
 
 	* ALL bug fix: do not enforce Keep on uninstalled packages
 	  Thanks Ralf Treinen for the patch! (Closes: #266)
@@ -48,7 +48,7 @@
 	* ALL add several test cases to the test suite
 	* ALL Development release 0.5.98
 
-2010-06-03  Stefano Zacchiroli  <zack@pps.jussieu.fr>
+2010-06-03  Stefano Zacchiroli  <zack@upsilon.cc>
 
 	* ALL bug fix: optional/mandatory extra property management
 	* c-lib bug fix: add handling of vpkgformula extra properties
@@ -56,7 +56,7 @@
 	* ALL bug fix: do not accept trivial formulae as v(eq)pkglist
 	* ALL Development release 0.5.97
 
-2010-06-01  Stefano Zacchiroli  <zack@pps.jussieu.fr>
+2010-06-01  Stefano Zacchiroli  <zack@upsilon.cc>
 
 	* c-lib add structured accessors to request fields
 	  (patch by Gustavo Gutierrez, thanks!)
@@ -68,7 +68,7 @@
 	* ALL bug fix: support heading '+' when parsing posint
 	* ALL Development release 0.5.96
 
-2009-12-18  Stefano Zacchiroli  <zack@pps.jussieu.fr>
+2009-12-18  Stefano Zacchiroli  <zack@upsilon.cc>
 
 	* c-lib Remove the need of OCaml devel stuff to use the C API
 	* c-lib Provide bindings to OCaml native code, if available
@@ -76,12 +76,12 @@
 	* c-lib O(n^2) -> O(n) speed-up in package list conversion
 	* ALL Development release 0.5.94
 
-2009-11-25  Stefano Zacchiroli  <zack@pps.jussieu.fr>
+2009-11-25  Stefano Zacchiroli  <zack@upsilon.cc>
 
 	* ALL Porting to CUDF 2.0
 	* ALL Development release 0.5.92
 
-2009-02-24  Stefano Zacchiroli  <zack@pps.jussieu.fr>
+2009-02-24  Stefano Zacchiroli  <zack@upsilon.cc>
 
 	* ALL First public release, version 0.4
 
