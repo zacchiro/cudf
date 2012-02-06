@@ -27,7 +27,6 @@ endif
 
 DIST_DIR = $(NAME)-$(VERSION)
 DIST_TARBALL = $(DIST_DIR).tar.gz
-DEB_TARBALL = $(subst -,_,$(DIST_DIR).orig.tar.gz)
 
 all: $(RESULTS)
 opt: $(RESULTS_OPT)
@@ -43,8 +42,7 @@ c-lib-opt:
 clean:
 	make -C $(C_LIB_DIR) clean
 	$(OCAMLBUILD) $(OBFLAGS) -clean
-	rm -rf *.dsc *.deb *.changes *.orig.tar.gz *.upload \
-		$(NAME)-*.gz $(NAME)_*.gz $(NAME)-*/
+	rm -rf $(NAME)-*.gz $(NAME)_*.gz $(NAME)-*/
 
 _build/%:
 	$(OCAMLBUILD) $(OBFLAGS) $*
@@ -111,13 +109,6 @@ dist: ./$(DIST_TARBALL)
 	rm -rf ./$(DIST_DIR)
 	@echo "Distribution tarball: ./$(DIST_TARBALL)"
 
-./$(DEB_TARBALL): ./$(DIST_TARBALL)
-	cp $< $@
-deb: ./$(DEB_TARBALL)
-	rm -rf ./$(DIST_DIR)
-	tar xvzf $<
-	svn export debian/ $(DIST_DIR)/debian
-	cd $(DIST_DIR) && dpkg-buildpackage -rfakeroot
 rpm: ./$(DIST_TARBALL)
 	rpmbuild --nodeps -ta $<
 
