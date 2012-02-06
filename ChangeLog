@@ -1,5 +1,5 @@
 2011-11-27  Stefano Zacchiroli  <zack@pps.jussieu.fr>
-	* ALL UNRELEASED
+	* ALL release 0.6.2
 	* ALL Cudf: add a new mapping between packages and unique integer
 	  identifiers, useful to avoid external uid maps (patch by Pietro
 	  Abate)
