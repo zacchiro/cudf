@@ -30,8 +30,7 @@ let package_typedecl = [
   "provides",		`Veqpkglist (Some []) ;
   "installed",		`Bool (Some false) ;
   "was-installed",	`Bool (Some false) ;
-  "keep",		`Enum (["version"; "package"; "feature"; "none"],
-			       Some "none") ;
+  "keep",		`Enum (keep_enums, Some "none") ;
 ]
 
 let request_typedecl = [
