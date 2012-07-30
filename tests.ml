@@ -110,12 +110,17 @@ let parse_pkgs_test = parse_test ~parse_fun:parse_pkgs_wrapper
 let load_cudf_test = parse_test ~parse_fun:load_cudf_wrapper
 let load_univ_test = parse_test ~parse_fun:load_pkgs_wrapper
 
-
 (** {!OUnit.assert_equal} proxy for {!Cudf_types.typed_value} values *)
 let assert_equal_tyval ?cmp ?pp_diff ?msg expected real =
   let printer = Cudf_types_pp.string_of_value in
   OUnit.assert_equal ?cmp ~printer ?pp_diff ?msg expected real
 
+let assert_equal_string ?cmp ?pp_diff ?msg expected real =
+  let printer s = s in
+  OUnit.assert_equal ?cmp ~printer ?pp_diff ?msg expected real
+
+let string_of_int_list l =
+  sprintf "[%s]" (String.concat ";" (List.map string_of_int l))
 
 (** {5 Test builders} *)
 
@@ -173,7 +178,7 @@ let bad_pkgs_parse_suite =
 
 let value_parse_suite =
   let value_parse_ok (desc, typ, s, v) = desc >: TestCase (fun _ ->
-    assert_equal (Cudf_types_pp.parse_value typ s) v) in
+    assert_equal_tyval (Cudf_types_pp.parse_value typ s) v) in
   let value_parse_ko (desc, typ, s) = desc >: TestCase (fun _ ->
     assert_raises'
       ~cmp:(fun e1 e2 ->
@@ -307,9 +312,9 @@ let property_access_suite =
 
 let value_pp_suite =
   let value_pp_ok (desc, v, s) = desc >: TestCase (fun _ ->
-    assert_equal (Cudf_types_pp.string_of_value v) s) in
+    assert_equal_string (Cudf_types_pp.string_of_value v) s) in
   let decl_pp_ok (desc, v, s) = desc >: TestCase (fun _ ->
-    assert_equal (Cudf_types_pp.string_of_typedecl v) s) in
+    assert_equal_string (Cudf_types_pp.string_of_typedecl v) s) in
   "value pretty printing" >::: [
     "good value" >::: List.map value_pp_ok [
     ] ;
@@ -376,40 +381,42 @@ let misc_parse_suite =
   "misc parsing" >::: [
     "qstring" >::: [
       "base" >:: (fun () ->
-        assert_equal (Cudf_types_pp.parse_qstring "\"foo\"") "foo") ;
+        assert_equal_string (Cudf_types_pp.parse_qstring "\"foo\"") "foo") ;
       "escape \"" >:: (fun () ->
-        assert_equal (Cudf_types_pp.parse_qstring "\"fo\\\"o\"") "fo\"o") ;
+        assert_equal_string (Cudf_types_pp.parse_qstring "\"fo\\\"o\"") "fo\"o") ;
       "escape \\" >:: (fun () ->
-        assert_equal (Cudf_types_pp.parse_qstring "\"fo\\\\o\"") "fo\\o") ;
+        assert_equal_string (Cudf_types_pp.parse_qstring "\"fo\\\\o\"") "fo\\o") ;
       "dangling \"" >:: (fun () -> "unexpected parse success" @?
         (try ignore (Cudf_types_pp.parse_qstring "\"fo\"o\"") ; false
 	 with _ -> true)) ;
       "typename ident" >:: (fun () ->
-        assert_equal (Cudf_types_pp.parse_type "ident") `Ident) ;
+        assert_equal ~printer:Cudf_types_pp.string_of_type
+	  (Cudf_types_pp.parse_type "ident") `Ident) ;
     ];
     "pkg comparison" >::: [
       "=%" >:: (fun () ->
         let pkg1 = { default_package with installed = true } in
         let pkg2 = { default_package with installed = false } in
-        assert_equal (pkg1 =% pkg2) true) ;
+	assert_equal ~cmp:(=%) pkg1 pkg2);
       "<%" >:: (fun () ->
         let pkg1 = { default_package with installed = true } in
         let pkg2 = { default_package with installed = false } in
 	let l1 = [ pkg1 ; pkg2 ] in
 	let l2 = [ pkg2 ; pkg1 ] in
-	let rec pkgs_eq = function
+	let rec pkgs_eq pkgs1 pkgs2 =
+	  match pkgs1, pkgs2 with
 	  | [], [] -> true
-	  | p1::t1, p2::t2 -> (p1 =% p2) && pkgs_eq (t1,t2)
+	  | p1::t1, p2::t2 -> (p1 =% p2) && pkgs_eq t1 t2
 	  | _ -> assert false in
-        assert_equal
-	  (pkgs_eq ((List.sort ~cmp:(<%) l1), (List.sort ~cmp:(<%) l2)))
-	  true) ;
+        assert_equal ~cmp:pkgs_eq
+	  (List.sort ~cmp:(<%) l1)
+	  (List.sort ~cmp:(<%) l2));
     ];
   ]
 
 let or_dep =
   "disjunctive dependencies" >:: (fun () ->
-    assert_equal
+    assert_equal ~printer:Cudf_types_pp.string_of_vpkgformula
       (lookup_package (load_univ_test "or-dep") ("electric-engine", 1)).depends
       [["solar-collector", None; "huge-battery", None]])
 
@@ -433,10 +440,11 @@ let inst_version_lookup =
   "lookup installed versions" >:: (fun () ->
     let univ = load_univ_test "multi-versions" in
     let versions pkg = List.map (fun p -> p.version) (get_installed univ pkg) in
-      assert_equal (List.sort (versions "gasoline-engine")) [1; 2];
-      assert_equal (versions "battery") [3];
-      assert_equal (versions "not-installed") [];
-      assert_equal (versions "not-existent") [])
+      assert_equal ~printer:string_of_int_list
+	(List.sort (versions "gasoline-engine")) [1; 2];
+      assert_equal ~printer:string_of_int_list (versions "battery") [3];
+      assert_equal ~printer:string_of_int_list (versions "not-installed") [];
+      assert_equal ~printer:string_of_int_list (versions "not-existent") [])
 
 let mem_installed =
   "check whether an installation satisfy a package constraint" >:: (fun () ->
@@ -502,9 +510,11 @@ let univ_sizes =
   let univ = lazy (let _, univ, _ = load_cudf_test "legacy" in univ) in
     "check universe size measuring" >::: [
       "total size" >::
-	(fun () -> assert_equal (universe_size (Lazy.force univ)) 20);
+	(fun () -> assert_equal ~printer:string_of_int
+	  (universe_size (Lazy.force univ)) 20);
       "installed size" >::
-	(fun () -> assert_equal (installed_size (Lazy.force univ)) 6);
+	(fun () -> assert_equal ~printer:string_of_int
+	  (installed_size (Lazy.force univ)) 6);
     ]
 
 let default_value =
@@ -514,7 +524,7 @@ let default_value =
 	(fun () ->
 	  let car = lookup_package (Lazy.force univ) ("car", 1) in
 	  let bugs = List.assoc "bugs" car.pkg_extra in
-	  assert_equal bugs (`Int 0))
+	  assert_equal_tyval (`Int 0) bugs)
     ]
 
 let good_solution_suite = "good solutions" >:::
