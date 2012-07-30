@@ -31,3 +31,16 @@ type stanza_typedecl = (string * typedecl) list
 *)
 val stanza_typedecl: stanza_typedecl
 
+
+(** {6 Direct access to per-stanza type declaration} *)
+
+(** Preamble schemata *)
+val preamble_typedecl: typedecl
+
+(** Package description schemata
+
+    I.e. type declarataion for all core package properties *)
+val package_typedecl: typedecl
+
+(** Request schemata *)
+val request_typedecl: typedecl
