@@ -57,6 +57,7 @@ headers: header.txt .headache.conf
 
 test: _build/test.byte
 	$< -verbose
+	@echo
 c-lib-test:
 	make -C $(C_LIB_DIR) test
 _build/test.byte: $(SOURCES)
