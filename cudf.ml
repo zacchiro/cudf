@@ -242,3 +242,28 @@ let lookup_preamble_property pre = function
   | "status-checksum" -> pre.status_checksum
   | "req-checksum" -> pre.req_checksum
   | _ -> raise Not_found
+
+let lookup_typed_package_property pkg = function
+  | "package" -> `Pkgname pkg.package
+  | "version" -> `Posint pkg.version
+  | "depends" -> `Vpkgformula pkg.depends
+  | "conflicts" -> `Vpkglist pkg.conflicts
+  | "provides" -> `Veqpkglist pkg.provides
+  | "installed" -> `Bool pkg.installed
+  | "keep" -> `Enum (keep_enums, string_of_keep pkg.keep)
+  | prop_name -> List.assoc prop_name pkg.pkg_extra
+
+let lookup_typed_request_property req = function
+  | "request" -> `String req.request_id
+  | "install" -> `Vpkglist req.install
+  | "remove" -> `Vpkglist req.remove
+  | "upgrade" -> `Vpkglist req.upgrade
+  | prop_name -> List.assoc prop_name req.req_extra
+
+let lookup_typed_preamble_property pre = function
+  | "preamble" -> `String pre.preamble_id
+  | "property" -> `Typedecl pre.property
+  | "univ-checksum" -> `String pre.univ_checksum
+  | "status-checksum" -> `String pre.status_checksum
+  | "req-checksum" -> `String pre.req_checksum
+  | _ -> raise Not_found

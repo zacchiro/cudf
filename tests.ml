@@ -110,6 +110,13 @@ let parse_pkgs_test = parse_test ~parse_fun:parse_pkgs_wrapper
 let load_cudf_test = parse_test ~parse_fun:load_cudf_wrapper
 let load_univ_test = parse_test ~parse_fun:load_pkgs_wrapper
 
+
+(** {!OUnit.assert_equal} proxy for {!Cudf_types.typed_value} values *)
+let assert_equal_tyval ?cmp ?pp_diff ?msg expected real =
+  let printer = Cudf_types_pp.string_of_value in
+  OUnit.assert_equal ?cmp ~printer ?pp_diff ?msg expected real
+
+
 (** {5 Test builders} *)
 
 let good_parse ~parse_fun name = TestCase (fun _ ->
@@ -261,6 +268,40 @@ let value_parse_suite =
       "vpkgs trail", `Vpkglist, "foo ," ;
       "veqpkg", `Veqpkg, "foo > 1" ;
       "enum bad def", `Typedecl, "p: enum[a,b,c] = [z]" ;
+    ] ;
+  ]
+
+let property_access_suite =
+  let pre, univ, req = load_cudf_test "legacy" in
+  let pre = Option.get pre in
+  let pkg = lookup_package univ ("gasoline-engine", 1) in
+  let pre_ty (p, v) =
+    p >:: (fun _ -> assert_equal_tyval v (lookup_typed_preamble_property pre p)) in
+  let pkg_ty (p, v) =
+    p >:: (fun _ -> assert_equal_tyval v (lookup_typed_package_property pkg p)) in
+  let req_ty (p, v) =
+    p >:: (fun _ -> assert_equal_tyval v (lookup_typed_request_property req p)) in
+  "property access" >::: [
+    "preamble" >::: List.map pre_ty [
+      "univ-checksum", (`String "8c6d8b4d0cf7027cd523ad095d6408b4901ac31c");
+      "status-checksum", (`String "6936ce910eb716ad97190393f80c14ab04d95b3d");
+      "req-checksum", (`String "17259225eaf63642f9ab99a627b9857a5b27c5f7");
+    ] ;
+    "package" >::: List.map pkg_ty [
+      "package", (`Pkgname "gasoline-engine");
+      "version", (`Posint 1);
+      "depends", (`Vpkgformula [["turbo", None]]);
+      "provides", (`Veqpkglist ["engine", None]);
+      "conflicts", (`Vpkglist ["engine", None; "gasoline-engine", None]);
+      "installed", (`Bool true);
+    ] ;
+    "request" >::: List.map req_ty [
+      "request",
+      (`String "http://www.example.org/8f46e388-042f-415e-8aab-df4eeb974444.dudf");
+      "install", (`Vpkglist ["bicycle", None;
+			     "electric-engine", Some (`Eq, 1)]);
+      "upgrade", (`Vpkglist ["door", None;
+			     "wheel", Some (`Gt, 2)]);
     ] ;
   ]
 
@@ -538,6 +579,7 @@ let all =
   "all tests" >::: [
     value_parse_suite ;
     value_pp_suite ;
+    property_access_suite ;
     cudf_pp_suite ;
     misc_parse_suite ;
     good_cudf_parse_suite ;

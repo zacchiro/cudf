@@ -211,6 +211,15 @@ val lookup_request_property : request -> string -> string
     speaking is not a property) you should lookup "preamble" *)
 val lookup_preamble_property : preamble -> string -> string
 
+(** Same as {!Cudf.lookup_package_property}, but return a typed value. *)
+val lookup_typed_package_property : package -> string -> typed_value
+
+(** Same as {!Cudf.lookup_request_property}, but return a typed value. *)
+val lookup_typed_request_property : request -> string -> typed_value
+
+(** Same as {!Cudf.lookup_preamble_property}, but return a typed value. *)
+val lookup_typed_preamble_property : preamble -> string -> typed_value
+
 (** Check whether a version matches a version constraint,
     e.g. [version_matches 1 (Some(`Eq, 2)) = false] *)
 val version_matches : version -> constr -> bool
