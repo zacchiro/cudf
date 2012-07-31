@@ -286,28 +286,57 @@ let property_access_suite =
     p >:: (fun _ -> assert_equal_tyval v (lookup_typed_package_property pkg p)) in
   let req_ty (p, v) =
     p >:: (fun _ -> assert_equal_tyval v (lookup_typed_request_property req p)) in
+  let pre_raw (p, v) =
+    p >:: (fun _ -> assert_equal_string v (lookup_preamble_property pre p)) in
+  let pkg_raw (p, v) =
+    p >:: (fun _ -> assert_equal_string v (lookup_package_property pkg p)) in
+  let req_raw (p, v) =
+    p >:: (fun _ -> assert_equal_string v (lookup_request_property req p)) in
   "property access" >::: [
-    "preamble" >::: List.map pre_ty [
-      "univ-checksum", (`String "8c6d8b4d0cf7027cd523ad095d6408b4901ac31c");
-      "status-checksum", (`String "6936ce910eb716ad97190393f80c14ab04d95b3d");
-      "req-checksum", (`String "17259225eaf63642f9ab99a627b9857a5b27c5f7");
+    "raw" >::: [
+      "preamble" >::: List.map pre_raw [
+	"univ-checksum", "8c6d8b4d0cf7027cd523ad095d6408b4901ac31c";
+	"status-checksum", "6936ce910eb716ad97190393f80c14ab04d95b3d";
+	"req-checksum", "17259225eaf63642f9ab99a627b9857a5b27c5f7";
+      ] ;
+      "package" >::: List.map pkg_raw [
+	"package", "gasoline-engine";
+	"version", "1";
+	"depends", "turbo";
+	"provides", "engine";
+	"conflicts", "engine , gasoline-engine";
+	"installed", "true";
+      ] ;
+      "request" >::: List.map req_raw [
+	"request",
+	"http://www.example.org/8f46e388-042f-415e-8aab-df4eeb974444.dudf";
+	"install", "bicycle , electric-engine = 1";
+	"upgrade", "door , wheel > 2";
+      ] ;
     ] ;
-    "package" >::: List.map pkg_ty [
-      "package", (`Pkgname "gasoline-engine");
-      "version", (`Posint 1);
-      "depends", (`Vpkgformula [["turbo", None]]);
-      "provides", (`Veqpkglist ["engine", None]);
-      "conflicts", (`Vpkglist ["engine", None; "gasoline-engine", None]);
-      "installed", (`Bool true);
-    ] ;
-    "request" >::: List.map req_ty [
-      "request",
-      (`String "http://www.example.org/8f46e388-042f-415e-8aab-df4eeb974444.dudf");
-      "install", (`Vpkglist ["bicycle", None;
-			     "electric-engine", Some (`Eq, 1)]);
-      "upgrade", (`Vpkglist ["door", None;
-			     "wheel", Some (`Gt, 2)]);
-    ] ;
+    "typed" >::: [
+      "preamble" >::: List.map pre_ty [
+	"univ-checksum", (`String "8c6d8b4d0cf7027cd523ad095d6408b4901ac31c");
+	"status-checksum", (`String "6936ce910eb716ad97190393f80c14ab04d95b3d");
+	"req-checksum", (`String "17259225eaf63642f9ab99a627b9857a5b27c5f7");
+      ] ;
+      "package" >::: List.map pkg_ty [
+	"package", (`Pkgname "gasoline-engine");
+	"version", (`Posint 1);
+	"depends", (`Vpkgformula [["turbo", None]]);
+	"provides", (`Veqpkglist ["engine", None]);
+	"conflicts", (`Vpkglist ["engine", None; "gasoline-engine", None]);
+	"installed", (`Bool true);
+      ] ;
+      "request" >::: List.map req_ty [
+	"request",
+	(`String "http://www.example.org/8f46e388-042f-415e-8aab-df4eeb974444.dudf");
+	"install", (`Vpkglist ["bicycle", None;
+			       "electric-engine", Some (`Eq, 1)]);
+	"upgrade", (`Vpkglist ["door", None;
+			       "wheel", Some (`Gt, 2)]);
+      ] ;
+    ]
   ]
 
 let value_pp_suite =
