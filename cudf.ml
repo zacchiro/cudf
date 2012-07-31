@@ -218,31 +218,6 @@ let who_provides ?(installed=true) univ (pkgname, constr) =
     )
     (Hashtbl.find_all univ.features pkgname)
 
-let lookup_package_property pkg = function
-  | "package" -> string_of_pkgname pkg.package
-  | "version" -> string_of_version pkg.version
-  | "depends" -> string_of_vpkgformula pkg.depends
-  | "conflicts" -> string_of_vpkglist pkg.conflicts
-  | "provides" -> string_of_veqpkglist pkg.provides
-  | "installed" -> string_of_bool pkg.installed
-  | "keep" -> string_of_keep pkg.keep
-  | prop_name -> string_of_value (List.assoc prop_name pkg.pkg_extra)
-
-let lookup_request_property req = function
-  | "request" -> req.request_id
-  | "install" -> string_of_vpkglist req.install
-  | "remove" -> string_of_vpkglist req.remove
-  | "upgrade" -> string_of_vpkglist req.upgrade
-  | prop_name -> string_of_value (List.assoc prop_name req.req_extra)
-
-let lookup_preamble_property pre = function
-  | "preamble" -> pre.preamble_id
-  | "property" -> string_of_typedecl pre.property
-  | "univ-checksum" -> pre.univ_checksum
-  | "status-checksum" -> pre.status_checksum
-  | "req-checksum" -> pre.req_checksum
-  | _ -> raise Not_found
-
 let lookup_typed_package_property pkg = function
   | "package" -> `Pkgname pkg.package
   | "version" -> `Posint pkg.version
@@ -267,3 +242,12 @@ let lookup_typed_preamble_property pre = function
   | "status-checksum" -> `String pre.status_checksum
   | "req-checksum" -> `String pre.req_checksum
   | _ -> raise Not_found
+
+let lookup_package_property pkg prop =
+  string_of_value (lookup_typed_package_property pkg prop)
+
+let lookup_request_property req prop =
+  string_of_value (lookup_typed_request_property req prop)
+
+let lookup_preamble_property pre prop =
+  string_of_value (lookup_typed_preamble_property pre prop)
