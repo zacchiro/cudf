@@ -218,6 +218,7 @@ let who_provides ?(installed=true) univ (pkgname, constr) =
     )
     (Hashtbl.find_all univ.features pkgname)
 
+
 let lookup_typed_package_property pkg = function
   | "package" -> `Pkgname pkg.package
   | "version" -> `Posint pkg.version
@@ -243,6 +244,7 @@ let lookup_typed_preamble_property pre = function
   | "req-checksum" -> `String pre.req_checksum
   | _ -> raise Not_found
 
+
 let lookup_package_property pkg prop =
   string_of_value (lookup_typed_package_property pkg prop)
 
@@ -251,3 +253,7 @@ let lookup_request_property req prop =
 
 let lookup_preamble_property pre prop =
   string_of_value (lookup_typed_preamble_property pre prop)
+
+
+let lookup_package_typedecl ?(extra = []) prop =
+  List.assoc prop (Cudf_conf.package_typedecl @ extra)

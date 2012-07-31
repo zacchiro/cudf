@@ -574,6 +574,29 @@ let inconsistency_suite = "inconsistent universes" >:::
        not (fst (Cudf_checker.is_consistent (load_univ_test u)))))
     inconsistent_univs
 
+let typedecl_lookup = "type declaration lookup" >:::
+  let pre, _univ, _req = load_cudf_test "legacy" in
+  let pre = Option.get pre in
+  let test_typedecl (prop, typedecl1) =
+    prop >:: (fun _ ->
+      assert_equal ~printer:Std.dump (* TODO use/write a better printer *)
+	typedecl1
+	(lookup_package_typedecl ~extra:pre.property prop)) in
+  List.map
+    test_typedecl
+    [ "package", `Pkgname None;
+      "version", `Posint None;
+      "depends", `Vpkgformula (Some []);
+      "conflicts", `Vpkglist (Some []);
+      "provides", `Veqpkglist (Some []);
+      "installed", `Bool (Some false);
+      "was-installed", `Bool (Some false);
+      "keep", `Enum (keep_enums, Some "none");
+      "suite", `Enum (["stable"; "testing"; "unstable"], Some "stable");
+      "bugs", `Int (Some 0);
+      "description", `String (Some "no description");
+    ]
+
 (** {6 Test suites} *)
 
 let feature_suite =
@@ -588,6 +611,7 @@ let feature_suite =
     consistency ;
     univ_sizes ;
     default_value ;
+    typedecl_lookup ;
   ]
 
 (*

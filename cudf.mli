@@ -220,6 +220,19 @@ val lookup_typed_request_property : request -> string -> typed_value
 (** Same as {!Cudf.lookup_preamble_property}, but return a typed value. *)
 val lookup_typed_preamble_property : preamble -> string -> typed_value
 
+(** lookup the type declaration of a given property (either core or extra)
+
+    @param extras if given, list of extra package properties to consider when
+    looking for the type declaration. When not given, which is the default, the
+    lookup is performed only among core package properties
+
+    Note: [lookup_typedecl name] is not the same as [List.assoc
+    preamble.property name]; only the former takes into account core package
+    properties. See also {!Cudf_conf.package_typedecl}.
+
+    @raise Not_found if no declaration could be found for the given property *)
+val lookup_package_typedecl : ?extra:typedecl -> string -> typedecl1
+
 (** Check whether a version matches a version constraint,
     e.g. [version_matches 1 (Some(`Eq, 2)) = false] *)
 val version_matches : version -> constr -> bool
