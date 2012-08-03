@@ -73,6 +73,9 @@ let (=%) pkg1 pkg2 =
 let (<%) pkg1 pkg2 =
   Pervasives.compare (pkg1.package, pkg1.version) (pkg2.package, pkg2.version)
 
+let (>%) pkg1 pkg2 =
+  Pervasives.compare (pkg2.package, pkg2.version) (pkg1.package, pkg1.version)
+
 let default_preamble = {
   preamble_id = "" ;
   property = [] ;

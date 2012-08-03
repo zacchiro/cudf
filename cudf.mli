@@ -44,6 +44,9 @@ val (=%) : package -> package -> bool
     sorting. *)
 val (<%) : package -> package -> int
 
+(** Same as {!Cudf.(<%)}, but sort with greater versions first. *)
+val (>%) : package -> package -> int
+
 type request = {
   request_id : string ;				(* default : "" *)
   install : vpkglist ;				(* default : [] *)
