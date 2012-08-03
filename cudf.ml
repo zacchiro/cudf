@@ -183,6 +183,8 @@ let status univ =
       expand_features pkg univ'.features
     | _ -> ())
     univ.id2pkg;
+  univ'.inst_size <- univ.inst_size;
+  univ'.univ_size <- univ.inst_size; (* as we filtered on installed pkgs *)
   univ'
 
 let lookup_packages ?(filter=None) univ pkgname = 
