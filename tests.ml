@@ -465,6 +465,15 @@ let status_filtering =
         (fun { installed = i } -> i)
         (get_packages (status univ)))
 
+let status_sizes =
+  "status projection size" >:: (fun _ ->
+    let _, univ, _ = load_cudf_test "legacy" in
+    let status = status univ in
+    let assert_equal' x y = assert_equal ~printer:string_of_int x y in
+    assert_equal' 6 (universe_size status);
+    assert_equal' 6 (installed_size status);
+    assert_equal' (installed_size univ) (installed_size status))
+
 let inst_version_lookup =
   "lookup installed versions" >:: (fun () ->
     let univ = load_univ_test "multi-versions" in
@@ -602,6 +611,7 @@ let typedecl_lookup = "type declaration lookup" >:::
 let feature_suite =
   "new feature tests" >::: [
     status_filtering ;
+    status_sizes ;
     inst_version_lookup ;
     mem_installed ;
     mem_package ;
