@@ -1,3 +1,15 @@
+2012-08-03  Stefano Zacchiroli  <zack@upsilon.cc>
+	* ALL release 0.6.3
+	* Cudf: bugfix: ensure that Cudf.status sizes are non-bogus
+	* Cudf: new functions to lookup properties as typed values
+	  lookup_typed_{package,request,preamble}_property
+	* Cudf: new functions to lookup type declarations
+	  for both core and extra package properties
+	* Cudf_conf: offer direct access to per-stanza property schemata
+	* testsuite: add printers to better inspect test failures
+	* Cudf: refactoring, build raw property access on top of typed one
+	* Cudf_conf: refactoring, deduplicate "keep" property enums
+
 2011-11-27  Stefano Zacchiroli  <zack@upsilon.cc>
 	* ALL release 0.6.2
 	* ALL Cudf: add a new mapping between packages and unique integer
