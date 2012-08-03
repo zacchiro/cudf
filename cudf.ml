@@ -122,24 +122,24 @@ let expand_features pkg features =
 let load_universe pkgs =
   let univ = empty_universe () in
   let uid = ref 0 in
-    List.iter
-      (fun pkg ->
-	 let id = pkg.package, pkg.version in
-         Hashtbl.add univ.uid2pkgs !uid pkg;
-         Hashtbl.add univ.id2uid id !uid;
-         incr uid;
-	   if Hashtbl.mem univ.id2pkg id then
-	     raise (Constraint_violation
-		      (sprintf "duplicate package: <%s, %d>"
-			 pkg.package pkg.version));
-	   Hashtbl.add univ.id2pkg id pkg;
-	   Hashtbl.add univ.name2pkgs pkg.package pkg;
-	   expand_features pkg univ.features;
-	   univ.univ_size <- univ.univ_size + 1;
-	   if pkg.installed then
-	     univ.inst_size <- univ.inst_size + 1)
-      pkgs;
-    univ
+  List.iter
+    (fun pkg ->
+      let id = pkg.package, pkg.version in
+      Hashtbl.add univ.uid2pkgs !uid pkg;
+      Hashtbl.add univ.id2uid id !uid;
+      incr uid;
+      if Hashtbl.mem univ.id2pkg id then
+	raise (Constraint_violation
+		 (sprintf "duplicate package: <%s, %d>"
+		    pkg.package pkg.version));
+      Hashtbl.add univ.id2pkg id pkg;
+      Hashtbl.add univ.name2pkgs pkg.package pkg;
+      expand_features pkg univ.features;
+      univ.univ_size <- univ.univ_size + 1;
+      if pkg.installed then
+	univ.inst_size <- univ.inst_size + 1)
+    pkgs;
+  univ
 
 let package_by_uid univ = Hashtbl.find univ.uid2pkgs
 let uid_by_package univ pkg =
@@ -175,15 +175,15 @@ let version_matches = (|=)
 
 let status univ =
   let univ' = empty_universe () in
-    Hashtbl.iter
-      (fun id pkg -> match pkg with
-      | { installed = true } ->
-          Hashtbl.add univ'.id2pkg id pkg;
-	        Hashtbl.add univ'.name2pkgs pkg.package pkg;
-	        expand_features pkg univ'.features
-	    | _ -> ())
-      univ.id2pkg;
-    univ'
+  Hashtbl.iter
+    (fun id pkg -> match pkg with
+    | { installed = true } ->
+      Hashtbl.add univ'.id2pkg id pkg;
+      Hashtbl.add univ'.name2pkgs pkg.package pkg;
+      expand_features pkg univ'.features
+    | _ -> ())
+    univ.id2pkg;
+  univ'
 
 let lookup_packages ?(filter=None) univ pkgname = 
   let packages = Hashtbl.find_all univ.name2pkgs pkgname in
