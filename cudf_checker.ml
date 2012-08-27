@@ -138,7 +138,7 @@ let is_solution (univ, req) sol =
 	  let res =
 	    List.fold_left
 	      (fun (ok, downgrades, multi) ((name, _constr) as vpkg) ->
-		 match versions_of sol name with
+		 match List.unique (versions_of sol name) with
 		   | [Some v] ->
 		       let old_installed = versions_of univ name in
 			 if not (List.for_all
