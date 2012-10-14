@@ -27,25 +27,39 @@ as found by a package manager.
 libCUDF enables manipulation of CUDF and related documents.
 
 
-Bugs
-----
+Development
+-----------
 
-Please report bugs to the gforge bug tracker available at:
+Development happens on the INRIA Forge, in the [cudf project][1]. There you can
+find:
 
-  http://gforge.info.ucl.ac.be/tracker/?group_id=35
+* [releases][4]
+* [Git repository][5]
+* [bug reports][6]
 
-when reporting bug, please select the "libcudf" component.
+[1]: https://gforge.inria.fr/projects/cudf/
+[4]: https://gforge.inria.fr/frs/?group_id=4385
+[5]: https://gforge.inria.fr/scm/?group_id=4385
+[6]: https://gforge.inria.fr/tracker/?group_id=4385
+
+Please report bugs using the forge [bug tracker][6] rather than mailing me
+directly.
+
+If you're in a hurry and just want to get the latest version of the code, here
+is the command you're looking for:
+
+    $ git clone https://gforge.inria.fr/git/cudf/cudf.git
 
 
 Reference
 ---------
 
 libCUDF implements the Common Upgradeability Description Format (CUDF)
-2.0 specifications [1], edited by the Mancoosi project [2].
+2.0 [specifications][2], edited by the [Mancoosi project][3].
 
-[1] http://www.mancoosi.org/reports/tr3.pdf
-[2] http://www.mancoosi.org
+[2]: http://www.mancoosi.org/reports/tr3.pdf
+[3]: http://www.mancoosi.org
 
 
- -- Stefano Zacchiroli <zack@pps.jussieu.fr>  Thu, 26 Nov 2009 10:49:32 +0100
+ -- Stefano Zacchiroli <zack@upsilon.cc>  Sun, 14 Oct 2012 16:28:32 +0100
 
