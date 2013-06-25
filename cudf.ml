@@ -163,6 +163,14 @@ let iteri_packages f univ = Hashtbl.iter (fun _id pkg -> f _id pkg) univ.uid2pkg
 let fold_packages f init univ =
   Hashtbl.fold (fun _id pkg acc -> f acc pkg) univ.id2pkg init
 
+let iter_packages_by_name f univ =
+  Hashtbl.iter (fun n { contents = l } -> f n l) univ.name2pkgs
+
+let fold_packages_by_name f a univ =
+  Hashtbl.fold (fun n { contents = l } a -> f a n l) univ.name2pkgs a
+
+let package_names univ = List.of_enum (Hashtbl.keys univ.name2pkgs)
+
 let get_packages ?filter univ =
   match filter with
     | None -> fold_packages (fun acc pkg -> pkg :: acc) [] univ

@@ -166,6 +166,17 @@ val fold_packages : ('a -> package -> 'a) -> 'a -> universe -> 'a
     both the package and its unique identifier *)
 val iteri_packages : (int -> package -> unit) -> universe -> unit
 
+(** iter on all packages grouped by name. Each package name is associated to
+    a list of packages with the same name and different versions *)
+val iter_packages_by_name : (pkgname -> package list -> unit) -> universe -> unit
+
+(** fold on all packages grouped by name. Each package name is associated to
+    a list of packages with the same name and different versions *)
+val fold_packages_by_name : ('a -> pkgname -> package list -> 'a) -> 'a -> universe -> 'a
+
+(** return the list of all unique package names *)
+val package_names : universe -> pkgname list
+
 (** conversion from universe to plain package list
 
     @param filter only return packages matching a given
