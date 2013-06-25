@@ -52,8 +52,8 @@ type universe = {
   name2pkgs: (string, package list ref) Hashtbl.t; (** name -> pkg list ref *)
   uid2pkgs: (int, package) Hashtbl.t; (** int uid -> pkg *)
   id2uid: ((pkgname * version), int) Hashtbl.t; (** <name, ver> -> int uid *)
-  features: (string, (package * version option)) Hashtbl.t;
-  (** feature -> avail feature versions (multi-bindings) 
+  features: (string, (package * version option) list ref) Hashtbl.t;
+  (** feature -> avail feature versions
       Each available feature is reported as a pair 
       <owner, provided version>, where owner is the package
       providing it. Provided version "None" means "all possible
@@ -113,20 +113,21 @@ let empty_universe () =
     univ_size = 0 ; inst_size = 0 ;
   }
 
+let add_to_hash_list h n p =
+  try let l = Hashtbl.find h n in l := p :: !l
+  with Not_found -> Hashtbl.add h n (ref [p])
+
+let get_hash_list h n = try !(Hashtbl.find h n) with Not_found -> []
+
+
 (** process all features (i.e., Provides) provided by a given package
     and fill with them a given feature table *)
 let expand_features pkg features =
     List.iter
       (function
-        | name, None -> Hashtbl.add features name (pkg, None)
-        | name, Some (_, ver) -> Hashtbl.add features name (pkg, (Some ver)))
+        | name, None -> add_to_hash_list features name (pkg, None)
+        | name, Some (_, ver) -> add_to_hash_list features name (pkg, (Some ver)))
       pkg.provides
-
-let add_to_package_list h n p =
-  try let l = Hashtbl.find h n in l := p :: !l
-  with Not_found -> Hashtbl.add h n (ref [p])
-
-let get_package_list h n = try !(Hashtbl.find h n) with Not_found -> []
 
 let load_universe pkgs =
   let univ = empty_universe () in
@@ -142,7 +143,7 @@ let load_universe pkgs =
 		 (sprintf "duplicate package: <%s, %d>"
 		    pkg.package pkg.version));
       Hashtbl.add univ.id2pkg id pkg;
-      add_to_package_list univ.name2pkgs pkg.package pkg;
+      add_to_hash_list univ.name2pkgs pkg.package pkg;
       expand_features pkg univ.features;
       univ.univ_size <- univ.univ_size + 1;
       if pkg.installed then
@@ -196,7 +197,7 @@ let status univ =
     (fun id pkg -> match pkg with
     | { installed = true } ->
       Hashtbl.add univ'.id2pkg id pkg;
-      add_to_package_list univ'.name2pkgs pkg.package pkg;
+      add_to_hash_list univ'.name2pkgs pkg.package pkg;
       expand_features pkg univ'.features
     | _ -> ())
     univ.id2pkg;
@@ -205,7 +206,7 @@ let status univ =
   univ'
 
 let lookup_packages ?(filter=None) univ pkgname = 
-  let packages = get_package_list univ.name2pkgs pkgname in
+  let packages = get_hash_list univ.name2pkgs pkgname in
     match filter with
 	None -> packages
       | Some _ as pred -> List.filter (fun p -> p.version |= pred) packages
@@ -217,7 +218,7 @@ let mem_installed ?(include_features = true) ?(ignore = fun _ -> false)
     univ (name, constr) =
   let pkg_filter = fun pkg -> not (ignore pkg) in
   let mem_feature constr =
-    let feats = Hashtbl.find_all univ.features name in
+    let feats = get_hash_list univ.features name in
       List.exists
 	(function
            | owner_pkg, _ when not owner_pkg.installed -> false
@@ -235,7 +236,7 @@ let who_provides ?(installed=true) univ (pkgname, constr) =
       |_, None -> true 
       | _, Some v -> v |= constr
     )
-    (Hashtbl.find_all univ.features pkgname)
+    (get_hash_list univ.features pkgname)
 
 
 let lookup_typed_package_property pkg = function
