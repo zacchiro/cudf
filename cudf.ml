@@ -37,6 +37,7 @@ type request = {
   upgrade : vpkglist ;
   req_extra : typed_value stanza ;
 }
+
 type preamble = {
   preamble_id : string ;
   property : typedecl ;
@@ -44,6 +45,7 @@ type preamble = {
   status_checksum: string ;
   req_checksum: string ;
 }
+
 type cudf_doc = preamble option * package list * request
 type cudf_item =
     [ `Preamble of preamble | `Package of package | `Request of request ]
@@ -119,7 +121,6 @@ let add_to_hash_list h n p =
 
 let get_hash_list h n = try !(Hashtbl.find h n) with Not_found -> []
 
-
 (** process all features (i.e., Provides) provided by a given package
     and fill with them a given feature table *)
 let expand_features pkg features =
@@ -129,26 +130,64 @@ let expand_features pkg features =
         | name, Some (_, ver) -> add_to_hash_list features name (pkg, (Some ver)))
       pkg.provides
 
+let add_package_aux univ pkg uid =
+  let id = pkg.package, pkg.version in
+  if Hashtbl.mem univ.id2pkg id then
+    raise (Constraint_violation (sprintf "duplicate package: <%s, %d>" pkg.package pkg.version))
+  else begin
+    Hashtbl.add univ.uid2pkgs uid pkg;
+    Hashtbl.add univ.id2uid id uid;
+    Hashtbl.add univ.id2pkg id pkg;
+    add_to_hash_list univ.name2pkgs pkg.package pkg;
+    expand_features pkg univ.features;
+    univ.univ_size <- univ.univ_size + 1;
+    if pkg.installed then
+      univ.inst_size <- univ.inst_size + 1
+  end
+
+let add_package univ pkg =
+  let uid = (Hashtbl.length univ.uid2pkgs) + 1 in
+  add_package_aux univ pkg uid
+
+let remove_package univ id =
+  if not (Hashtbl.mem univ.id2pkg id) then ()
+  else begin
+    let uid = Hashtbl.find univ.id2uid id in
+    let p = Hashtbl.find univ.uid2pkgs uid in
+
+    let l = Hashtbl.find univ.name2pkgs p.package in
+    l := List.remove !l p;
+    if List.length !l = 0 then
+      Hashtbl.remove univ.name2pkgs p.package;
+
+    List.iter (function
+      | name, None ->
+          let l = Hashtbl.find univ.features name in
+          l := List.remove !l (p, None);
+          if List.length !l = 0 then
+            Hashtbl.remove univ.features name
+      | name, Some (_, ver) ->
+          let l = Hashtbl.find univ.features name in
+          l := List.remove !l (p, (Some ver));
+          if List.length !l = 0 then
+            Hashtbl.remove univ.features name
+    ) p.provides;
+
+    Hashtbl.remove univ.uid2pkgs uid;
+    Hashtbl.remove univ.id2uid id;
+
+    univ.univ_size <- univ.univ_size - 1;
+    if p.installed then
+      univ.inst_size <- univ.inst_size - 1
+  end
+
 let load_universe pkgs =
   let univ = empty_universe () in
   let uid = ref 0 in
-  List.iter
-    (fun pkg ->
-      let id = pkg.package, pkg.version in
-      Hashtbl.add univ.uid2pkgs !uid pkg;
-      Hashtbl.add univ.id2uid id !uid;
-      incr uid;
-      if Hashtbl.mem univ.id2pkg id then
-	raise (Constraint_violation
-		 (sprintf "duplicate package: <%s, %d>"
-		    pkg.package pkg.version));
-      Hashtbl.add univ.id2pkg id pkg;
-      add_to_hash_list univ.name2pkgs pkg.package pkg;
-      expand_features pkg univ.features;
-      univ.univ_size <- univ.univ_size + 1;
-      if pkg.installed then
-	univ.inst_size <- univ.inst_size + 1)
-    pkgs;
+  List.iter (fun pkg ->
+    add_package_aux univ pkg !uid;
+    incr uid
+  ) pkgs;
   univ
 
 let package_by_uid univ = Hashtbl.find univ.uid2pkgs
@@ -238,7 +277,6 @@ let who_provides ?(installed=true) univ (pkgname, constr) =
     )
     (get_hash_list univ.features pkgname)
 
-
 let lookup_typed_package_property pkg = function
   | "package" -> `Pkgname pkg.package
   | "version" -> `Posint pkg.version
@@ -273,7 +311,6 @@ let lookup_request_property req prop =
 
 let lookup_preamble_property pre prop =
   string_of_value (lookup_typed_preamble_property pre prop)
-
 
 let lookup_package_typedecl ?(extra = []) prop =
   List.assoc prop (Cudf_conf.package_typedecl @ extra)

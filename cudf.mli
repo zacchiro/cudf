@@ -102,6 +102,15 @@ type solution = preamble * universe
     the given package list *)
 val load_universe : package list -> universe
 
+(** add a package to an existing universe. The universe is modified in place.
+    @raise Constraint_violation if a package with the same name and version is
+    alreayd in the given universe *)
+val add_package : universe -> package -> unit
+
+(** remove a package from an existing universe.
+    The universe is modified in place *)
+val remove_package : universe -> pkgname * version -> unit
+
 (** {5 CUDF manipulation} *)
 
 (** Lookup a specific package via a <name, version> key
