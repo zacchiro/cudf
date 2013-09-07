@@ -175,10 +175,11 @@ let remove_package univ id =
 
     Hashtbl.remove univ.uid2pkgs uid;
     Hashtbl.remove univ.id2uid id;
+    Hashtbl.remove univ.id2pkg id;
 
     univ.univ_size <- univ.univ_size - 1;
     if p.installed then
-      univ.inst_size <- univ.inst_size - 1
+      univ.inst_size <- univ.inst_size - 1;
   end
 
 let load_universe pkgs =

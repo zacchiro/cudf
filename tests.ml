@@ -555,6 +555,22 @@ let univ_sizes =
 	  (installed_size (Lazy.force univ)) 6);
     ]
 
+let univ_manipulation =
+  let univ = (let _, univ, _ = load_cudf_test "legacy" in univ) in
+  let car = lookup_package univ ("car", 1) in
+  "universe manipulations" >::: [
+    "remove package" >::
+      (fun () ->
+        remove_package univ ("car", 1);
+        assert_equal false (Cudf.mem_package univ ("car", 1))
+      );
+    "add package" >::
+      (fun () ->
+        add_package univ car;
+        assert_equal car (lookup_package univ ("car", 1))
+      );
+  ]
+
 let default_value =
   let univ = lazy (let _, univ, _ = load_cudf_test "legacy" in univ) in
     "default value of opt prop" >::: [
@@ -620,6 +636,7 @@ let feature_suite =
     self_conflicts ;
     consistency ;
     univ_sizes ;
+    univ_manipulation ;
     default_value ;
     typedecl_lookup ;
   ]
