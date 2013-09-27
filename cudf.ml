@@ -160,7 +160,8 @@ let remove_package univ id =
     if List.length !l = 0 then
       Hashtbl.remove univ.name2pkgs p.package;
 
-    List.iter (function
+    List.iter
+      (function
       | name, None ->
           let l = Hashtbl.find univ.features name in
           l := List.remove !l (p, None);
@@ -170,8 +171,8 @@ let remove_package univ id =
           let l = Hashtbl.find univ.features name in
           l := List.remove !l (p, (Some ver));
           if List.length !l = 0 then
-            Hashtbl.remove univ.features name
-    ) p.provides;
+            Hashtbl.remove univ.features name)
+      p.provides;
 
     Hashtbl.remove univ.uid2pkgs uid;
     Hashtbl.remove univ.id2uid id;
@@ -185,10 +186,11 @@ let remove_package univ id =
 let load_universe pkgs =
   let univ = empty_universe () in
   let uid = ref 0 in
-  List.iter (fun pkg ->
-    add_package_aux univ pkg !uid;
-    incr uid
-  ) pkgs;
+  List.iter
+    (fun pkg ->
+      add_package_aux univ pkg !uid;
+      incr uid)
+    pkgs;
   univ
 
 let package_by_uid univ = Hashtbl.find univ.uid2pkgs
