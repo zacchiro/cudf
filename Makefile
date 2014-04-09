@@ -55,12 +55,13 @@ top-level: _build/cudf.cma
 headers: header.txt .headache.conf
 	headache -h header.txt -c .headache.conf $(SOURCES) $(C_LIB_SOURCES)
 
-test: _build/test.byte
-	$< -verbose
+test: test.byte
+	./$< -verbose
 	@echo
 c-lib-test:
 	make -C $(C_LIB_DIR) test
-_build/test.byte: $(SOURCES)
+test.byte: $(SOURCES)
+	ocamlbuild $@
 
 tags: TAGS
 TAGS: $(SOURCES)
