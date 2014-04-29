@@ -8,6 +8,7 @@
 	* Cudf: allow add/remove imperative changes to universes
 	  (Thanks Pietro Abate for the above 3 patches)
 	* test runner: port "make test" to ocamlbuild >= 4.x
+	* cudf-check: include a man page, available under doc/
 
 2012-08-03  Stefano Zacchiroli  <zack@upsilon.cc>
 	* ALL release 0.6.3

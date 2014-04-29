@@ -7,8 +7,9 @@ LIBS_OPT = _build/cudf.cmxa
 PROGS = _build/main_cudf_check _build/main_cudf_parse_822
 PROGS_BYTE = $(addsuffix .byte,$(PROGS))
 PROGS_OPT = $(addsuffix .native,$(PROGS))
-RESULTS = $(LIBS) $(PROGS_BYTE) _build/cudf_c.cmo
-RESULTS_OPT = $(LIBS_OPT) $(PROGS_OPT) _build/cudf_c.cmx
+DOC = doc/cudf-check.1
+RESULTS = $(DOC) $(LIBS) $(PROGS_BYTE) _build/cudf_c.cmo
+RESULTS_OPT = $(DOC) $(LIBS_OPT) $(PROGS_OPT) _build/cudf_c.cmx
 SOURCES = $(wildcard *.ml *.mli *.mll *.mly)
 C_LIB_DIR = c-lib
 C_LIB_SOURCES = $(wildcard $(C_LIB_DIR)/*.c $(C_LIB_DIR)/*.h)
@@ -33,7 +34,10 @@ opt: $(RESULTS_OPT)
 $(RESULTS): $(SOURCES)
 $(RESULTS_OPT): $(SOURCES)
 
-.PHONY: c-lib c-lib-opt
+doc/cudf-check.1: doc/cudf-check.pod
+	$(MAKE) -C doc/
+
+.PHONY: c-lib c-lib-opt doc
 c-lib:
 	make -C $(C_LIB_DIR) all
 c-lib-opt:
@@ -41,6 +45,7 @@ c-lib-opt:
 
 clean:
 	make -C $(C_LIB_DIR) clean
+	make -C doc/ clean
 	$(OCAMLBUILD) $(OBFLAGS) -clean
 	rm -rf $(NAME)-*.gz $(NAME)_*.gz $(NAME)-*/
 

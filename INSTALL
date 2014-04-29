@@ -14,6 +14,7 @@ Build dependencies:
 - glib			(only needed to build the C bindings
 			 Debian package: "libglib2.0-dev",
 			 RPM: "libglib2.0-devel")
+- perl                  (for pod2man, to build cudf-check.1 man page)
 
 To build run:
 
