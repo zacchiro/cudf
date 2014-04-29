@@ -76,6 +76,14 @@ show usage information and exit
 =back
 
 
+=head1 EXIT STATUS
+
+cudf-check returns an exit status of 0 (true) if all performed checks (universe
+consistency, solution consistency, request-solution correspondence) were
+successful; if one or more of them fails, cudf-check returns an exit status of
+1 (false).
+
+
 =head1 SEE ALSO
 
 apt-cudf(1), update-cudf-solvers(8)

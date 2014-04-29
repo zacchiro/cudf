@@ -41,14 +41,15 @@ In particular:
   cudf-check -univ FILE               validate package universe (no request)
 Options:"
 
-let die_usage () = Arg.usage arg_spec usage_msg ; exit (-2)
+let die_usage () = Arg.usage arg_spec usage_msg ; exit 2
 
 let print_inst_info inst =
   match is_consistent inst with
-    | true, _ -> printf "original installation status consistent\n%!"
+    | true, _ -> printf "original installation status consistent\n%!"; true
     | false, Some r ->
 	printf "original installation status inconsistent (reason: %s)\n%!"
-	  (explain_reason (r :> bad_solution_reason))
+	  (explain_reason (r :> bad_solution_reason));
+        false
     | _ -> assert false
 
 let print_cudf (pre, univ, req) =
@@ -63,10 +64,11 @@ let print_univ univ =
 
 let print_sol_info inst sol =
   match is_solution inst sol with
-    | true, _ -> printf "is_solution: true\n%!"
+    | true, _ -> printf "is_solution: true\n%!"; true
     | false, rs ->
 	printf "is_solution: false (reason: %s)\n%!"
-	  (String.concat "; " (List.map explain_reason rs))
+	  (String.concat "; " (List.map explain_reason rs));
+        false
 
 let pp_loc (start_pos, end_pos) =
   let line { Lexing.pos_lnum = l } = l in
@@ -84,6 +86,7 @@ let main () =
     eprintf "Location: %s\n%!" (pp_loc loc) ;
     exit 1
   in
+  let exit_ rc = if rc then exit 0 else exit 1 in
   if !cudf_arg <> "" then begin
     try
       let p = Cudf_parser.from_in_channel (open_in !cudf_arg) in
@@ -117,15 +120,17 @@ let main () =
     sol := Some (Cudf_parser.from_in_channel (open_in !sol_arg));
   match !cudf, !univ, !sol with
     | Some (pre,univ,req), None, None ->
-	print_inst_info univ;
-	print_cudf (pre,univ,req)
+        let rc = print_inst_info univ in
+	print_cudf (pre,univ,req);
+	exit_ rc
     | Some (pre,univ,req), None, Some sol_parser ->
 	(try
 	   eprintf "loading solution ...\n%!";
 	   let _pre', sol = Cudf_parser.load_solution sol_parser univ in
-	   print_inst_info univ;
-	   print_sol_info (univ,req) sol;
-	   print_cudf (pre,univ,req)
+	   let rc1 = print_inst_info univ in
+	   let rc2 = print_sol_info (univ,req) sol in
+	   print_cudf (pre,univ,req);
+	   exit_ (rc1 && rc2)
 	 with
 	   | Cudf_parser.Parse_error (msg, loc) -> fail_parse "solution" msg loc
 	   | Cudf.Constraint_violation _ as exn ->
@@ -133,8 +138,9 @@ let main () =
 		 !sol_arg (Printexc.to_string exn);
                exit (-1))
     | None, Some univ, None ->
-	print_inst_info univ;
-	print_univ univ
+        let rc = print_inst_info univ in
+	print_univ univ;
+	exit_ rc
     | _ -> die_usage ()
 
 let _ = 
