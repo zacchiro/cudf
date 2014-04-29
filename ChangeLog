@@ -1,3 +1,14 @@
+2014-04-29  Stefano Zacchiroli  <zack@upsilon.cc>
+	* ALL release 0.7
+	* Cudf_checker: do not report as multi-upgrade error a package
+	  providing itself
+	* Cudf refactoring: change name2pkgs and univ.features internal
+	  structures to list ref from multi-binding hash table.
+	* Cudf: add iterators on packages grouped by name
+	* Cudf: allow add/remove imperative changes to universes
+	  (Thanks Pietro Abate for the above 3 patches)
+	* test runner: port "make test" to ocamlbuild >= 4.x
+
 2012-08-03  Stefano Zacchiroli  <zack@upsilon.cc>
 	* ALL release 0.6.3
 	* Cudf: bugfix: ensure that Cudf.status sizes are non-bogus
