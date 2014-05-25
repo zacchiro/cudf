@@ -106,12 +106,12 @@ let default_request = {
   req_extra = [] ;
 }
 
-let empty_universe () =
-  { id2pkg = Hashtbl.create 1023 ;
-    uid2pkgs = Hashtbl.create 1023;
-    id2uid = Hashtbl.create 1023;
-    name2pkgs = Hashtbl.create 1023 ;
-    features = Hashtbl.create 1023 ;
+let empty_universe ?(size=1023) () =
+  { id2pkg = Hashtbl.create size ;
+    uid2pkgs = Hashtbl.create size;
+    id2uid = Hashtbl.create size;
+    name2pkgs = Hashtbl.create size;
+    features = Hashtbl.create size;
     univ_size = 0 ; inst_size = 0 ;
   }
 
@@ -184,7 +184,8 @@ let remove_package univ id =
   end
 
 let load_universe pkgs =
-  let univ = empty_universe () in
+  let size = 2* (List.length pkgs) -1 in
+  let univ = empty_universe ~size () in
   let uid = ref 0 in
   List.iter
     (fun pkg ->
