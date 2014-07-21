@@ -184,7 +184,7 @@ let remove_package univ id =
   end
 
 let load_universe pkgs =
-  let size = 2* (List.length pkgs) -1 in
+  let size = List.length pkgs in
   let univ = empty_universe ~size () in
   let uid = ref 0 in
   List.iter
