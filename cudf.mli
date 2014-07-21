@@ -98,8 +98,10 @@ type cudf = preamble * universe * request
     status *)
 type solution = preamble * universe
 
-(** return an empty universe. Size represent the initial size of the universe *)
-val empty_universe : ?size: int -> unit -> universe
+(** return an empty universe.
+
+    @param size represents the initial size of the universe (default: 1023) *)
+val empty_universe : ?size:int -> unit -> universe
 
 (** @raise Constraint_violation when a global CUDF constraint is violated in
     the given package list *)
