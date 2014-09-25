@@ -130,3 +130,4 @@ world: all opt c-lib c-lib-opt doc
 
 .PHONY: all opt world clean top-level headers test tags install uninstall
 .PHONY: dep rpm c-lib c-lib-opt dist doc
+.NOTPARALLEL:
