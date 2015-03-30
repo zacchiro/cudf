@@ -1,6 +1,6 @@
 (*****************************************************************************)
 (*  libCUDF - CUDF (Common Upgrade Description Format) manipulation library  *)
-(*  Copyright (C) 2009-2012  Stefano Zacchiroli <zack@upsilon.cc>            *)
+(*  Copyright (C) 2009-2015  Stefano Zacchiroli <zack@upsilon.cc>            *)
 (*                                                                           *)
 (*  This library is free software: you can redistribute it and/or modify     *)
 (*  it under the terms of the GNU Lesser General Public License as           *)
@@ -20,6 +20,10 @@ type cudf_parser = {
   lexbuf: Lexing.lexbuf ;
   fname: string ;
   mutable typedecl: Cudf_conf.stanza_typedecl ;
+  priv_in_chan: in_channel option;
+  (* in_channel to be closed upon close() invocation, to avoid leaving up to
+     OCaml GC when to close it. Will be set only if it is Cudf_parser itself
+     who has created the in_channel, e.g., upon Cudf_parser.from_file *)
 }
 
 type loc_map = (string * loc) list
@@ -31,6 +35,7 @@ let from_in_channel ?(typedecl=Cudf_conf.stanza_typedecl) ic =
   { lexbuf = Lexing.from_channel ic ;
     typedecl = typedecl ;
     fname = "" ;
+    priv_in_chan = None ;
   }
 
 let from_IO_in_channel ?(typedecl=Cudf_conf.stanza_typedecl) ic =
@@ -38,18 +43,24 @@ let from_IO_in_channel ?(typedecl=Cudf_conf.stanza_typedecl) ic =
   { lexbuf = Lexing.from_function f;
     typedecl = typedecl ;
     fname = "" ;
+    priv_in_chan = None ;
   }
 
 let from_file ?(typedecl=Cudf_conf.stanza_typedecl) fname =
   (* Syntax  error with OCaml 3.10.2:
    * { from_in_channel ?typedecl (open_in fname)
    *   with fname = fname } *)
-  { lexbuf = Lexing.from_channel (open_in fname) ;
+  let ic = open_in fname in
+  { lexbuf = Lexing.from_channel ic ;
     typedecl = typedecl ;
     fname = fname ;
+    priv_in_chan = Some ic ;
   }
 
-let close p = ()
+let close p =
+  match p.priv_in_chan with
+  | None -> ()
+  | Some ic -> close_in ic
 
 let parse_stanza p =
   try
