@@ -1,3 +1,11 @@
+2015-03-31  Stefano Zacchiroli  <zack@upsilon.cc>
+	* ALL release 0.8
+	* Cudf: performance improvement by allocating larger hashtbl
+	* Cudf: expose empty_universe
+	  (Thanks to Pietro Abate for the above 2 patches)
+	* Makefile: inhibit parallel build (thanks to Roberto Di Cosmo)
+	* Cudf_parser: prevent in_channel leaks when using from_file
+
 2014-04-29  Stefano Zacchiroli  <zack@upsilon.cc>
 	* ALL release 0.7
 	* Cudf_checker: do not report as multi-upgrade error a package
