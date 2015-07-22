@@ -2,6 +2,13 @@ include Makefile.config
 
 NAME = cudf
 
+ifeq ("$(shell (ocamlc -config 2>/dev/null || ocamlopt -config) | fgrep os_type)","os_type: Win32")
+EXE=.exe
+OCAMLLIBDIR := $(shell cygpath $(OCAMLLIBDIR))
+else
+EXE=
+endif
+
 LIBS = _build/cudf.cma
 LIBS_OPT = _build/cudf.cmxa
 PROGS = _build/main_cudf_check _build/main_cudf_parse_822
@@ -84,7 +91,7 @@ install:
 	$(INSTALL) -patch-version $(VERSION) $(NAME) $(INSTALL_STUFF)
 	test -d $(DESTDIR)$(BINDIR) || mkdir -p $(DESTDIR)$(BINDIR)
 	for p in $(notdir $(PROGS)) ; do \
-		tgt=`echo $$p | sed -e 's/^main.//' -e 's/_/-/g'` ; \
+		tgt=`echo $$p | sed -e 's/^main.//' -e 's/_/-/g'`$(EXE) ; \
 		if [ -f _build/$$p.native ] ; then \
 			cp _build/$$p.native $(DESTDIR)$(BINDIR)/$$tgt ; \
 		else \
@@ -99,7 +106,7 @@ install:
 uninstall:
 	$(UNINSTALL) $(NAME)
 	for p in $(notdir $(PROGS)) ; do \
-		tgt=`echo $$p | sed -e 's/^main.//' -e 's/_/-/g'` ; \
+		tgt=`echo $$p | sed -e 's/^main.//' -e 's/_/-/g'`$(EXE) ; \
 		if [ -f $(DESTDIR)$(BINDIR)/$$tgt ] ; then \
 			rm $(DESTDIR)$(BINDIR)/$$tgt ; \
 		fi ; \
