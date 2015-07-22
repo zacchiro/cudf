@@ -3,6 +3,10 @@ all: libcudf.a c-test
 opt: libcudf-opt.a c-test-opt
 include Makefile.variants
 
+ifneq ($(DESTDIR),)
+DESTDIR:=$(DESTDIR)/
+endif
+
 NULL =
 CFLAGS = -Wall -DG_LOG_DOMAIN=\"libCUDF\"
 PROG_CFLAGS = -Wall
@@ -60,22 +64,22 @@ clean:
 	rm -f cudf.pc
 
 install: cudf.pc
-	test -d $(DESTDIR)/$(LIBDIR) || mkdir -p $(DESTDIR)/$(LIBDIR)
-	test -d $(DESTDIR)/$(INCDIR) || mkdir -p $(DESTDIR)/$(INCDIR)
-	test -d $(DESTDIR)/$(PCDIR) || mkdir -p $(DESTDIR)/$(PCDIR)
+	test -d $(DESTDIR)$(LIBDIR) || mkdir -p $(DESTDIR)$(LIBDIR)
+	test -d $(DESTDIR)$(INCDIR) || mkdir -p $(DESTDIR)$(INCDIR)
+	test -d $(DESTDIR)$(PCDIR) || mkdir -p $(DESTDIR)$(PCDIR)
 	if [ -f libcudf-opt.a ] ; then \
-		cp libcudf-opt.a $(DESTDIR)/$(LIBDIR)/libcudf.a ; \
+		cp libcudf-opt.a $(DESTDIR)$(LIBDIR)/libcudf.a ; \
 	else \
-		cp libcudf.a $(DESTDIR)/$(LIBDIR)/libcudf.a ; \
+		cp libcudf.a $(DESTDIR)$(LIBDIR)/libcudf.a ; \
 	fi
-	cp libcudf.a $(DESTDIR)/$(LIBDIR)
-	cp cudf.h $(DESTDIR)/$(INCDIR)
-	cp cudf.pc $(DESTDIR)/$(PCDIR)
+	cp libcudf.a $(DESTDIR)$(LIBDIR)
+	cp cudf.h $(DESTDIR)$(INCDIR)
+	cp cudf.pc $(DESTDIR)$(PCDIR)
 
 uninstall:
-	rm $(DESTDIR)/$(LIBDIR)/libcudf.a
-	rm $(DESTDIR)/$(INCDIR)/cudf.h
-	rm $(DESTDIR)/$(PCDIR)/cudf.pc
-	-rmdir -p $(DESTDIR)/$(LIBDIR) $(DESTDIR)/$(INCDIR) $(DESTDIR)/$(PCDIR)
+	rm $(DESTDIR)$(LIBDIR)/libcudf.a
+	rm $(DESTDIR)$(INCDIR)/cudf.h
+	rm $(DESTDIR)$(PCDIR)/cudf.pc
+	-rmdir -p $(DESTDIR)$(LIBDIR) $(DESTDIR)$(INCDIR) $(DESTDIR)$(PCDIR)
 
 .PHONY: all opt clean test install uninstall
