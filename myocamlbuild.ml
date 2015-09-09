@@ -38,10 +38,6 @@ let before_space s =
 let find_packages () =
   List.map before_space (split_nl & run_and_read "ocamlfind list")
 
-(* this is supposed to list available syntaxes, but I don't know how
-   to do it. *)
-let find_syntaxes () = ["camlp4o"; "camlp4r"]
-
 (* ocamlfind command *)
 let ocamlfind x = S[A"ocamlfind"; x]
 
@@ -74,14 +70,6 @@ let _ = dispatch begin function
          flag ["ocaml"; "link";     "pkg_"^pkg] & S[A"-package"; A pkg];
        end (find_packages ());
 
-       (* Like -package but for extensions syntax. Morover -syntax is
-       	  useless when linking. *)
-       List.iter begin fun syntax ->
-         flag ["ocaml"; "compile";  "syntax_"^syntax] & S[A"-syntax"; A syntax];
-         flag ["ocaml"; "ocamldep"; "syntax_"^syntax] & S[A"-syntax"; A syntax];
-         flag ["ocaml"; "doc";      "syntax_"^syntax] & S[A"-syntax"; A syntax];
-       end (find_syntaxes ());
-       
        (* The default "thread" tag is not compatible with ocamlfind.
           Indeed, the default rules add the "threads.cma" or
           "threads.cmxa" options when using this tag. When using the

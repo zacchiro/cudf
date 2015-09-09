@@ -4,7 +4,6 @@ To build
 
 Build dependencies:
 - ocaml	>= 3.10.2	(Debian package: "ocaml-nox", RPM: "ocaml")
-- camlp4                (RPM: "camlp4")
 - findlib		(Debian package: "ocaml-findlib", RPM: "ocaml-findlib")
 - extlib		(Debian package: "libextlib-ocaml-dev",
   			 RPM: "ocaml-extlib-devel")

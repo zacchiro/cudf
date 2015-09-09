@@ -6,7 +6,7 @@ Source: https://gforge.inria.fr/frs/?group_id=4385
 URL: http://www.mancoosi.org/cudf/
 License: LGPL
 Group: Development/Libraries
-BuildRequires: ocaml ocaml-findlib ocaml-camlp4-devel ocaml-extlib-devel
+BuildRequires: ocaml ocaml-findlib ocaml-extlib-devel
 BuildRoot: %{_tmppath}/%{name}-root
 
 %description
