@@ -1,3 +1,8 @@
+2017-03-21  Stefano Zacchiroli  <zack@upsilon.cc>
+	* ALL release 0.9
+	* Build: remove spurious dependencies on no longer used camlp4
+	* Makefile: fix build issues on Windows
+
 2015-03-31  Stefano Zacchiroli  <zack@upsilon.cc>
 	* ALL release 0.8
 	* Cudf: performance improvement by allocating larger hashtbl
