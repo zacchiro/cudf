@@ -1,10 +1,9 @@
 libCUDF - CUDF (Common Upgradeability Description Format) library
 =================================================================
 
-libCUDF is a library to manipulate so called CUDF documents. A CUDF
-(Common Upgradeability Description Format) document describes an
-"upgrade scenario", as faced by package managers in popular
-package-based FOSS (Free and Open Source Software) distributions.
+libCUDF is a reference implementation of CUDF (Common Upgradeability
+Description Format), a document format to describe package upgrade scenarios,
+in a package manager agnostic way.  distributions.
 
 A CUDF document consists of an optional leading "preamble", a "package
 universe", and a trailing "user request":
@@ -30,25 +29,24 @@ libCUDF enables manipulation of CUDF and related documents.
 Development
 -----------
 
-Development happens on the INRIA Forge, in the [cudf project][1]. There you can
-find:
+Development happens on GitLab, in the [CUDF project][1]. There you can find:
 
 * [releases][4]
 * [Git repository][5]
 * [bug reports][6]
 
-[1]: https://gforge.inria.fr/projects/cudf/
-[4]: https://gforge.inria.fr/frs/?group_id=4385
-[5]: https://gforge.inria.fr/scm/?group_id=4385
-[6]: https://gforge.inria.fr/tracker/?group_id=4385
+[1]: https://gitlab.com/irill/cudf
+[4]: https://gitlab.com/irill/cudf/-/tags
+[5]: https://gitlab.com/irill/cudf/-/tree/master
+[6]: https://gitlab.com/irill/cudf/-/issues
 
-Please report bugs using the forge [bug tracker][6] rather than mailing me
-directly.
+Please report bugs using the [bug tracker][6].
+Patches are welcome!, just submit a merge request on GitLab.
 
 If you're in a hurry and just want to get the latest version of the code, here
 is the command you're looking for:
 
-    $ git clone https://gforge.inria.fr/git/cudf/cudf.git
+    $ git clone https://gitlab.com/irill/cudf/
 
 
 Reference
@@ -62,4 +60,3 @@ libCUDF implements the Common Upgradeability Description Format (CUDF)
 
 
  -- Stefano Zacchiroli <zack@upsilon.cc>  Sun, 14 Oct 2012 16:28:32 +0100
-
